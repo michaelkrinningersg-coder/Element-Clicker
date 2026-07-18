@@ -18,8 +18,14 @@ export const SAVE_VERSION = 1;
 // ---- Naturkonstante ----
 /** Avogadro-Konstante: Atome pro mol. */
 export const AVOGADRO = new Decimal("6.02214076e23");
-/** 2 mol H (in Atomen) – Kosten der ersten Fusion H->He. */
-export const TWO_MOL_H = AVOGADRO.mul(2);
+/** 2 mol (in Atomen) – Menge des Ausgangsstoffs je Fusion. */
+export const TWO_MOL = AVOGADRO.mul(2);
+/** 2 mol H – Kosten der Fusion H->He (identischer Zahlenwert wie TWO_MOL). */
+export const TWO_MOL_H = TWO_MOL;
+
+// Jede Fusion: 2 mol Ausgangsstoff -> 1 EINZELNES Atom des nächsten Elements.
+// Elemente werden also in ATOMEN gezählt. Beispiel: 2 mol H -> 1 He-Atom;
+// für 1 Li-Atom braucht man 2 mol He (= 2*Avogadro He-Atome) usw.
 
 // ---- Klick ----
 export const CLICK_BASE = new Decimal(1); // 1 H-Atom pro Klick (Upgrades später)

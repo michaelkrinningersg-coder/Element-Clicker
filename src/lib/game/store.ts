@@ -7,6 +7,7 @@ import {
   GRAVITON_H_COST,
   IGNITION_KELVIN,
   KELVIN_PER_AE,
+  TWO_MOL,
   TWO_MOL_H,
 } from "./constants";
 import { GENERATOR_BY_ID } from "./generators";
@@ -110,11 +111,13 @@ function applyFusion(target: FusableSymbol, count: Decimal): void {
   if (count.lte(0)) return;
   const recipe = FUSION_RECIPES[target];
   if (target === "He") {
+    // 2 mol H -> 1 He-Atom
     state.h = state.h.sub(TWO_MOL_H.mul(count));
     state.elements.He = state.elements.He.add(count);
   } else {
+    // 2 mol des Ausgangs-Elements -> 1 Atom des nächsten
     const fromSym = recipe.from as "He" | "Li";
-    state.elements[fromSym] = state.elements[fromSym].sub(count.mul(2));
+    state.elements[fromSym] = state.elements[fromSym].sub(TWO_MOL.mul(count));
     state.elements[target] = state.elements[target].add(count);
   }
   const bp = recipe.byproduct;
@@ -136,7 +139,7 @@ export function fuse(target: FusableSymbol): void {
     state.autoFusion = true;
   } else {
     const fromSym = FUSION_RECIPES[target].from as "He" | "Li";
-    if (state.elements[fromSym].lt(2)) return;
+    if (state.elements[fromSym].lt(TWO_MOL)) return;
     applyFusion(target, ONE);
   }
   commit();
@@ -150,11 +153,11 @@ function autoFuseStep(): void {
   if (state.h.gte(TWO_MOL_H)) {
     applyFusion("He", state.h.div(TWO_MOL_H).floor());
   }
-  if (state.elements.He.gte(2)) {
-    applyFusion("Li", state.elements.He.div(2).floor());
+  if (state.elements.He.gte(TWO_MOL)) {
+    applyFusion("Li", state.elements.He.div(TWO_MOL).floor());
   }
-  if (state.elements.Li.gte(2)) {
-    applyFusion("Be", state.elements.Li.div(2).floor());
+  if (state.elements.Li.gte(TWO_MOL)) {
+    applyFusion("Be", state.elements.Li.div(TWO_MOL).floor());
   }
 }
 

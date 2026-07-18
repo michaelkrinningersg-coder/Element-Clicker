@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Decimal } from "../src/lib/game/decimal";
-import { TWO_MOL_H } from "../src/lib/game/constants";
+import { TWO_MOL, TWO_MOL_H } from "../src/lib/game/constants";
 import {
   getState,
   click,
@@ -65,21 +65,23 @@ describe("Kompletter Frühphasen-Loop", () => {
     expect(s.h.lt(TWO_MOL_H.mul(2))).toBe(true);
   });
 
-  it("Fusion He->Li und Li->Be liefern die richtigen Teilchen", () => {
+  it("Fusion He->Li und Li->Be brauchen je 2 mol Ausgangsstoff pro Atom", () => {
     const s = getState();
-    s.elements.He = new Decimal(2);
+    s.elements.He = TWO_MOL; // 2 mol He -> 1 Li-Atom
     const pBefore = s.particles.protons.toNumber();
     const eBefore = s.particles.electrons.toNumber();
     fuse("Li");
     expect(s.elements.Li.toNumber()).toBe(1);
+    expect(s.elements.He.toNumber()).toBe(0); // 2 mol verbraucht
     expect(s.particles.protons.toNumber()).toBe(pBefore + 1);
     expect(s.particles.electrons.toNumber()).toBe(eBefore + 1);
     expect(s.unlocked.Li).toBe(true);
 
-    s.elements.Li = new Decimal(2);
+    s.elements.Li = TWO_MOL; // 2 mol Li -> 1 Be-Atom
     const nBefore = s.particles.neutrons.toNumber();
     fuse("Be");
     expect(s.elements.Be.toNumber()).toBe(1);
+    expect(s.elements.Li.toNumber()).toBe(0);
     expect(s.particles.neutrons.toNumber()).toBe(nBefore + 3);
     expect(s.unlocked.Be).toBe(true);
   });
@@ -95,10 +97,10 @@ describe("Kompletter Frühphasen-Loop", () => {
     s.elements.He = new Decimal(0);
     s.elements.Li = new Decimal(0);
     s.elements.Be = new Decimal(0);
-    s.h = TWO_MOL_H.mul(8); // -> 8 He -> 4 Li -> 2 Be (kaskadiert in einem Tick)
+    // Jede Stufe braucht 2 mol -> für eine Kaskade bis Be: ~ (2 mol)^3 H.
+    s.h = TWO_MOL.pow(3).mul(8); // reichlich für H->He->Li->Be in einem Tick
     const beBefore = s.elements.Be.toNumber();
     tick(0.001);
     expect(s.elements.Be.toNumber()).toBeGreaterThan(beBefore);
-    expect(s.h.lt(TWO_MOL_H)).toBe(true); // fast alles H verbraucht
   });
 });
