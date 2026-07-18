@@ -2,7 +2,7 @@
   import { game, fuse } from "../game/store";
   import { TWO_MOL_H } from "../game/constants";
   import { FUSION_ORDER, FUSION_RECIPES } from "../game/elements";
-  import { formatInt, formatMol } from "../game/format";
+  import { formatMol } from "../game/format";
 
   function byproductText(sym: (typeof FUSION_ORDER)[number]): string {
     const bp = FUSION_RECIPES[sym].byproduct;
@@ -59,14 +59,6 @@
       {/each}
     </div>
   {/if}
-
-  <div class="particles">
-    <span class="chip">⚡ Protonen: <b class="mono">{formatInt($game.particles.protons)}</b></span>
-    <span class="chip">🔵 Elektronen: <b class="mono">{formatInt($game.particles.electrons)}</b></span>
-    <span class="chip">⚪ Neutronen: <b class="mono">{formatInt($game.particles.neutrons)}</b></span>
-    <span class="chip">✨ Positronen: <b class="mono">{formatInt($game.particles.positrons)}</b></span>
-  </div>
-  <p class="dim small">Teilchen werden vorerst nur gesammelt – Boni folgen später.</p>
 </div>
 
 <style>
@@ -102,10 +94,10 @@
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 10px;
-    background: var(--bg-panel-2);
-    border: 1px solid var(--border);
+    background: var(--glass-2);
+    border: 1px solid var(--border-row);
     border-radius: 10px;
-    padding: 9px 12px;
+    padding: 10px 14px;
     opacity: 0.6;
   }
   .rung.flow {
@@ -122,18 +114,5 @@
   }
   .state.on {
     color: var(--good);
-  }
-  .particles {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-  }
-  .chip {
-    background: var(--bg-panel-2);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 5px 10px;
-    font-size: 0.82rem;
   }
 </style>

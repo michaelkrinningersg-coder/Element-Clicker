@@ -19,7 +19,7 @@
     <span class="glyph">🌫️</span>
     <span class="hint">KLICK</span>
   </button>
-  <div class="dim mono">+{formatDecimal(perClick)} H / Klick</div>
+  <div class="perclick mono">+{formatDecimal(perClick)} H / Klick</div>
 </div>
 
 <style>
@@ -27,34 +27,52 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 22px;
   }
   .orb {
     width: 190px;
     height: 190px;
     border-radius: 50%;
     border: 2px solid var(--accent);
-    background: radial-gradient(circle at 40% 35%, #3a4a80, #0e1530 72%);
+    background: var(--orb-fill);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    box-shadow: 0 0 40px rgba(110, 168, 255, 0.25);
-    transition: transform 0.06s ease, box-shadow 0.1s ease;
-  }
-  .orb:hover {
-    box-shadow: 0 0 55px rgba(110, 168, 255, 0.4);
+    animation: coreGlow 3.4s ease-in-out infinite;
+    transition: transform 0.06s ease;
   }
   .orb.pulse {
     transform: scale(0.96);
   }
   .glyph {
-    font-size: 3.4rem;
+    font-size: 58px;
   }
   .hint {
-    letter-spacing: 3px;
-    font-size: 0.8rem;
+    letter-spacing: 4px;
+    font-size: 12px;
     color: var(--text-dim);
+  }
+  .perclick {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  @keyframes coreGlow {
+    0%,
+    100% {
+      box-shadow: 0 0 42px rgba(110, 168, 255, 0.32);
+    }
+    50% {
+      box-shadow: 0 0 70px rgba(150, 120, 255, 0.5);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .orb {
+      animation: none;
+      box-shadow: 0 0 42px rgba(110, 168, 255, 0.32);
+    }
   }
 </style>

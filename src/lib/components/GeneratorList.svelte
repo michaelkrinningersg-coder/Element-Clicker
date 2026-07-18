@@ -1,171 +1,150 @@
 <script lang="ts">
   import { game, buyGenerator } from "../game/store";
   import { GENERATORS } from "../game/generators";
-  import { effectiveGeneratorProduction, nextPerk } from "../game/formulas";
+  import {
+    effectiveGeneratorProduction,
+    totalProductionPerSec,
+    generatorOutputMultiplier,
+    aeMultiplier,
+    perkGlobalMultiplier,
+    nextPerk,
+  } from "../game/formulas";
   import { formatDecimal } from "../game/format";
+  import { ZERO } from "../game/decimal";
 
-  // Aufgeklappter Generator (Akkordeon) – zeigt dessen Perk-Leiter.
-  let openId: string | null = null;
-  function toggle(id: string) {
-    openId = openId === id ? null : id;
-  }
+  $: total = totalProductionPerSec($game);
 </script>
 
-<div class="panel">
+<div class="genpanel">
   <h3>Generatoren</h3>
-  <p class="dim hint">Klick auf einen Generator zeigt seine Perks.</p>
-  <div class="list">
-    {#each GENERATORS as def (def.id)}
-      {@const gs = $game.generators[def.id]}
-      {@const affordable = $game.h.gte(gs.nextCost)}
-      {@const prod = effectiveGeneratorProduction($game, def.id)}
-      {@const np = nextPerk($game, def.id)}
-      {@const open = openId === def.id}
-      <div class="card" class:open>
-        <div class="row" role="button" tabindex="0" on:click={() => toggle(def.id)} on:keydown={(e) => e.key === "Enter" && toggle(def.id)}>
-          <span class="icon">{def.icon}</span>
-          <span class="info">
-            <span class="name">{def.name}</span>
-            <span class="sub dim mono">
-              {#if gs.owned > 0}{formatDecimal(prod)} /s{:else}—{/if}
-              {#if np}<span class="nextperk"> · nächster Perk: {np.threshold} Stk.</span>{/if}
-            </span>
-          </span>
-          <span class="count mono">{gs.owned}</span>
-          <button
-            class="buy"
-            class:ok={affordable}
-            disabled={!affordable}
-            on:click|stopPropagation={() => buyGenerator(def.id)}
-          >
-            {formatDecimal(gs.nextCost)} H
-          </button>
-        </div>
-
-        {#if open}
-          <div class="perks">
-            {#if def.perks.length === 0}
-              <p class="dim small">Perks für diesen Generator folgen noch.</p>
-            {:else}
-              {#each def.perks as perk (perk.threshold)}
-                {@const reached = gs.owned >= perk.threshold}
-                <div class="perk" class:reached>
-                  <span class="pt mono">{perk.threshold} Stk.</span>
-                  <span class="pl">{perk.label}</span>
-                  <span class="ps">{reached ? "✓" : "🔒"}</span>
-                </div>
-              {/each}
-            {/if}
-          </div>
-        {/if}
-      </div>
-    {/each}
+  <div class="thead">
+    <span>Generator</span>
+    <span class="r">Anzahl</span>
+    <span class="r">Produktion</span>
+    <span class="r">Nächste Kosten</span>
+    <span class="r">Nächster Bonus</span>
+    <span class="r">Anteil h/s</span>
   </div>
+
+  {#each GENERATORS as def (def.id)}
+    {@const gs = $game.generators[def.id]}
+    {@const affordable = $game.h.gte(gs.nextCost)}
+    {@const prod = effectiveGeneratorProduction($game, def.id)}
+    {@const nextBonus = def.baseProd
+      .mul(generatorOutputMultiplier($game, def.id))
+      .mul(aeMultiplier($game))
+      .mul(perkGlobalMultiplier($game))}
+    {@const share = total.gt(0) && prod.gt(0) ? prod.div(total).mul(100) : ZERO}
+    {@const np = nextPerk($game, def.id)}
+    {@const locked = gs.owned === 0 && !affordable}
+    <button
+      class="trow"
+      class:locked
+      disabled={!affordable}
+      title={np ? `Nächster Perk bei ${np.threshold} Stk.: ${np.label}` : "Alle Perks erreicht"}
+      on:click={() => buyGenerator(def.id)}
+    >
+      <span class="gen">
+        <span class="icon">{def.icon}</span>
+        <span class="name">{def.name}</span>
+      </span>
+      <span class="r count">×{gs.owned}</span>
+      <span class="r prod">{gs.owned > 0 ? `${formatDecimal(prod)} /s` : "—"}</span>
+      <span class="r cost" class:ok={affordable}>{formatDecimal(gs.nextCost)} H</span>
+      <span class="r bonus">+{formatDecimal(nextBonus)} /s</span>
+      <span class="r share">{share.gt(0) ? `${formatDecimal(share, 1)} %` : "—"}</span>
+    </button>
+  {/each}
 </div>
 
 <style>
-  .hint {
-    font-size: 0.78rem;
-    margin: 0 0 10px;
+  .genpanel {
+    background: var(--glass);
+    border: 1px solid var(--border-panel);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
   }
-  .list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .card {
-    background: var(--bg-panel-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .card.open {
-    border-color: var(--accent);
-  }
-  .row {
+  .thead,
+  .trow {
     display: grid;
-    grid-template-columns: 36px 1fr auto auto;
+    grid-template-columns: 2.4fr 0.8fr 1fr 1.1fr 1.2fr 0.9fr;
+    gap: 12px;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    cursor: pointer;
   }
-  .row:hover {
-    filter: brightness(1.12);
+  .thead {
+    padding: 0 14px 8px;
+    border-bottom: 1px solid var(--border-panel);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-head);
+    margin-bottom: 8px;
   }
-  .icon {
-    font-size: 1.5rem;
-  }
-  .info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .name {
-    font-weight: 600;
-  }
-  .sub {
-    font-size: 0.8rem;
-  }
-  .nextperk {
-    color: var(--accent-2);
-  }
-  .count {
-    font-size: 1.1rem;
-    font-weight: 700;
-    min-width: 2ch;
+  .r {
     text-align: right;
   }
-  .buy {
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 7px 10px;
-    font-size: 0.82rem;
-    color: var(--text-dim);
-    white-space: nowrap;
+  .trow {
+    width: 100%;
+    text-align: left;
+    background: var(--glass-2);
+    border: 1px solid var(--border-row);
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
   }
-  .buy.ok {
-    color: var(--good);
-    border-color: var(--good);
+  .trow:hover:not(:disabled) {
+    filter: brightness(1.15);
   }
-  .buy:hover:not(:disabled) {
-    filter: brightness(1.2);
-  }
-  .buy:disabled {
+  .trow.locked {
+    background: var(--glass-dim);
+    border-color: var(--border-panel);
     opacity: 0.5;
+  }
+  .trow:disabled {
     cursor: not-allowed;
   }
-  .perks {
-    border-top: 1px solid var(--border);
-    padding: 8px 12px 10px;
+  .gen {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    background: #0d1326;
-  }
-  .perk {
-    display: grid;
-    grid-template-columns: 68px 1fr auto;
     align-items: center;
-    gap: 8px;
-    font-size: 0.82rem;
-    opacity: 0.55;
+    gap: 10px;
+    min-width: 0;
   }
-  .perk.reached {
-    opacity: 1;
+  .icon {
+    font-size: 20px;
   }
-  .pt {
-    color: var(--text-dim);
+  .name {
+    font-size: 15px;
+    font-weight: 600;
   }
-  .perk.reached .pt {
-    color: var(--gold);
+  .count {
+    font-weight: 700;
   }
-  .perk.reached .ps {
+  .prod {
+    color: var(--prod);
+  }
+  .cost {
+    color: var(--text-locked);
+  }
+  .cost.ok {
     color: var(--good);
   }
-  .small {
-    font-size: 0.8rem;
-    margin: 2px 0;
+  .bonus,
+  .share {
+    color: var(--text-dim);
+  }
+  @media (max-width: 760px) {
+    .thead,
+    .trow {
+      grid-template-columns: 2fr 0.7fr 1fr 1.1fr;
+    }
+    .thead span:nth-child(5),
+    .thead span:nth-child(6),
+    .trow .bonus,
+    .trow .share {
+      display: none;
+    }
   }
 </style>
