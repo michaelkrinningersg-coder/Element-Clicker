@@ -31,6 +31,9 @@ export interface GeneratorDef {
   baseCost: Decimal; // Kosten der 1. Einheit (in H-Atomen)
   baseProd: Decimal; // H/Sek. pro Einheit
   perks: Perk[];
+  /** Additiver Bonus auf das Klick-Einkommen JE besessener Einheit
+   *  (z.B. 0,25 = +25 % pro Einheit, additiv). */
+  clickBonusPerUnit?: number;
 }
 
 export const GENERATORS: GeneratorDef[] = [
@@ -40,6 +43,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌫️",
     baseCost: new Decimal(50),
     baseProd: new Decimal(1),
+    clickBonusPerUnit: 0.25, // +25 % Klick-Einkommen je Molekülwolke (additiv)
     perks: [
       { threshold: 10, label: "+50 % Klick-Power", effects: [{ kind: "clickMult", factor: 1.5 }] },
       { threshold: 25, label: "×2 Molekülwolken-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },

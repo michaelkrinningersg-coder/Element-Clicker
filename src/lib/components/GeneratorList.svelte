@@ -84,6 +84,12 @@
 
       {#if open}
         <div class="perkdetail">
+          {#if def.clickBonusPerUnit}
+            <div class="clickbonus">
+              ⚡ Je Einheit: +{fmt(def.clickBonusPerUnit * 100)} % Klick-Einkommen
+              <span class="dim">(aktuell +{fmt(def.clickBonusPerUnit * 100 * gs.owned)} %)</span>
+            </div>
+          {/if}
           {#if def.perks.length === 0}
             <p class="dim small">Perks für diesen Generator folgen noch.</p>
           {:else}
@@ -261,6 +267,13 @@
   .small {
     font-size: 13px;
     margin: 2px 0;
+  }
+  .clickbonus {
+    font-size: 13px;
+    color: var(--gold);
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border-panel);
   }
 
   .milestones {

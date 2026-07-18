@@ -81,6 +81,19 @@ export function clickUpgradeMultiplier(state: GameState): Decimal {
   return new Decimal(m);
 }
 
+/**
+ * Additiver Klick-Bonus aus Generatoren mit clickBonusPerUnit
+ * (z.B. Molekülwolke: +25 % Klick je Einheit). Ergibt den Faktor
+ * 1 + Summe(owned * clickBonusPerUnit).
+ */
+export function clickGeneratorBonusMultiplier(state: GameState): Decimal {
+  let bonus = 0;
+  for (const g of GENERATORS) {
+    if (g.clickBonusPerUnit) bonus += g.clickBonusPerUnit * state.generators[g.id].owned;
+  }
+  return new Decimal(1 + bonus);
+}
+
 /** Summe aller besessenen Generatoren (über alle Typen). */
 export function totalGeneratorsOwned(state: GameState): number {
   let n = 0;
@@ -164,9 +177,10 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(milestoneProductionMultiplier(state));
 }
 
-/** Wert eines Klicks (H-Atome): Basis * Klick-Perks * Klick-Upgrades * Meilensteine * AE. */
+/** Wert eines Klicks: Basis * Generator-Klickbonus * Klick-Perks * Klick-Upgrades * Meilensteine * AE. */
 export function clickValue(state: GameState, base: Decimal): Decimal {
   return base
+    .mul(clickGeneratorBonusMultiplier(state))
     .mul(clickPowerMultiplier(state))
     .mul(clickUpgradeMultiplier(state))
     .mul(milestoneClickMultiplier(state))
