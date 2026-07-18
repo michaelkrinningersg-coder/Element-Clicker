@@ -2,8 +2,7 @@
   import { game, fuse } from "../game/store";
   import { TWO_MOL_H } from "../game/constants";
   import { FUSION_ORDER, FUSION_RECIPES } from "../game/elements";
-  import { formatDecimal, formatInt, formatMol } from "../game/format";
-  import { Decimal } from "../game/decimal";
+  import { formatInt, formatMol } from "../game/format";
 
   function byproductText(sym: (typeof FUSION_ORDER)[number]): string {
     const bp = FUSION_RECIPES[sym].byproduct;
@@ -15,42 +14,51 @@
     return parts.length ? parts.join(" + ") : "—";
   }
 
-  // Verfügbarkeit je Fusion
-  function canFuse(sym: (typeof FUSION_ORDER)[number], g: typeof $game): boolean {
-    if (sym === "He") return g.ignited && g.h.gte(TWO_MOL_H);
+  // "läuft gerade" = genug Ausgangsstoff für mindestens eine Fusion vorhanden
+  function flowing(sym: (typeof FUSION_ORDER)[number], g: typeof $game): boolean {
+    if (sym === "He") return g.h.gte(TWO_MOL_H);
     const from = FUSION_RECIPES[sym].from as "He" | "Li";
     return g.elements[from].gte(2);
   }
 
-  function costText(sym: (typeof FUSION_ORDER)[number]): string {
-    if (sym === "He") return `2 mol H (${formatMol(TWO_MOL_H)})`;
-    const from = FUSION_RECIPES[sym].from;
-    return `2 mol ${from}`;
-  }
+  $: canFirstFuse = $game.ignited && $game.h.gte(TWO_MOL_H);
 </script>
 
 <div class="panel">
-  <h3>Fusion</h3>
-  {#if !$game.ignited}
-    <p class="dim">🔒 Erst zünden (10 Mio K), dann wird H→He freigeschaltet.</p>
-  {/if}
-  <div class="list">
-    {#each FUSION_ORDER as sym (sym)}
-      {@const recipe = FUSION_RECIPES[sym]}
-      {@const ok = canFuse(sym, $game)}
-      {@const locked = sym !== "He" && !$game.unlocked[recipe.from as "He" | "Li"] && recipe.from !== "H"}
-      <div class="row" class:locked>
-        <div class="rx">
-          <b>{recipe.from} → {sym}</b>
-          <span class="dim small">Kosten: {costText(sym)}</span>
-          <span class="dim small">frei: {byproductText(sym)}</span>
-        </div>
-        <button class="btn primary" disabled={!ok} on:click={() => fuse(sym)}>
-          Fusionieren
-        </button>
-      </div>
-    {/each}
+  <div class="head">
+    <h3>Fusion</h3>
+    {#if $game.autoFusion}
+      <span class="badge">⚙️ Auto-Fusion aktiv</span>
+    {/if}
   </div>
+
+  {#if !$game.ignited}
+    <p class="dim">🔒 Erst zünden (10 Mio K), dann wird die Fusion H→He freigeschaltet.</p>
+  {:else if !$game.autoFusion}
+    <p class="dim small">
+      Löse die erste Fusion manuell aus. Danach läuft die gesamte Kette
+      <b>automatisch</b>: sobald genug Ausgangsstoff (je 2 mol) da ist, wird
+      fusioniert – Wasserstoff wird von den Generatoren weiter nachproduziert.
+    </p>
+    <button class="btn primary full" disabled={!canFirstFuse} on:click={() => fuse("He")}>
+      🔥 Erste Fusion: 2 mol H → He
+    </button>
+    {#if !canFirstFuse}
+      <p class="dim small">Benötigt 2 mol H ({formatMol(TWO_MOL_H)}).</p>
+    {/if}
+  {:else}
+    <div class="ladder">
+      {#each FUSION_ORDER as sym (sym)}
+        {@const recipe = FUSION_RECIPES[sym]}
+        {@const isFlowing = flowing(sym, $game)}
+        <div class="rung" class:flow={isFlowing}>
+          <span class="rx"><b>{recipe.from} → {sym}</b></span>
+          <span class="dim small">frei: {byproductText(sym)}</span>
+          <span class="state" class:on={isFlowing}>{isFlowing ? "▶ läuft" : "wartet"}</span>
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   <div class="particles">
     <span class="chip">⚡ Protonen: <b class="mono">{formatInt($game.particles.protons)}</b></span>
@@ -62,30 +70,58 @@
 </div>
 
 <style>
-  .list {
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .head h3 {
+    margin: 0;
+  }
+  .badge {
+    background: linear-gradient(90deg, #1f8a5f33, #4fd39a22);
+    border: 1px solid var(--good);
+    color: var(--good);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+  .full {
+    width: 100%;
+    margin-top: 6px;
+  }
+  .ladder {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin-top: 6px;
   }
-  .row {
-    display: flex;
-    justify-content: space-between;
+  .rung {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 10px;
     background: var(--bg-panel-2);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 10px 12px;
+    padding: 9px 12px;
+    opacity: 0.6;
   }
-  .row.locked {
-    opacity: 0.5;
-  }
-  .rx {
-    display: flex;
-    flex-direction: column;
+  .rung.flow {
+    opacity: 1;
+    border-color: var(--accent);
   }
   .small {
     font-size: 0.78rem;
+  }
+  .state {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .state.on {
+    color: var(--good);
   }
   .particles {
     display: flex;

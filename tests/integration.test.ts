@@ -81,4 +81,22 @@ describe("Kompletter Frühphasen-Loop", () => {
     expect(s.particles.neutrons.toNumber()).toBe(nBefore + 3);
     expect(s.unlocked.Be).toBe(true);
   });
+
+  it("erste Fusion aktiviert Auto-Fusion", () => {
+    expect(getState().autoFusion).toBe(true);
+  });
+
+  it("Auto-Fusion kaskadiert H -> He -> Li -> Be im Tick", () => {
+    const s = getState();
+    // Generatoren produzieren 0 (nach Kollaps), daher liefert der Tick keine
+    // nennenswerte H-Produktion – wir setzen H direkt für den Kaskaden-Test.
+    s.elements.He = new Decimal(0);
+    s.elements.Li = new Decimal(0);
+    s.elements.Be = new Decimal(0);
+    s.h = TWO_MOL_H.mul(8); // -> 8 He -> 4 Li -> 2 Be (kaskadiert in einem Tick)
+    const beBefore = s.elements.Be.toNumber();
+    tick(0.001);
+    expect(s.elements.Be.toNumber()).toBeGreaterThan(beBefore);
+    expect(s.h.lt(TWO_MOL_H)).toBe(true); // fast alles H verbraucht
+  });
 });

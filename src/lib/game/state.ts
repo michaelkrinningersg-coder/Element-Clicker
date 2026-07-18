@@ -24,6 +24,7 @@ export interface GameState {
   kelvin: Decimal; // aufgebaute Temperatur Richtung Zündung
   gravitons: Decimal;
   ignited: boolean; // Zündung erfolgt (Fusion H->He freigeschaltet)
+  autoFusion: boolean; // ab der 1. manuellen Fusion: gesamte Kette läuft automatisch
 
   // Freischaltungen im Periodensystem
   unlocked: { He: boolean; Li: boolean; Be: boolean };
@@ -50,6 +51,7 @@ export function createInitialState(): GameState {
     kelvin: ZERO,
     gravitons: ZERO,
     ignited: false,
+    autoFusion: false,
     unlocked: { He: false, Li: false, Be: false },
     generators,
     totalClicks: 0,

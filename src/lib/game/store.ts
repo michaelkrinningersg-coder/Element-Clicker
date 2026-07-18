@@ -88,29 +88,60 @@ export function ignite(): void {
   commit();
 }
 
-/** Fusion: 2 mol X -> 1 mol (X+1) + Teilchen. */
-export function fuse(target: FusableSymbol): void {
+/**
+ * Führt `count` Fusionen 2 mol X -> 1 mol (X+1) aus und schreibt Teilchen gut.
+ * Ohne Guards – Aufrufer stellt sicher, dass genug Ausgangsstoff da ist.
+ */
+function applyFusion(target: FusableSymbol, count: Decimal): void {
+  if (count.lte(0)) return;
   const recipe = FUSION_RECIPES[target];
   if (target === "He") {
-    if (!state.ignited) return;
-    if (state.h.lt(TWO_MOL_H)) return;
-    state.h = state.h.sub(TWO_MOL_H);
-    state.elements.He = state.elements.He.add(ONE);
+    state.h = state.h.sub(TWO_MOL_H.mul(count));
+    state.elements.He = state.elements.He.add(count);
   } else {
     const fromSym = recipe.from as "He" | "Li";
-    const have = state.elements[fromSym];
-    if (have.lt(2)) return;
-    state.elements[fromSym] = have.sub(2);
-    state.elements[target] = state.elements[target].add(ONE);
+    state.elements[fromSym] = state.elements[fromSym].sub(count.mul(2));
+    state.elements[target] = state.elements[target].add(count);
   }
-  // Teilchen gutschreiben (erstmal nur sammeln)
   const bp = recipe.byproduct;
-  state.particles.protons = state.particles.protons.add(bp.protons);
-  state.particles.neutrons = state.particles.neutrons.add(bp.neutrons);
-  state.particles.electrons = state.particles.electrons.add(bp.electrons);
-  state.particles.positrons = state.particles.positrons.add(bp.positrons);
+  state.particles.protons = state.particles.protons.add(count.mul(bp.protons));
+  state.particles.neutrons = state.particles.neutrons.add(count.mul(bp.neutrons));
+  state.particles.electrons = state.particles.electrons.add(count.mul(bp.electrons));
+  state.particles.positrons = state.particles.positrons.add(count.mul(bp.positrons));
   state.unlocked[target] = true;
+}
+
+/**
+ * Manuelle Einzel-Fusion. Die erste H->He-Fusion aktiviert die Auto-Fusion:
+ * ab dann läuft die gesamte Kette (H->He->Li->Be) automatisch im Tick.
+ */
+export function fuse(target: FusableSymbol): void {
+  if (target === "He") {
+    if (!state.ignited || state.h.lt(TWO_MOL_H)) return;
+    applyFusion("He", ONE);
+    state.autoFusion = true;
+  } else {
+    const fromSym = FUSION_RECIPES[target].from as "He" | "Li";
+    if (state.elements[fromSym].lt(2)) return;
+    applyFusion(target, ONE);
+  }
   commit();
+}
+
+/**
+ * Auto-Fusion pro Tick: fusioniert je Stufe so oft wie möglich (Bulk) und
+ * kaskadiert H->He->Li->Be, damit frisch erzeugtes He/Li sofort weiterläuft.
+ */
+function autoFuseStep(): void {
+  if (state.h.gte(TWO_MOL_H)) {
+    applyFusion("He", state.h.div(TWO_MOL_H).floor());
+  }
+  if (state.elements.He.gte(2)) {
+    applyFusion("Li", state.elements.He.div(2).floor());
+  }
+  if (state.elements.Li.gte(2)) {
+    applyFusion("Be", state.elements.Li.div(2).floor());
+  }
 }
 
 /** Ebene 2: Nebel kollabieren -> Graviton (verbraucht AE + H). */
@@ -128,6 +159,7 @@ export function collapseNebula(): void {
 
 export function tick(dtSeconds: number): void {
   state.h = state.h.add(totalProductionPerSec(state).mul(dtSeconds));
+  if (state.autoFusion) autoFuseStep();
   state.playtimeSeconds += dtSeconds;
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {

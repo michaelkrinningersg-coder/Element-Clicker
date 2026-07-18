@@ -40,6 +40,7 @@ function serialize(state: GameState): string {
       kelvin: decToStr(state.kelvin),
       gravitons: decToStr(state.gravitons),
       ignited: state.ignited,
+      autoFusion: state.autoFusion,
       unlocked: { ...state.unlocked },
       generators: gens,
       totalClicks: state.totalClicks,
@@ -72,6 +73,7 @@ function deserialize(raw: string): GameState {
   base.kelvin = new Decimal(s.kelvin ?? 0);
   base.gravitons = new Decimal(s.gravitons ?? 0);
   base.ignited = Boolean(s.ignited);
+  base.autoFusion = Boolean(s.autoFusion);
   if (s.unlocked) {
     base.unlocked.He = Boolean(s.unlocked.He);
     base.unlocked.Li = Boolean(s.unlocked.Li);
