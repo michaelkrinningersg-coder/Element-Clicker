@@ -10,6 +10,7 @@ import {
   TWO_MOL_H,
 } from "./constants";
 import { GENERATOR_BY_ID } from "./generators";
+import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
 import {
   clickValue,
   growthRate,
@@ -54,6 +55,17 @@ export function buyGenerator(id: string): void {
   const oldOwned = gs.owned;
   gs.owned += 1;
   gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+  commit();
+}
+
+/** Kauft ein Klick-Upgrade (einmalig, permanent). */
+export function buyClickUpgrade(id: string): void {
+  const def = CLICK_UPGRADE_BY_ID[id];
+  if (!def) return;
+  if (state.clickUpgrades.includes(id)) return;
+  if (state.h.lt(def.cost)) return;
+  state.h = state.h.sub(def.cost);
+  state.clickUpgrades = [...state.clickUpgrades, id];
   commit();
 }
 

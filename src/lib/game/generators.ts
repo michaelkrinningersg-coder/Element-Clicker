@@ -61,7 +61,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🧵",
     baseCost: new Decimal(600),
     baseProd: new Decimal(8),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Filament-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "+25 % Klick-Power", effects: [{ kind: "clickMult", factor: 1.25 }] },
+      { threshold: 50, label: "×2 Filament-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 75, label: "+10 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.1 }] },
+      { threshold: 100, label: "×3 Filament-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+    ],
   },
   {
     id: "g3",
@@ -69,7 +75,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "⚫",
     baseCost: new Decimal(8_500),
     baseProd: new Decimal(120),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Bok-Globule-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "×2 Bok-Globule-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 50, label: "×2,5 Bok-Globule-Output", effects: [{ kind: "selfOutputMult", factor: 2.5 }] },
+      { threshold: 75, label: "+15 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.15 }] },
+      { threshold: 100, label: "×3 Bok-Globule-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+    ],
   },
   {
     id: "g4",
@@ -77,7 +89,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌑",
     baseCost: new Decimal(130_000),
     baseProd: new Decimal(1_400),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Kaltgas-Halo-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "×1,5 Molekülwolken-Output", effects: [{ kind: "generatorOutputMult", factor: 1.5, targetId: "g1" }] },
+      { threshold: 50, label: "×2 Kaltgas-Halo-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 75, label: "×1,5 Bok-Globule-Output", effects: [{ kind: "generatorOutputMult", factor: 1.5, targetId: "g3" }] },
+      { threshold: 100, label: "+20 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.2 }] },
+    ],
   },
   {
     id: "g5",
@@ -85,7 +103,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌌",
     baseCost: new Decimal("2.2e6"),
     baseProd: new Decimal(22_000),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Riesenmolekülwolke-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "+10 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.1 }] },
+      { threshold: 50, label: "×2 Riesenmolekülwolke-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 75, label: "+15 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.15 }] },
+      { threshold: 100, label: "+25 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.25 }] },
+    ],
   },
   {
     id: "g6",
@@ -93,7 +117,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🫧",
     baseCost: new Decimal("3.3e7"),
     baseProd: new Decimal(310_000),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Superblasen-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "+50 % Klick-Power", effects: [{ kind: "clickMult", factor: 1.5 }] },
+      { threshold: 50, label: "×2,5 Superblasen-Output", effects: [{ kind: "selfOutputMult", factor: 2.5 }] },
+      { threshold: 75, label: "+50 % Klick-Power", effects: [{ kind: "clickMult", factor: 1.5 }] },
+      { threshold: 100, label: "×3 Superblasen-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+    ],
   },
   {
     id: "g7",
@@ -101,7 +131,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌐",
     baseCost: new Decimal("5.5e8"),
     baseProd: new Decimal("5.5e6"),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Gashalo-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "+15 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.15 }] },
+      { threshold: 50, label: "×1,5 Riesenmolekülwolke-Output", effects: [{ kind: "generatorOutputMult", factor: 1.5, targetId: "g5" }] },
+      { threshold: 75, label: "×2 Gashalo-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 100, label: "+30 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.3 }] },
+    ],
   },
   {
     id: "g8",
@@ -109,7 +145,13 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🕸️",
     baseCost: new Decimal("1.0e10"),
     baseProd: new Decimal("1.0e8"),
-    perks: [],
+    perks: [
+      { threshold: 10, label: "×2 Kosmisches-Filament-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "+20 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.2 }] },
+      { threshold: 50, label: "×3 Kosmisches-Filament-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+      { threshold: 75, label: "+30 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.3 }] },
+      { threshold: 100, label: "×2 globale Produktion", effects: [{ kind: "globalMult", factor: 2 }] },
+    ],
   },
 ];
 

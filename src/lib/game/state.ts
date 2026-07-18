@@ -32,6 +32,9 @@ export interface GameState {
   // Generatoren
   generators: Record<string, GeneratorState>;
 
+  // Gekaufte Klick-Upgrades (permanent, Reihenfolge egal)
+  clickUpgrades: string[];
+
   // Meta
   totalClicks: number;
   playtimeSeconds: number;
@@ -54,6 +57,7 @@ export function createInitialState(): GameState {
     autoFusion: false,
     unlocked: { He: false, Li: false, Be: false },
     generators,
+    clickUpgrades: [],
     totalClicks: 0,
     playtimeSeconds: 0,
     lastSaved: Date.now(),

@@ -1,6 +1,7 @@
 <script lang="ts">
   import ResourceBar from "./lib/components/ResourceBar.svelte";
   import ClickArea from "./lib/components/ClickArea.svelte";
+  import ClickUpgradesPanel from "./lib/components/ClickUpgradesPanel.svelte";
   import GeneratorList from "./lib/components/GeneratorList.svelte";
   import PeriodicTable from "./lib/components/PeriodicTable.svelte";
   import PrestigePanel from "./lib/components/PrestigePanel.svelte";
@@ -25,6 +26,7 @@
 <div class="layout">
   <div class="col">
     <ClickArea />
+    <ClickUpgradesPanel />
     <PeriodicTable />
   </div>
   <div class="col">

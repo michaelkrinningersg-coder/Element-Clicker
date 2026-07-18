@@ -10,6 +10,7 @@ import {
   PERK_MILESTONES,
 } from "./constants";
 import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
+import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
 import type { GameState } from "./state";
 
 /**
@@ -65,6 +66,16 @@ export function clickPowerMultiplier(state: GameState): Decimal {
       if (owned < p.threshold) continue;
       for (const e of p.effects) if (e.kind === "clickMult") m *= e.factor;
     }
+  }
+  return new Decimal(m);
+}
+
+/** Multiplikator aus gekauften Klick-Upgrades (permanent). */
+export function clickUpgradeMultiplier(state: GameState): Decimal {
+  let m = 1;
+  for (const id of state.clickUpgrades) {
+    const def = CLICK_UPGRADE_BY_ID[id];
+    if (def) m *= def.clickMult;
   }
   return new Decimal(m);
 }
@@ -125,9 +136,12 @@ export function totalProductionPerSec(state: GameState): Decimal {
   return sum.mul(aeMultiplier(state)).mul(perkGlobalMultiplier(state));
 }
 
-/** Wert eines Klicks (H-Atome): Basis * Klick-Perks * AE-Multiplikator. */
+/** Wert eines Klicks (H-Atome): Basis * Klick-Perks * Klick-Upgrades * AE-Multiplikator. */
 export function clickValue(state: GameState, base: Decimal): Decimal {
-  return base.mul(clickPowerMultiplier(state)).mul(aeMultiplier(state));
+  return base
+    .mul(clickPowerMultiplier(state))
+    .mul(clickUpgradeMultiplier(state))
+    .mul(aeMultiplier(state));
 }
 
 // ---- Aktivierungsenergie ----

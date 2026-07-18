@@ -43,6 +43,7 @@ function serialize(state: GameState): string {
       autoFusion: state.autoFusion,
       unlocked: { ...state.unlocked },
       generators: gens,
+      clickUpgrades: [...state.clickUpgrades],
       totalClicks: state.totalClicks,
       playtimeSeconds: state.playtimeSeconds,
       lastSaved: Date.now(),
@@ -84,6 +85,9 @@ function deserialize(raw: string): GameState {
       const g = s.generators[id];
       if (g) base.generators[id].owned = Number(g.owned ?? 0);
     }
+  }
+  if (Array.isArray(s.clickUpgrades)) {
+    base.clickUpgrades = s.clickUpgrades.filter((x: unknown) => typeof x === "string");
   }
   base.totalClicks = Number(s.totalClicks ?? 0);
   base.playtimeSeconds = Number(s.playtimeSeconds ?? 0);
