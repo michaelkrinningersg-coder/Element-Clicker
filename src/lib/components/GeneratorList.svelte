@@ -13,17 +13,26 @@
   import { ZERO } from "../game/decimal";
 
   $: total = totalProductionPerSec($game);
+
+  // Aufgeklappte Perk-Detailzeile (Akkordeon).
+  let openId: string | null = null;
+  function toggle(id: string) {
+    openId = openId === id ? null : id;
+  }
 </script>
 
 <div class="genpanel">
   <h3>Generatoren</h3>
-  <div class="thead">
-    <span>Generator</span>
-    <span class="r">Anzahl</span>
-    <span class="r">Produktion</span>
-    <span class="r">Nächste Kosten</span>
-    <span class="r">Nächster Bonus</span>
-    <span class="r">Anteil h/s</span>
+  <div class="rowline">
+    <div class="thead">
+      <span>Generator</span>
+      <span class="r">Anzahl</span>
+      <span class="r">Produktion</span>
+      <span class="r">Nächste Kosten</span>
+      <span class="r">Nächster Bonus</span>
+      <span class="r">Anteil h/s</span>
+    </div>
+    <div class="caret-spacer"></div>
   </div>
 
   {#each GENERATORS as def (def.id)}
@@ -37,23 +46,54 @@
     {@const share = total.gt(0) && prod.gt(0) ? prod.div(total).mul(100) : ZERO}
     {@const np = nextPerk($game, def.id)}
     {@const locked = gs.owned === 0 && !affordable}
-    <button
-      class="trow"
-      class:locked
-      disabled={!affordable}
-      title={np ? `Nächster Perk bei ${np.threshold} Stk.: ${np.label}` : "Alle Perks erreicht"}
-      on:click={() => buyGenerator(def.id)}
-    >
-      <span class="gen">
-        <span class="icon">{def.icon}</span>
-        <span class="name">{def.name}</span>
-      </span>
-      <span class="r count">×{gs.owned}</span>
-      <span class="r prod">{gs.owned > 0 ? `${formatDecimal(prod)} /s` : "—"}</span>
-      <span class="r cost" class:ok={affordable}>{formatDecimal(gs.nextCost)} H</span>
-      <span class="r bonus">+{formatDecimal(nextBonus)} /s</span>
-      <span class="r share">{share.gt(0) ? `${formatDecimal(share, 1)} %` : "—"}</span>
-    </button>
+    {@const open = openId === def.id}
+    <div class="genitem">
+      <div class="rowline">
+        <button
+          class="trow"
+          class:locked
+          disabled={!affordable}
+          title={np ? `Nächster Perk bei ${np.threshold} Stk.: ${np.label}` : "Alle Perks erreicht"}
+          on:click={() => buyGenerator(def.id)}
+        >
+          <span class="gen">
+            <span class="icon">{def.icon}</span>
+            <span class="name">{def.name}</span>
+          </span>
+          <span class="r count">×{gs.owned}</span>
+          <span class="r prod">{gs.owned > 0 ? `${formatDecimal(prod)} /s` : "—"}</span>
+          <span class="r cost" class:ok={affordable}>{formatDecimal(gs.nextCost)} H</span>
+          <span class="r bonus">+{formatDecimal(nextBonus)} /s</span>
+          <span class="r share">{share.gt(0) ? `${formatDecimal(share, 1)} %` : "—"}</span>
+        </button>
+        <button
+          class="caret"
+          class:open
+          aria-label="Perks anzeigen"
+          aria-expanded={open}
+          on:click={() => toggle(def.id)}
+        >
+          ▸
+        </button>
+      </div>
+
+      {#if open}
+        <div class="perkdetail">
+          {#if def.perks.length === 0}
+            <p class="dim small">Perks für diesen Generator folgen noch.</p>
+          {:else}
+            {#each def.perks as perk (perk.threshold)}
+              {@const reached = gs.owned >= perk.threshold}
+              <div class="perk" class:reached>
+                <span class="pt mono">{perk.threshold} Stk.</span>
+                <span class="pl">{perk.label}</span>
+                <span class="ps">{reached ? "✓" : "🔒"}</span>
+              </div>
+            {/each}
+          {/if}
+        </div>
+      {/if}
+    </div>
   {/each}
 </div>
 
@@ -65,14 +105,17 @@
     padding: 18px;
     margin-bottom: 20px;
   }
-  .thead,
-  .trow {
+  .rowline {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .thead {
+    flex: 1;
     display: grid;
     grid-template-columns: 2.4fr 0.8fr 1fr 1.1fr 1.2fr 0.9fr;
     gap: 12px;
     align-items: center;
-  }
-  .thead {
     padding: 0 14px 8px;
     border-bottom: 1px solid var(--border-panel);
     font-size: 11px;
@@ -81,19 +124,30 @@
     color: var(--text-head);
     margin-bottom: 8px;
   }
+  .caret-spacer {
+    width: 36px;
+    flex: 0 0 36px;
+  }
   .r {
     text-align: right;
   }
+  .genitem {
+    margin-bottom: 8px;
+  }
   .trow {
-    width: 100%;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2.4fr 0.8fr 1fr 1.1fr 1.2fr 0.9fr;
+    gap: 12px;
+    align-items: center;
     text-align: left;
     background: var(--glass-2);
     border: 1px solid var(--border-row);
     border-radius: 10px;
     padding: 11px 14px;
-    margin-bottom: 8px;
     font-variant-numeric: tabular-nums;
     color: var(--text);
+    min-width: 0;
   }
   .trow:hover:not(:disabled) {
     filter: brightness(1.15);
@@ -105,6 +159,24 @@
   }
   .trow:disabled {
     cursor: not-allowed;
+  }
+  .caret {
+    flex: 0 0 36px;
+    width: 36px;
+    background: var(--glass-2);
+    border: 1px solid var(--border-row);
+    border-radius: 10px;
+    color: var(--text-dim);
+    font-size: 12px;
+    transition: transform 0.12s ease, filter 0.1s ease;
+  }
+  .caret:hover {
+    filter: brightness(1.25);
+  }
+  .caret.open {
+    transform: rotate(90deg);
+    color: var(--accent);
+    border-color: var(--accent);
   }
   .gen {
     display: flex;
@@ -135,6 +207,46 @@
   .share {
     color: var(--text-dim);
   }
+
+  /* Perk-Detail */
+  .perkdetail {
+    margin: 6px 44px 2px 14px;
+    padding: 10px 14px;
+    background: #0d1326;
+    border: 1px solid var(--border-panel);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .perk {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    opacity: 0.5;
+  }
+  .perk.reached {
+    opacity: 1;
+  }
+  .pt {
+    color: var(--text-dim);
+  }
+  .perk.reached .pt {
+    color: var(--gold);
+  }
+  .ps {
+    color: var(--text-dim);
+  }
+  .perk.reached .ps {
+    color: var(--good);
+  }
+  .small {
+    font-size: 13px;
+    margin: 2px 0;
+  }
+
   @media (max-width: 760px) {
     .thead,
     .trow {
