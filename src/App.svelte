@@ -5,6 +5,8 @@
   import GeneratorList from "./lib/components/GeneratorList.svelte";
   import PeriodicTable from "./lib/components/PeriodicTable.svelte";
   import PrestigePanel from "./lib/components/PrestigePanel.svelte";
+  import AchievementsPanel from "./lib/components/AchievementsPanel.svelte";
+  import StatisticsPanel from "./lib/components/StatisticsPanel.svelte";
   import { offlineReport } from "./lib/game/store";
   import { formatDecimal } from "./lib/game/format";
 
@@ -34,6 +36,11 @@
   <div class="col">
     <ClickUpgradesPanel />
   </div>
+</div>
+
+<div class="bottom">
+  <AchievementsPanel />
+  <StatisticsPanel />
 </div>
 
 <footer class="dim">Frühphasen-Prototyp · Balancing-Werte sind Platzhalter.</footer>
@@ -67,6 +74,18 @@
     flex-direction: column;
     gap: 18px;
     min-width: 0;
+  }
+  .bottom {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .bottom {
+      grid-template-columns: 1fr;
+    }
   }
   footer {
     margin-top: 20px;

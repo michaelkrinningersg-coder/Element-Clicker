@@ -151,6 +151,11 @@ export function aeMultiplier(state: GameState): Decimal {
   return ONE.add(state.ae.mul(AE_PRODUCTION_BONUS));
 }
 
+/** Multiplikator aus Achievements: 1,0 + 0,1 je freigeschaltetem Achievement. */
+export function achievementMultiplier(state: GameState): Decimal {
+  return new Decimal(1 + 0.1 * state.achievements.length);
+}
+
 /** Roh-Produktion eines Generators (baseProd * Anzahl * Output-Perks), ohne globale Faktoren. */
 export function rawGeneratorProduction(state: GameState, id: string): Decimal {
   const owned = state.generators[id].owned;
@@ -164,7 +169,8 @@ export function effectiveGeneratorProduction(state: GameState, id: string): Deci
   return rawGeneratorProduction(state, id)
     .mul(aeMultiplier(state))
     .mul(perkGlobalMultiplier(state))
-    .mul(milestoneProductionMultiplier(state));
+    .mul(milestoneProductionMultiplier(state))
+    .mul(achievementMultiplier(state));
 }
 
 /** Gesamte H/Sek. inkl. globaler Faktoren. */
@@ -174,16 +180,18 @@ export function totalProductionPerSec(state: GameState): Decimal {
   return sum
     .mul(aeMultiplier(state))
     .mul(perkGlobalMultiplier(state))
-    .mul(milestoneProductionMultiplier(state));
+    .mul(milestoneProductionMultiplier(state))
+    .mul(achievementMultiplier(state));
 }
 
-/** Wert eines Klicks: Basis * Generator-Klickbonus * Klick-Perks * Klick-Upgrades * Meilensteine * AE. */
+/** Wert eines Klicks: Basis * Generator-Klickbonus * Perks * Upgrades * Meilenstein * Achievements * AE. */
 export function clickValue(state: GameState, base: Decimal): Decimal {
   return base
     .mul(clickGeneratorBonusMultiplier(state))
     .mul(clickPowerMultiplier(state))
     .mul(clickUpgradeMultiplier(state))
     .mul(milestoneClickMultiplier(state))
+    .mul(achievementMultiplier(state))
     .mul(aeMultiplier(state));
 }
 

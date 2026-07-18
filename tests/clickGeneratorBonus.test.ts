@@ -21,11 +21,11 @@ describe("Molekülwolke: +25 % Klick-Einkommen je Einheit (additiv)", () => {
     expect(clickGeneratorBonusMultiplier(s).toNumber()).toBeCloseTo(2, 9);
   });
 
-  it("nur der erste Generator wirkt (andere Generatoren zählen nicht)", () => {
+  it("jeder Generator wirkt (+25 % je Einheit, additiv über alle Typen)", () => {
     const s = createInitialState();
-    s.generators.g2.owned = 100;
-    s.generators.g5.owned = 100;
-    expect(clickGeneratorBonusMultiplier(s).toNumber()).toBe(1);
+    s.generators.g2.owned = 2;
+    s.generators.g5.owned = 2; // gesamt 4 × +25 % = +100 %
+    expect(clickGeneratorBonusMultiplier(s).toNumber()).toBeCloseTo(2, 9);
   });
 
   it("fließt in den Klickwert ein (2 Molekülwolken -> ×1,5 auf die Basis)", () => {

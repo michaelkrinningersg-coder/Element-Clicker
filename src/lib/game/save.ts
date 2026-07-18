@@ -44,7 +44,13 @@ function serialize(state: GameState): string {
       unlocked: { ...state.unlocked },
       generators: gens,
       clickUpgrades: [...state.clickUpgrades],
+      achievements: [...state.achievements],
       totalClicks: state.totalClicks,
+      totalGeneratorsBought: state.totalGeneratorsBought,
+      collapseCount: state.collapseCount,
+      nebulaCount: state.nebulaCount,
+      igniteCount: state.igniteCount,
+      lifetimeH: decToStr(state.lifetimeH),
       playtimeSeconds: state.playtimeSeconds,
       lastSaved: Date.now(),
     },
@@ -89,7 +95,15 @@ function deserialize(raw: string): GameState {
   if (Array.isArray(s.clickUpgrades)) {
     base.clickUpgrades = s.clickUpgrades.filter((x: unknown) => typeof x === "string");
   }
+  if (Array.isArray(s.achievements)) {
+    base.achievements = s.achievements.filter((x: unknown) => typeof x === "string");
+  }
   base.totalClicks = Number(s.totalClicks ?? 0);
+  base.totalGeneratorsBought = Number(s.totalGeneratorsBought ?? 0);
+  base.collapseCount = Number(s.collapseCount ?? 0);
+  base.nebulaCount = Number(s.nebulaCount ?? 0);
+  base.igniteCount = Number(s.igniteCount ?? 0);
+  base.lifetimeH = new Decimal(s.lifetimeH ?? 0);
   base.playtimeSeconds = Number(s.playtimeSeconds ?? 0);
   base.lastSaved = Number(s.lastSaved ?? Date.now());
 

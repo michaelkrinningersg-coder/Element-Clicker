@@ -65,6 +65,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🧵",
     baseCost: new Decimal(600),
     baseProd: new Decimal(8),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Filament-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+25 % Klick-Power", effects: [{ kind: "clickMult", factor: 1.25 }] },
@@ -79,6 +80,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "⚫",
     baseCost: new Decimal(8_500),
     baseProd: new Decimal(120),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Bok-Globule-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "×2 Bok-Globule-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
@@ -93,6 +95,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌑",
     baseCost: new Decimal(130_000),
     baseProd: new Decimal(1_400),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Kaltgas-Halo-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "×1,5 Molekülwolken-Output", effects: [{ kind: "generatorOutputMult", factor: 1.5, targetId: "g1" }] },
@@ -107,6 +110,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌌",
     baseCost: new Decimal("2.2e6"),
     baseProd: new Decimal(22_000),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Riesenmolekülwolke-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+10 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.1 }] },
@@ -121,6 +125,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🫧",
     baseCost: new Decimal("3.3e7"),
     baseProd: new Decimal(310_000),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Superblasen-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+50 % Klick-Power", effects: [{ kind: "clickMult", factor: 1.5 }] },
@@ -135,6 +140,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🌐",
     baseCost: new Decimal("5.5e8"),
     baseProd: new Decimal("5.5e6"),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Gashalo-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+15 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.15 }] },
@@ -149,6 +155,7 @@ export const GENERATORS: GeneratorDef[] = [
     icon: "🕸️",
     baseCost: new Decimal("1.0e10"),
     baseProd: new Decimal("1.0e8"),
+    clickBonusPerUnit: 0.25,
     perks: [
       { threshold: 10, label: "×2 Kosmisches-Filament-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+20 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.2 }] },

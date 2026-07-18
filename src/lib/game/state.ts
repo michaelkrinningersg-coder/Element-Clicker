@@ -35,8 +35,16 @@ export interface GameState {
   // Gekaufte Klick-Upgrades (permanent, Reihenfolge egal)
   clickUpgrades: string[];
 
-  // Meta
+  // Freigeschaltete Achievements (permanent)
+  achievements: string[];
+
+  // Meta / Statistik (alles permanent, überlebt Kollaps)
   totalClicks: number;
+  totalGeneratorsBought: number; // gekaufte Gebäude gesamt (lifetime)
+  collapseCount: number; // Wolke-Kollapse
+  nebulaCount: number; // Nebel-Kollapse
+  igniteCount: number; // Zündungen
+  lifetimeH: Decimal; // insgesamt jemals erzeugtes H
   playtimeSeconds: number;
   lastSaved: number; // ms seit Epoch
 }
@@ -58,7 +66,13 @@ export function createInitialState(): GameState {
     unlocked: { He: false, Li: false, Be: false },
     generators,
     clickUpgrades: [],
+    achievements: [],
     totalClicks: 0,
+    totalGeneratorsBought: 0,
+    collapseCount: 0,
+    nebulaCount: 0,
+    igniteCount: 0,
+    lifetimeH: ZERO,
     playtimeSeconds: 0,
     lastSaved: Date.now(),
   };

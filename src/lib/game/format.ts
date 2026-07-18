@@ -32,3 +32,23 @@ export function formatMol(atoms: Decimal, decimals = 2): string {
 export function formatInt(d: Decimal): string {
   return formatDecimal(d, 0);
 }
+
+/** Zahl (JS number) mit Tausenderpunkten. */
+export function formatNumber(n: number): string {
+  return Math.floor(n).toLocaleString("de-DE");
+}
+
+/** Sekunden als "Xd Yh Zm Ws". */
+export function formatDuration(totalSeconds: number): string {
+  const s = Math.floor(totalSeconds);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const parts: string[] = [];
+  if (d) parts.push(`${d}d`);
+  if (h || d) parts.push(`${h}h`);
+  if (m || h || d) parts.push(`${m}m`);
+  parts.push(`${sec}s`);
+  return parts.join(" ");
+}
