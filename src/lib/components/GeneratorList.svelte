@@ -7,6 +7,7 @@
     generatorOutputMultiplier,
     aeMultiplier,
     perkGlobalMultiplier,
+    milestoneProductionMultiplier,
     nextPerk,
     totalGeneratorsOwned,
   } from "../game/formulas";
@@ -34,7 +35,8 @@
       <span class="r">Anzahl</span>
       <span class="r">Produktion</span>
       <span class="r">Nächste Kosten</span>
-      <span class="r">Nächster Bonus</span>
+      <span class="r">Bonus (Basis)</span>
+      <span class="r">Bonus (+Boni)</span>
       <span class="r">Anteil h/s</span>
     </div>
     <div class="caret-spacer"></div>
@@ -47,7 +49,8 @@
     {@const nextBonus = def.baseProd
       .mul(generatorOutputMultiplier($game, def.id))
       .mul(aeMultiplier($game))
-      .mul(perkGlobalMultiplier($game))}
+      .mul(perkGlobalMultiplier($game))
+      .mul(milestoneProductionMultiplier($game))}
     {@const share = total.gt(0) && prod.gt(0) ? prod.div(total).mul(100) : ZERO}
     {@const np = nextPerk($game, def.id)}
     {@const locked = gs.owned === 0 && !affordable}
@@ -68,6 +71,7 @@
           <span class="r count">×{gs.owned}</span>
           <span class="r prod">{gs.owned > 0 ? `${formatDecimal(prod)} /s` : "—"}</span>
           <span class="r cost" class:ok={affordable}>{formatDecimal(gs.nextCost)} H</span>
+          <span class="r basebonus">+{formatDecimal(def.baseProd)} /s</span>
           <span class="r bonus">+{formatDecimal(nextBonus)} /s</span>
           <span class="r share">{share.gt(0) ? `${formatDecimal(share, 1)} %` : "—"}</span>
         </button>
@@ -135,7 +139,7 @@
   .thead {
     flex: 1;
     display: grid;
-    grid-template-columns: 2.4fr 0.8fr 1fr 1.1fr 1.2fr 0.9fr;
+    grid-template-columns: 2.1fr 0.7fr 1fr 1.1fr 1fr 1fr 0.9fr;
     gap: 12px;
     align-items: center;
     padding: 0 14px 8px;
@@ -159,7 +163,7 @@
   .trow {
     flex: 1;
     display: grid;
-    grid-template-columns: 2.4fr 0.8fr 1fr 1.1fr 1.2fr 0.9fr;
+    grid-template-columns: 2.1fr 0.7fr 1fr 1.1fr 1fr 1fr 0.9fr;
     gap: 12px;
     align-items: center;
     text-align: left;
@@ -225,9 +229,12 @@
   .cost.ok {
     color: var(--good);
   }
-  .bonus,
+  .basebonus,
   .share {
     color: var(--text-dim);
+  }
+  .bonus {
+    color: var(--prod);
   }
 
   /* Perk-Detail */
@@ -321,6 +328,8 @@
     }
     .thead span:nth-child(5),
     .thead span:nth-child(6),
+    .thead span:nth-child(7),
+    .trow .basebonus,
     .trow .bonus,
     .trow .share {
       display: none;
