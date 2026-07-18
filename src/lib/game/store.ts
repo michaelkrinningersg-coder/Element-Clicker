@@ -85,6 +85,8 @@ export function ignite(): void {
   if (state.ignited) return;
   if (state.kelvin.lt(IGNITION_KELVIN)) return;
   state.ignited = true;
+  // Fusion läuft ab jetzt vollautomatisch (siehe autoFuseStep im Tick).
+  state.autoFusion = true;
   commit();
 }
 

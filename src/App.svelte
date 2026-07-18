@@ -4,7 +4,6 @@
   import GeneratorList from "./lib/components/GeneratorList.svelte";
   import PeriodicTable from "./lib/components/PeriodicTable.svelte";
   import PrestigePanel from "./lib/components/PrestigePanel.svelte";
-  import FusionPanel from "./lib/components/FusionPanel.svelte";
   import { offlineReport } from "./lib/game/store";
   import { formatDecimal } from "./lib/game/format";
 
@@ -27,7 +26,6 @@
   <div class="col">
     <ClickArea />
     <PeriodicTable />
-    <FusionPanel />
   </div>
   <div class="col">
     <PrestigePanel />

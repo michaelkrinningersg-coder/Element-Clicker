@@ -36,7 +36,7 @@ describe("Kompletter Frühphasen-Loop", () => {
 
   it("Wolke kollabieren gibt AE und setzt H/Generatoren zurück", () => {
     const s = getState();
-    s.h = new Decimal(2.1e6); // -> 2 AE
+    s.h = new Decimal(1.1e6); // -> 2 AE (Skalierung x1,1)
     collapseCloud();
     expect(s.ae.toNumber()).toBe(2);
     expect(s.h.toNumber()).toBe(0);
@@ -51,6 +51,8 @@ describe("Kompletter Frühphasen-Loop", () => {
     expect(s.ignited).toBe(false);
     ignite();
     expect(s.ignited).toBe(true);
+    // Zündung startet die Auto-Fusion direkt.
+    expect(s.autoFusion).toBe(true);
   });
 
   it("Fusion H->He verbraucht 2 mol H und setzt 2 Positronen frei", () => {
@@ -82,7 +84,7 @@ describe("Kompletter Frühphasen-Loop", () => {
     expect(s.unlocked.Be).toBe(true);
   });
 
-  it("erste Fusion aktiviert Auto-Fusion", () => {
+  it("Auto-Fusion ist nach der Zündung aktiv", () => {
     expect(getState().autoFusion).toBe(true);
   });
 

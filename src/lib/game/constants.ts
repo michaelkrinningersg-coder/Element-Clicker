@@ -45,9 +45,9 @@ export const PERK_MILESTONES: number[] = [
 
 // ---- Aktivierungsenergie (AE) ----
 // n-te AE-Einheit benötigt (H im aktuellen Run):  T(n) = BASE * RATIO^(n-1)
-//   T(1)=1e6, T(2)=2.1e6, T(3)=4.41e6, ...
+//   T(1)=1e6, T(2)=1.1e6, T(3)=1.21e6, ...
 export const AE_BASE_H = 1e6;
-export const AE_RATIO = 2.1;
+export const AE_RATIO = 1.1;
 /** Jede gehaltene AE gibt +2% globale H-Produktion. */
 export const AE_PRODUCTION_BONUS = 0.02;
 

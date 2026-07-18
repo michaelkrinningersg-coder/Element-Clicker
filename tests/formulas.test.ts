@@ -41,16 +41,16 @@ describe("Aktivierungsenergie", () => {
     expect(potentialAE(new Decimal(999_999), ZERO).toNumber()).toBe(0);
   });
 
-  it("Schwellen folgen 1e6 * 2,1^(n-1)", () => {
+  it("Schwellen folgen 1e6 * 1,1^(n-1)", () => {
     expect(aeThreshold(1, ZERO).toNumber()).toBeCloseTo(1e6, 0);
-    expect(aeThreshold(2, ZERO).toNumber()).toBeCloseTo(2.1e6, 0);
-    expect(aeThreshold(3, ZERO).toNumber()).toBeCloseTo(4.41e6, 0);
+    expect(aeThreshold(2, ZERO).toNumber()).toBeCloseTo(1.1e6, 0);
+    expect(aeThreshold(3, ZERO).toNumber()).toBeCloseTo(1.21e6, 0);
   });
 
   it("liefert die erwartete AE-Anzahl", () => {
     expect(potentialAE(new Decimal(1e6), ZERO).toNumber()).toBe(1);
-    expect(potentialAE(new Decimal(2.1e6), ZERO).toNumber()).toBe(2);
-    expect(potentialAE(new Decimal(4.41e6), ZERO).toNumber()).toBe(3);
+    expect(potentialAE(new Decimal(1.1e6), ZERO).toNumber()).toBe(2);
+    expect(potentialAE(new Decimal(1.21e6), ZERO).toNumber()).toBe(3);
   });
 
   it("Gravitonen senken die Schwellen (mehr AE bei gleichem H)", () => {

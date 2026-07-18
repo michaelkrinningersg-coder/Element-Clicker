@@ -6,7 +6,7 @@
     ignite,
     collapseNebula,
   } from "../game/store";
-  import { potentialAE } from "../game/formulas";
+  import { potentialAE, aeThreshold } from "../game/formulas";
   import {
     IGNITION_KELVIN,
     KELVIN_PER_AE,
@@ -14,10 +14,21 @@
     GRAVITON_H_COST,
   } from "../game/constants";
   import { formatDecimal, formatInt } from "../game/format";
-  import { Decimal } from "../game/decimal";
+  import { Decimal, ZERO } from "../game/decimal";
 
   $: aeGain = potentialAE($game.h, $game.gravitons);
   $: canCollapse = aeGain.gt(0);
+
+  // Fortschritt bis zur nächsten AE-Einheit.
+  $: aeTier = aeGain.toNumber();
+  $: aePrevThreshold = aeTier >= 1 ? aeThreshold(aeTier, $game.gravitons) : ZERO;
+  $: aeNextThreshold = aeThreshold(aeTier + 1, $game.gravitons);
+  $: aeNextPct = (() => {
+    const span = aeNextThreshold.sub(aePrevThreshold);
+    if (span.lte(0)) return 0;
+    const p = $game.h.sub(aePrevThreshold).div(span).mul(100).toNumber();
+    return Math.max(0, Math.min(100, p));
+  })();
   $: kelvinPct = Decimal.min($game.kelvin.div(IGNITION_KELVIN), new Decimal(1))
     .mul(100)
     .toNumber();
@@ -39,6 +50,15 @@
       Setzt H, Elemente und Generatoren zurück. Jede AE gibt +2 % globale
       H-Produktion (bleibt erhalten).
     </p>
+    <div class="nextae">
+      <div class="nextae-row">
+        <span class="dim small">Nächste AE bei</span>
+        <span class="mono small">{formatDecimal(aeNextThreshold)} H</span>
+      </div>
+      <div class="mini-progress">
+        <div class="mini-fill" style="width:{aeNextPct}%"></div>
+      </div>
+    </div>
     <button class="btn primary full" disabled={!canCollapse} on:click={collapseCloud}>
       Kollabieren
     </button>
@@ -135,5 +155,26 @@
   }
   .good {
     color: var(--good);
+  }
+  .nextae {
+    margin: 8px 0;
+  }
+  .nextae-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .mini-progress {
+    height: 6px;
+    background: #0d1326;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--hot), var(--accent-2));
+    transition: width 0.2s ease;
   }
 </style>
