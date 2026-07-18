@@ -8,11 +8,16 @@
     aeMultiplier,
     perkGlobalMultiplier,
     nextPerk,
+    totalGeneratorsOwned,
   } from "../game/formulas";
+  import { GENERATOR_MILESTONES } from "../game/milestones";
   import { formatDecimal } from "../game/format";
   import { ZERO } from "../game/decimal";
 
   $: total = totalProductionPerSec($game);
+  $: ownedTotal = totalGeneratorsOwned($game);
+
+  const fmt = (n: number) => n.toLocaleString("de-DE");
 
   // Aufgeklappte Perk-Detailzeile (Akkordeon).
   let openId: string | null = null;
@@ -95,6 +100,17 @@
       {/if}
     </div>
   {/each}
+
+  <div class="milestones">
+    {#each GENERATOR_MILESTONES as ms (ms.id)}
+      {@const done = ownedTotal >= ms.threshold}
+      <div class="ms" class:done>
+        <span class="mslabel">{done ? "✓" : "🔒"} {ms.label}</span>
+        <span class="mseff">Auto ×{fmt(ms.productionMult)} · Klick ×{fmt(ms.clickMult)}</span>
+        <span class="msnum mono">{ownedTotal}/{ms.threshold}</span>
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
@@ -245,6 +261,44 @@
   .small {
     font-size: 13px;
     margin: 2px 0;
+  }
+
+  .milestones {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-panel);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ms {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--glass-2);
+    border: 1px solid var(--border-row);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    opacity: 0.6;
+  }
+  .ms.done {
+    opacity: 1;
+    border-color: var(--good);
+  }
+  .mslabel {
+    font-weight: 600;
+  }
+  .ms.done .mslabel {
+    color: var(--good);
+  }
+  .mseff {
+    color: var(--accent-2);
+  }
+  .msnum {
+    margin-left: auto;
+    color: var(--text-dim);
   }
 
   @media (max-width: 760px) {
