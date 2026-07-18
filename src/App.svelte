@@ -26,11 +26,13 @@
 <div class="layout">
   <div class="col">
     <ClickArea />
-    <ClickUpgradesPanel />
     <PeriodicTable />
   </div>
   <div class="col">
     <PrestigePanel />
+  </div>
+  <div class="col">
+    <ClickUpgradesPanel />
   </div>
 </div>
 
@@ -56,7 +58,7 @@
   }
   .layout {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
+    grid-template-columns: 1.1fr 1fr 1fr;
     gap: 18px;
     align-items: start;
   }
@@ -71,7 +73,12 @@
     text-align: center;
     font-size: 12px;
   }
-  @media (max-width: 760px) {
+  @media (max-width: 980px) {
+    .layout {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 620px) {
     .layout {
       grid-template-columns: 1fr;
     }
