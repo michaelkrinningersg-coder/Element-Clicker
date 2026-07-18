@@ -12,6 +12,7 @@ import {
 } from "./constants";
 import { GENERATOR_BY_ID } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
+import { GENERATOR_UPGRADE_BY_ID } from "./generatorUpgrades";
 import {
   clickValue,
   growthRate,
@@ -47,6 +48,7 @@ function commit(): void {
 export function click(): void {
   const gained = clickValue(state, CLICK_BASE);
   state.h = state.h.add(gained);
+  state.runEarnedH = state.runEarnedH.add(gained);
   state.lifetimeH = state.lifetimeH.add(gained);
   state.totalClicks += 1;
   evaluateAchievements(state);
@@ -67,6 +69,18 @@ export function buyGenerator(id: string): void {
   commit();
 }
 
+/** Kauft ein Generator-Upgrade (einmalig, permanent) – wenn freigeschaltet. */
+export function buyGeneratorUpgrade(id: string): void {
+  const def = GENERATOR_UPGRADE_BY_ID[id];
+  if (!def) return;
+  if (state.generatorUpgrades.includes(id)) return;
+  if (state.generators[def.unlock.generatorId].owned < def.unlock.amount) return;
+  if (state.h.lt(def.cost)) return;
+  state.h = state.h.sub(def.cost);
+  state.generatorUpgrades = [...state.generatorUpgrades, id];
+  commit();
+}
+
 /** Kauft ein Klick-Upgrade (einmalig, permanent). */
 export function buyClickUpgrade(id: string): void {
   const def = CLICK_UPGRADE_BY_ID[id];
@@ -80,7 +94,9 @@ export function buyClickUpgrade(id: string): void {
 
 /** Ebene 0: Wolke kollabieren -> Aktivierungsenergie sammeln. */
 export function collapseCloud(): void {
-  const gain = potentialAE(state.h, state.gravitons);
+  // AE-Ertrag basiert auf dem gesamt im Run verdienten H (nicht dem aktuellen
+  // Kontostand) – Ausgeben für Generatoren schmälert den Ertrag also nicht.
+  const gain = potentialAE(state.runEarnedH, state.gravitons);
   if (gain.lte(0)) return;
   state.ae = state.ae.add(gain);
   state.collapseCount += 1;
@@ -188,6 +204,7 @@ export function collapseNebula(): void {
 export function tick(dtSeconds: number): void {
   const produced = totalProductionPerSec(state).mul(dtSeconds);
   state.h = state.h.add(produced);
+  state.runEarnedH = state.runEarnedH.add(produced);
   state.lifetimeH = state.lifetimeH.add(produced);
   if (state.autoFusion) autoFuseStep();
   state.playtimeSeconds += dtSeconds;

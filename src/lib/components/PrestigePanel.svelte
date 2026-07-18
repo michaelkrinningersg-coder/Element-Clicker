@@ -16,7 +16,7 @@
   import { formatDecimal, formatInt } from "../game/format";
   import { Decimal, ZERO } from "../game/decimal";
 
-  $: aeGain = potentialAE($game.h, $game.gravitons);
+  $: aeGain = potentialAE($game.runEarnedH, $game.gravitons);
   $: canCollapse = aeGain.gt(0);
 
   // Fortschritt bis zur nächsten AE-Einheit.
@@ -26,7 +26,7 @@
   $: aeNextPct = (() => {
     const span = aeNextThreshold.sub(aePrevThreshold);
     if (span.lte(0)) return 0;
-    const p = $game.h.sub(aePrevThreshold).div(span).mul(100).toNumber();
+    const p = $game.runEarnedH.sub(aePrevThreshold).div(span).mul(100).toNumber();
     return Math.max(0, Math.min(100, p));
   })();
   $: kelvinPct = Decimal.min($game.kelvin.div(IGNITION_KELVIN), new Decimal(1))

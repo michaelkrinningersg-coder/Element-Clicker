@@ -34,12 +34,14 @@ describe("Kompletter Frühphasen-Loop", () => {
     expect(getState().h.toNumber()).toBeGreaterThan(hBefore);
   });
 
-  it("Wolke kollabieren gibt AE und setzt H/Generatoren zurück", () => {
+  it("Wolke kollabieren: AE aus verdientem H, Ausgeben schmälert Ertrag nicht", () => {
     const s = getState();
-    s.h = new Decimal(1.1e6); // -> 2 AE (Skalierung x1,1)
+    s.runEarnedH = new Decimal(1.1e6); // im Run verdient -> 2 AE (x1,1)
+    s.h = new Decimal(0); // Kontostand leer (alles ausgegeben)
     collapseCloud();
-    expect(s.ae.toNumber()).toBe(2);
+    expect(s.ae.toNumber()).toBe(2); // trotz leerem Kontostand
     expect(s.h.toNumber()).toBe(0);
+    expect(s.runEarnedH.toNumber()).toBe(0); // Run-Zähler zurückgesetzt
     expect(s.generators.g1.owned).toBe(0);
   });
 

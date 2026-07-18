@@ -11,6 +11,7 @@ import {
 } from "./constants";
 import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
+import { GENERATOR_UPGRADES } from "./generatorUpgrades";
 import { GENERATOR_MILESTONES } from "./milestones";
 import type { GameState } from "./state";
 
@@ -142,6 +143,13 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
         else if (e.kind === "generatorOutputMult" && e.targetId === genId) m *= e.factor;
       }
     }
+  }
+  // Gekaufte Generator-Upgrades: dynamischer Output-Bonus je Partner-Generator
+  for (const up of GENERATOR_UPGRADES) {
+    if (up.effect.targetId !== genId) continue;
+    if (!state.generatorUpgrades.includes(up.id)) continue;
+    const perCount = state.generators[up.effect.perGeneratorId]?.owned ?? 0;
+    m *= 1 + up.effect.factorPerUnit * perCount;
   }
   return new Decimal(m);
 }

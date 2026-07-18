@@ -25,6 +25,7 @@ function serialize(state: GameState): string {
     version: SAVE_VERSION,
     state: {
       h: decToStr(state.h),
+      runEarnedH: decToStr(state.runEarnedH),
       elements: {
         He: decToStr(state.elements.He),
         Li: decToStr(state.elements.Li),
@@ -44,6 +45,7 @@ function serialize(state: GameState): string {
       unlocked: { ...state.unlocked },
       generators: gens,
       clickUpgrades: [...state.clickUpgrades],
+      generatorUpgrades: [...state.generatorUpgrades],
       achievements: [...state.achievements],
       totalClicks: state.totalClicks,
       totalGeneratorsBought: state.totalGeneratorsBought,
@@ -65,6 +67,7 @@ function deserialize(raw: string): GameState {
   if (!s) return base;
 
   base.h = new Decimal(s.h ?? 0);
+  base.runEarnedH = new Decimal(s.runEarnedH ?? s.h ?? 0);
   if (s.elements) {
     base.elements.He = new Decimal(s.elements.He ?? 0);
     base.elements.Li = new Decimal(s.elements.Li ?? 0);
@@ -94,6 +97,9 @@ function deserialize(raw: string): GameState {
   }
   if (Array.isArray(s.clickUpgrades)) {
     base.clickUpgrades = s.clickUpgrades.filter((x: unknown) => typeof x === "string");
+  }
+  if (Array.isArray(s.generatorUpgrades)) {
+    base.generatorUpgrades = s.generatorUpgrades.filter((x: unknown) => typeof x === "string");
   }
   if (Array.isArray(s.achievements)) {
     base.achievements = s.achievements.filter((x: unknown) => typeof x === "string");

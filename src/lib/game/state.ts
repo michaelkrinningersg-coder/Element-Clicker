@@ -11,6 +11,7 @@ export interface GeneratorState {
 export interface GameState {
   // Ressourcen
   h: Decimal; // Wasserstoff (Atome), Run-lokal (Reset bei Kollaps)
+  runEarnedH: Decimal; // insgesamt in diesem Run verdientes H (sinkt nicht beim Ausgeben); Basis für den AE-Ertrag
   elements: { He: Decimal; Li: Decimal; Be: Decimal }; // in mol
   particles: {
     protons: Decimal;
@@ -35,6 +36,9 @@ export interface GameState {
   // Gekaufte Klick-Upgrades (permanent, Reihenfolge egal)
   clickUpgrades: string[];
 
+  // Gekaufte Generator-Upgrades (permanent)
+  generatorUpgrades: string[];
+
   // Freigeschaltete Achievements (permanent)
   achievements: string[];
 
@@ -56,6 +60,7 @@ export function createInitialState(): GameState {
   }
   return {
     h: ZERO,
+    runEarnedH: ZERO,
     elements: { He: ZERO, Li: ZERO, Be: ZERO },
     particles: { protons: ZERO, neutrons: ZERO, electrons: ZERO, positrons: ZERO },
     ae: ZERO,
@@ -66,6 +71,7 @@ export function createInitialState(): GameState {
     unlocked: { He: false, Li: false, Be: false },
     generators,
     clickUpgrades: [],
+    generatorUpgrades: [],
     achievements: [],
     totalClicks: 0,
     totalGeneratorsBought: 0,
@@ -81,6 +87,7 @@ export function createInitialState(): GameState {
 /** Setzt Run-lokale Werte zurück (H, fusionierte Elemente, Generatoren). */
 export function softResetRun(state: GameState): void {
   state.h = ZERO;
+  state.runEarnedH = ZERO;
   state.elements = { He: ZERO, Li: ZERO, Be: ZERO };
   for (const g of GENERATORS) {
     state.generators[g.id] = { owned: 0, nextCost: g.baseCost };
