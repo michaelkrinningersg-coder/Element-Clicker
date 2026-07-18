@@ -8,9 +8,8 @@ import {
   COST_GROWTH_SPAN,
   GRAVITON_THRESHOLD_FACTOR,
   PERK_MILESTONES,
-  PERK_MILESTONE_PLACEHOLDER_MULT,
 } from "./constants";
-import { GENERATOR_BY_ID } from "./generators";
+import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
 import type { GameState } from "./state";
 
 /**
@@ -31,44 +30,107 @@ export function costForNext(baseCost: Decimal, owned: number): Decimal {
   return cost;
 }
 
-/** Wie viele Perk-Meilensteine bei `owned` Stück erreicht sind. */
+/** Wie viele der globalen Perk-Meilenstein-Schwellen bei `owned` erreicht sind. */
 export function reachedMilestones(owned: number): number {
   let count = 0;
   for (const m of PERK_MILESTONES) if (owned >= m) count++;
   return count;
 }
 
-/** Platzhalter-Multiplikator aus erreichten Meilensteinen (Perks folgen). */
-export function milestoneMultiplier(owned: number): Decimal {
-  const count = reachedMilestones(owned);
-  return new Decimal(Math.pow(PERK_MILESTONE_PLACEHOLDER_MULT, count));
+// ---- Perks ----
+
+/** Die bei aktuellem Besitz aktiven Perks eines Generators. */
+export function activePerks(state: GameState, genId: string): Perk[] {
+  const def = GENERATOR_BY_ID[genId];
+  if (!def) return [];
+  const owned = state.generators[genId].owned;
+  return def.perks.filter((p) => owned >= p.threshold);
+}
+
+/** Der nächste noch nicht erreichte Perk eines Generators (oder null). */
+export function nextPerk(state: GameState, genId: string): Perk | null {
+  const def = GENERATOR_BY_ID[genId];
+  if (!def) return null;
+  const owned = state.generators[genId].owned;
+  for (const p of def.perks) if (owned < p.threshold) return p;
+  return null;
+}
+
+/** Klick-Power-Multiplikator aus allen aktiven clickMult-Perks (alle Generatoren). */
+export function clickPowerMultiplier(state: GameState): Decimal {
+  let m = 1;
+  for (const g of GENERATORS) {
+    const owned = state.generators[g.id].owned;
+    for (const p of g.perks) {
+      if (owned < p.threshold) continue;
+      for (const e of p.effects) if (e.kind === "clickMult") m *= e.factor;
+    }
+  }
+  return new Decimal(m);
+}
+
+/** Globaler Produktions-Multiplikator aus allen aktiven globalMult-Perks. */
+export function perkGlobalMultiplier(state: GameState): Decimal {
+  let m = 1;
+  for (const g of GENERATORS) {
+    const owned = state.generators[g.id].owned;
+    for (const p of g.perks) {
+      if (owned < p.threshold) continue;
+      for (const e of p.effects) if (e.kind === "globalMult") m *= e.factor;
+    }
+  }
+  return new Decimal(m);
+}
+
+/** Output-Multiplikator eines Generators aus eigenen + fremden Perks. */
+export function generatorOutputMultiplier(state: GameState, genId: string): Decimal {
+  let m = 1;
+  for (const g of GENERATORS) {
+    const owned = state.generators[g.id].owned;
+    for (const p of g.perks) {
+      if (owned < p.threshold) continue;
+      for (const e of p.effects) {
+        if (e.kind === "selfOutputMult" && g.id === genId) m *= e.factor;
+        else if (e.kind === "generatorOutputMult" && e.targetId === genId) m *= e.factor;
+      }
+    }
+  }
+  return new Decimal(m);
 }
 
 /** Globaler Multiplikator aus gehaltener Aktivierungsenergie (+2% je AE). */
-export function globalMultiplier(state: GameState): Decimal {
+export function aeMultiplier(state: GameState): Decimal {
   return ONE.add(state.ae.mul(AE_PRODUCTION_BONUS));
 }
 
-/** H/Sek. eines einzelnen Generators (ohne globalen Multiplikator). */
-export function generatorProduction(id: string, owned: number): Decimal {
+/** Roh-Produktion eines Generators (baseProd * Anzahl * Output-Perks), ohne globale Faktoren. */
+export function rawGeneratorProduction(state: GameState, id: string): Decimal {
+  const owned = state.generators[id].owned;
   if (owned <= 0) return ZERO;
   const def = GENERATOR_BY_ID[id];
-  return def.baseProd.mul(owned).mul(milestoneMultiplier(owned));
+  return def.baseProd.mul(owned).mul(generatorOutputMultiplier(state, id));
 }
 
-/** Gesamte H/Sek. inkl. globalem Multiplikator. */
+/** Effektive H/Sek. eines Generators inkl. aller globalen Faktoren (für UI). */
+export function effectiveGeneratorProduction(state: GameState, id: string): Decimal {
+  return rawGeneratorProduction(state, id)
+    .mul(aeMultiplier(state))
+    .mul(perkGlobalMultiplier(state));
+}
+
+/** Gesamte H/Sek. inkl. globaler Faktoren. */
 export function totalProductionPerSec(state: GameState): Decimal {
   let sum = ZERO;
-  for (const id in state.generators) {
-    sum = sum.add(generatorProduction(id, state.generators[id].owned));
-  }
-  return sum.mul(globalMultiplier(state));
+  for (const id in state.generators) sum = sum.add(rawGeneratorProduction(state, id));
+  return sum.mul(aeMultiplier(state)).mul(perkGlobalMultiplier(state));
 }
 
-/** Wert eines Klicks (H-Atome), inkl. globalem Multiplikator. */
+/** Wert eines Klicks (H-Atome): Basis * Klick-Perks * AE-Multiplikator. */
 export function clickValue(state: GameState, base: Decimal): Decimal {
-  return base.mul(globalMultiplier(state));
+  return base.mul(clickPowerMultiplier(state)).mul(aeMultiplier(state));
 }
+
+// ---- Aktivierungsenergie ----
 
 /** Effektive H-Basisschwelle für die 1. AE, gesenkt durch Gravitonen. */
 export function aeThresholdBase(gravitons: Decimal): number {
@@ -82,8 +144,7 @@ export function aeThresholdBase(gravitons: Decimal): number {
 export function potentialAE(runH: Decimal, gravitons: Decimal): Decimal {
   const base = aeThresholdBase(gravitons);
   if (runH.lt(base)) return ZERO;
-  // Epsilon fängt Floating-Point-Ungenauigkeit an exakten Schwellen ab
-  // (z.B. H = 2,1e6 soll sicher als 2. AE-Einheit zählen).
+  // Epsilon fängt Floating-Point-Ungenauigkeit an exakten Schwellen ab.
   const n = Math.floor(runH.div(base).ln() / Math.log(AE_RATIO) + 1e-6) + 1;
   return new Decimal(Math.max(0, n));
 }

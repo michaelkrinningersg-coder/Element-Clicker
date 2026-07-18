@@ -34,17 +34,14 @@ export const COST_GROWTH_FLOOR = 1.05;
 export const COST_GROWTH_SPAN = 0.1;
 export const COST_GROWTH_KAPPA = 100;
 
-// ---- Perk-Meilensteine (Effekte werden später festgelegt) ----
-// Gilt pro Generator, anhand der besessenen Anzahl. Aktuell nur ein
-// milder Platzhalter-Multiplikator (siehe formulas.ts / milestoneMultiplier).
+// ---- Perk-Meilenstein-Schwellen (mögliche Stufen je Generator) ----
+// Referenzliste, bei welchen Stückzahlen Perks sitzen können. Die konkreten
+// Perk-Effekte werden pro Generator in generators.ts definiert.
 export const PERK_MILESTONES: number[] = [
   10, 25, 50, 75, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700,
   800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500,
   5000,
 ];
-// Platzhalter: jeder erreichte Meilenstein multipliziert die Eigenproduktion.
-// Bewusst klein gehalten, bis die echten Perks feststehen.
-export const PERK_MILESTONE_PLACEHOLDER_MULT = 1.1;
 
 // ---- Aktivierungsenergie (AE) ----
 // n-te AE-Einheit benötigt (H im aktuellen Run):  T(n) = BASE * RATIO^(n-1)
