@@ -4,6 +4,7 @@
   import {
     GENERATOR_ACHIEVEMENT_THRESHOLDS,
     CLICK_ACHIEVEMENT_THRESHOLDS,
+    TIME_ACHIEVEMENTS,
     TOTAL_ACHIEVEMENTS,
   } from "../game/achievements";
   import { achievementMultiplier } from "../game/formulas";
@@ -46,6 +47,19 @@
           class="achip"
           class:earned={earnedSet.has(`clicks_${t}`)}
           title={`${fmtT(t)} Klicks`}>{fmtT(t)}</span
+        >
+      {/each}
+    </span>
+  </div>
+
+  <div class="achrow">
+    <span class="glabel">⏱ Spielzeit</span>
+    <span class="chips">
+      {#each TIME_ACHIEVEMENTS as t (t.seconds)}
+        <span
+          class="achip"
+          class:earned={earnedSet.has(`time_${t.seconds}`)}
+          title={`Spiele ${t.label}`}>{t.label}</span
         >
       {/each}
     </span>

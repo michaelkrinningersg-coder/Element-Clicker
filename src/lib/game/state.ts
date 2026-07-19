@@ -12,6 +12,7 @@ export interface GameState {
   // Ressourcen
   h: Decimal; // Wasserstoff (Atome), Run-lokal (Reset bei Kollaps)
   runEarnedH: Decimal; // insgesamt in diesem Run verdientes H (sinkt nicht beim Ausgeben); Basis für den AE-Ertrag
+  runSeconds: number; // Sekunden seit dem letzten Kollaps (Run-Zeit-Bonus)
   elements: { He: Decimal; Li: Decimal; Be: Decimal }; // in mol
   particles: {
     protons: Decimal;
@@ -61,6 +62,7 @@ export function createInitialState(): GameState {
   return {
     h: ZERO,
     runEarnedH: ZERO,
+    runSeconds: 0,
     elements: { He: ZERO, Li: ZERO, Be: ZERO },
     particles: { protons: ZERO, neutrons: ZERO, electrons: ZERO, positrons: ZERO },
     ae: ZERO,
@@ -88,6 +90,7 @@ export function createInitialState(): GameState {
 export function softResetRun(state: GameState): void {
   state.h = ZERO;
   state.runEarnedH = ZERO;
+  state.runSeconds = 0;
   state.elements = { He: ZERO, Li: ZERO, Be: ZERO };
   for (const g of GENERATORS) {
     state.generators[g.id] = { owned: 0, nextCost: g.baseCost };

@@ -26,6 +26,7 @@ function serialize(state: GameState): string {
     state: {
       h: decToStr(state.h),
       runEarnedH: decToStr(state.runEarnedH),
+      runSeconds: state.runSeconds,
       elements: {
         He: decToStr(state.elements.He),
         Li: decToStr(state.elements.Li),
@@ -68,6 +69,7 @@ function deserialize(raw: string): GameState {
 
   base.h = new Decimal(s.h ?? 0);
   base.runEarnedH = new Decimal(s.runEarnedH ?? s.h ?? 0);
+  base.runSeconds = Number(s.runSeconds ?? 0);
   if (s.elements) {
     base.elements.He = new Decimal(s.elements.He ?? 0);
     base.elements.Li = new Decimal(s.elements.Li ?? 0);

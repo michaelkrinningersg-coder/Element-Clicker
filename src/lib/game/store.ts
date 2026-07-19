@@ -69,6 +69,28 @@ export function buyGenerator(id: string): void {
   commit();
 }
 
+/** Kauft bis zu `count` Einheiten eines Generators (bricht bei fehlendem H ab). */
+export function buyGenerators(id: string, count: number): void {
+  const def = GENERATOR_BY_ID[id];
+  if (!def) return;
+  const gs = state.generators[id];
+  let bought = 0;
+  const cap = Math.min(count, 1_000_000);
+  for (let i = 0; i < cap; i++) {
+    if (state.h.lt(gs.nextCost)) break;
+    state.h = state.h.sub(gs.nextCost);
+    const oldOwned = gs.owned;
+    gs.owned += 1;
+    gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+    bought++;
+  }
+  if (bought > 0) {
+    state.totalGeneratorsBought += bought;
+    evaluateAchievements(state);
+    commit();
+  }
+}
+
 /** Kauft ein Generator-Upgrade (einmalig, permanent) – wenn freigeschaltet. */
 export function buyGeneratorUpgrade(id: string): void {
   const def = GENERATOR_UPGRADE_BY_ID[id];
@@ -208,6 +230,8 @@ export function tick(dtSeconds: number): void {
   state.lifetimeH = state.lifetimeH.add(produced);
   if (state.autoFusion) autoFuseStep();
   state.playtimeSeconds += dtSeconds;
+  state.runSeconds += dtSeconds;
+  evaluateAchievements(state); // u.a. Spielzeit-Achievements
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {
     sinceAutosave = 0;

@@ -30,6 +30,11 @@ export const TWO_MOL_H = TWO_MOL;
 // ---- Klick ----
 export const CLICK_BASE = new Decimal(1); // 1 H-Atom pro Klick (Upgrades später)
 
+// ---- Run-Zeit-Bonus ----
+// Je Sekunde im aktuellen AE-Run steigt der Bonus auf Auto- UND Klick-Einkommen
+// um +0,01 % (additiv). Reset beim Wolke-/Nebel-Kollaps.
+export const RUN_TIME_BONUS_PER_SEC = 0.0001;
+
 // ---- Generatoren: Kostenkurve mit abflachender Wachstumsrate ----
 // r(n) = FLOOR + SPAN * 0.5^(n / KAPPA)
 //   n=0   -> 1.15   (FLOOR + SPAN)

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { game, buyGenerator } from "../game/store";
+  import { game, buyGenerators } from "../game/store";
   import { GENERATORS } from "../game/generators";
   import {
     effectiveGeneratorProduction,
@@ -10,6 +10,8 @@
     milestoneProductionMultiplier,
     nextPerk,
     totalGeneratorsOwned,
+    bulkCost,
+    maxAffordable,
   } from "../game/formulas";
   import { GENERATOR_MILESTONES } from "../game/milestones";
   import { formatDecimal } from "../game/format";
@@ -20,6 +22,22 @@
 
   const fmt = (n: number) => n.toLocaleString("de-DE");
 
+  // Kauf-Menge
+  type BuyMode = number | "max" | "next";
+  const BUY_MODES: BuyMode[] = [1, 10, 25, 50, 100, "max", "next"];
+  let buyMode: BuyMode = 1;
+  const modeLabel = (m: BuyMode) => (m === "max" ? "Max" : m === "next" ? "Next" : String(m));
+
+  // Ziel-Stückzahl je Modus (vor Leistbarkeit)
+  function targetCount(genId: string, owned: number): number {
+    if (buyMode === "max") return 1_000_000;
+    if (buyMode === "next") {
+      const np = nextPerk($game, genId);
+      return np ? Math.max(1, np.threshold - owned) : 1_000_000;
+    }
+    return buyMode;
+  }
+
   // Aufgeklappte Perk-Detailzeile (Akkordeon).
   let openId: string | null = null;
   function toggle(id: string) {
@@ -28,7 +46,17 @@
 </script>
 
 <div class="genpanel">
-  <h3>Generatoren</h3>
+  <div class="phead">
+    <h3>Generatoren</h3>
+    <div class="buymodes">
+      <span class="ml">Kaufen:</span>
+      {#each BUY_MODES as m (m)}
+        <button class="modebtn" class:active={buyMode === m} on:click={() => (buyMode = m)}>
+          {modeLabel(m)}
+        </button>
+      {/each}
+    </div>
+  </div>
   <div class="rowline">
     <div class="thead">
       <span>Generator</span>
@@ -44,7 +72,10 @@
 
   {#each GENERATORS as def (def.id)}
     {@const gs = $game.generators[def.id]}
-    {@const affordable = $game.h.gte(gs.nextCost)}
+    {@const tgt = targetCount(def.id, gs.owned)}
+    {@const buyCount = maxAffordable(gs.nextCost, gs.owned, $game.h, tgt)}
+    {@const buyCostTotal = bulkCost(gs.nextCost, gs.owned, buyCount)}
+    {@const affordable = buyCount > 0}
     {@const prod = effectiveGeneratorProduction($game, def.id)}
     {@const nextBonus = def.baseProd
       .mul(generatorOutputMultiplier($game, def.id))
@@ -62,7 +93,7 @@
           class:locked
           disabled={!affordable}
           title={np ? `Nächster Perk bei ${np.threshold} Stk.: ${np.label}` : "Alle Perks erreicht"}
-          on:click={() => buyGenerator(def.id)}
+          on:click={() => buyGenerators(def.id, buyCount)}
         >
           <span class="gen">
             <span class="icon">{def.icon}</span>
@@ -70,7 +101,9 @@
           </span>
           <span class="r count">×{gs.owned}</span>
           <span class="r prod">{gs.owned > 0 ? `${formatDecimal(prod)} /s` : "—"}</span>
-          <span class="r cost" class:ok={affordable}>{formatDecimal(gs.nextCost)} H</span>
+          <span class="r cost" class:ok={affordable}>
+            {#if buyCount > 1}×{buyCount} · {/if}{formatDecimal(affordable ? buyCostTotal : gs.nextCost)} H
+          </span>
           <span class="r basebonus">+{formatDecimal(def.baseProd)} /s</span>
           <span class="r bonus">+{formatDecimal(nextBonus)} /s</span>
           <span class="r share">{share.gt(0) ? `${formatDecimal(share, 1)} %` : "—"}</span>
@@ -130,6 +163,44 @@
     border-radius: 14px;
     padding: 18px;
     margin-bottom: 20px;
+  }
+  .phead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .phead h3 {
+    margin: 0;
+  }
+  .buymodes {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .ml {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-right: 2px;
+  }
+  .modebtn {
+    background: var(--glass-2);
+    border: 1px solid var(--border-row);
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .modebtn:hover {
+    filter: brightness(1.2);
+  }
+  .modebtn.active {
+    background: var(--btn-primary);
+    border-color: var(--accent);
+    color: var(--text);
   }
   .rowline {
     display: flex;

@@ -54,9 +54,17 @@ describe("Achievements", () => {
     expect(s.achievements.length).toBe(n);
   });
 
-  it("Gesamtzahl = 8 Generatoren × 7 + 8 Klick-Stufen", () => {
+  it("Gesamtzahl = 8 Generatoren × 7 + 8 Klick + 7 Zeit", () => {
     expect(TOTAL_ACHIEVEMENTS).toBe(ACHIEVEMENTS.length);
-    expect(TOTAL_ACHIEVEMENTS).toBe(8 * 7 + 8);
+    expect(TOTAL_ACHIEVEMENTS).toBe(8 * 7 + 8 + 7);
+  });
+
+  it("Spielzeit-Achievements greifen ab der Schwelle", () => {
+    const s = createInitialState();
+    s.playtimeSeconds = 3600; // 1 Stunde
+    evaluateAchievements(s);
+    expect(s.achievements).toContain("time_3600");
+    expect(s.achievements).not.toContain("time_36000");
   });
 });
 

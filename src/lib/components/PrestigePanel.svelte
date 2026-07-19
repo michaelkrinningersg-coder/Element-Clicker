@@ -6,7 +6,8 @@
     ignite,
     collapseNebula,
   } from "../game/store";
-  import { potentialAE, aeThreshold } from "../game/formulas";
+  import { potentialAE, aeThreshold, runTimeMultiplier } from "../game/formulas";
+  import { formatDuration } from "../game/format";
   import {
     IGNITION_KELVIN,
     KELVIN_PER_AE,
@@ -18,6 +19,7 @@
 
   $: aeGain = potentialAE($game.runEarnedH, $game.gravitons);
   $: canCollapse = aeGain.gt(0);
+  $: runBonusPct = (runTimeMultiplier($game).toNumber() - 1) * 100;
 
   // Fortschritt bis zur nächsten AE-Einheit.
   $: aeTier = aeGain.toNumber();
@@ -50,6 +52,11 @@
       Setzt H, Elemente und Generatoren zurück. Jede AE gibt +2 % globale
       H-Produktion (bleibt erhalten).
     </p>
+    <div class="runbonus">
+      ⏱ Run-Bonus: <b>+{runBonusPct.toLocaleString("de-DE", { maximumFractionDigits: 2 })} %</b>
+      Auto &amp; Klick
+      <span class="dim">· {formatDuration($game.runSeconds)} · 0,01 %/s · Reset bei Kollaps</span>
+    </div>
     <div class="nextae">
       <div class="nextae-row">
         <span class="dim small">Nächste AE bei</span>
@@ -155,6 +162,14 @@
   }
   .good {
     color: var(--good);
+  }
+  .runbonus {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 6px 0;
+  }
+  .runbonus b {
+    color: var(--accent);
   }
   .nextae {
     margin: 8px 0;

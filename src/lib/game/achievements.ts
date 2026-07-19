@@ -9,7 +9,18 @@ import type { GameState } from "./state";
 export const GENERATOR_ACHIEVEMENT_THRESHOLDS = [1, 5, 10, 25, 50, 75, 100];
 export const CLICK_ACHIEVEMENT_THRESHOLDS = [1, 10, 50, 100, 500, 1000, 5000, 10000];
 
-export type AchievementCategory = "generator" | "clicks";
+/** Spielzeit-Schwellen (Sekunden) mit Label. */
+export const TIME_ACHIEVEMENTS: Array<{ seconds: number; label: string }> = [
+  { seconds: 3600, label: "1 Stunde" },
+  { seconds: 36000, label: "10 Stunden" },
+  { seconds: 86400, label: "1 Tag" },
+  { seconds: 172800, label: "2 Tage" },
+  { seconds: 604800, label: "1 Woche" },
+  { seconds: 2592000, label: "1 Monat" },
+  { seconds: 31536000, label: "1 Jahr" },
+];
+
+export type AchievementCategory = "generator" | "clicks" | "time";
 
 export interface Achievement {
   id: string;
@@ -38,6 +49,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "clicks" as const,
     threshold: t,
   })),
+  ...TIME_ACHIEVEMENTS.map((t) => ({
+    id: `time_${t.seconds}`,
+    name: t.label,
+    description: `Spiele insgesamt ${t.label}.`,
+    category: "time" as const,
+    threshold: t.seconds,
+  })),
 ];
 
 export const TOTAL_ACHIEVEMENTS = ACHIEVEMENTS.length;
@@ -63,6 +81,13 @@ export function evaluateAchievements(state: GameState): void {
   for (const t of CLICK_ACHIEVEMENT_THRESHOLDS) {
     const id = `clicks_${t}`;
     if (state.totalClicks >= t && !earned.has(id)) {
+      earned.add(id);
+      changed = true;
+    }
+  }
+  for (const t of TIME_ACHIEVEMENTS) {
+    const id = `time_${t.seconds}`;
+    if (state.playtimeSeconds >= t.seconds && !earned.has(id)) {
       earned.add(id);
       changed = true;
     }

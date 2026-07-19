@@ -8,6 +8,7 @@ import {
   COST_GROWTH_SPAN,
   GRAVITON_THRESHOLD_FACTOR,
   PERK_MILESTONES,
+  RUN_TIME_BONUS_PER_SEC,
 } from "./constants";
 import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
@@ -31,6 +32,37 @@ export function costForNext(baseCost: Decimal, owned: number): Decimal {
   let cost = baseCost;
   for (let i = 0; i < owned; i++) cost = cost.mul(growthRate(i));
   return cost;
+}
+
+/** Gesamtkosten, um `count` Einheiten ab `owned` zu kaufen (Start: nextCost). */
+export function bulkCost(nextCost: Decimal, owned: number, count: number): Decimal {
+  let total = ZERO;
+  let cost = nextCost;
+  for (let i = 0; i < count; i++) {
+    total = total.add(cost);
+    cost = cost.mul(growthRate(owned + i));
+  }
+  return total;
+}
+
+/** Wie viele Einheiten mit `h` leistbar sind (gedeckelt durch `limit`). */
+export function maxAffordable(
+  nextCost: Decimal,
+  owned: number,
+  h: Decimal,
+  limit = 1_000_000,
+): number {
+  let count = 0;
+  let cost = nextCost;
+  let spent = ZERO;
+  while (count < limit) {
+    const next = spent.add(cost);
+    if (next.gt(h)) break;
+    spent = next;
+    cost = cost.mul(growthRate(owned + count));
+    count++;
+  }
+  return count;
 }
 
 /** Wie viele der globalen Perk-Meilenstein-Schwellen bei `owned` erreicht sind. */
@@ -164,6 +196,11 @@ export function achievementMultiplier(state: GameState): Decimal {
   return new Decimal(1 + 0.1 * state.achievements.length);
 }
 
+/** Run-Zeit-Bonus: 1 + 0,01 % je Sekunde im aktuellen Run (Auto & Klick). */
+export function runTimeMultiplier(state: GameState): Decimal {
+  return new Decimal(1 + RUN_TIME_BONUS_PER_SEC * state.runSeconds);
+}
+
 /** Roh-Produktion eines Generators (baseProd * Anzahl * Output-Perks), ohne globale Faktoren. */
 export function rawGeneratorProduction(state: GameState, id: string): Decimal {
   const owned = state.generators[id].owned;
@@ -178,7 +215,8 @@ export function effectiveGeneratorProduction(state: GameState, id: string): Deci
     .mul(aeMultiplier(state))
     .mul(perkGlobalMultiplier(state))
     .mul(milestoneProductionMultiplier(state))
-    .mul(achievementMultiplier(state));
+    .mul(achievementMultiplier(state))
+    .mul(runTimeMultiplier(state));
 }
 
 /** Gesamte H/Sek. inkl. globaler Faktoren. */
@@ -189,10 +227,11 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(aeMultiplier(state))
     .mul(perkGlobalMultiplier(state))
     .mul(milestoneProductionMultiplier(state))
-    .mul(achievementMultiplier(state));
+    .mul(achievementMultiplier(state))
+    .mul(runTimeMultiplier(state));
 }
 
-/** Wert eines Klicks: Basis * Generator-Klickbonus * Perks * Upgrades * Meilenstein * Achievements * AE. */
+/** Wert eines Klicks: Basis * Generator-Klickbonus * Perks * Upgrades * Meilenstein * Achievements * Run-Zeit * AE. */
 export function clickValue(state: GameState, base: Decimal): Decimal {
   return base
     .mul(clickGeneratorBonusMultiplier(state))
@@ -200,6 +239,7 @@ export function clickValue(state: GameState, base: Decimal): Decimal {
     .mul(clickUpgradeMultiplier(state))
     .mul(milestoneClickMultiplier(state))
     .mul(achievementMultiplier(state))
+    .mul(runTimeMultiplier(state))
     .mul(aeMultiplier(state));
 }
 
