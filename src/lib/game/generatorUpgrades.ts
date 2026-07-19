@@ -1,12 +1,19 @@
 import { Decimal } from "./decimal";
 
 /**
- * Generator-Upgrades: einmalige Käufe (mit H) mit Freischalt-Bedingung und
- * dynamischem Effekt. Permanent (überleben Kollaps, wie Klick-Upgrades).
+ * Generator-Upgrades: einmalige Käufe (mit H) mit Freischalt-Bedingung.
+ * Permanent (überleben Kollaps, wie Klick-Upgrades).
  *
- * Effekt "outputPerGenerator": multipliziert den Output des Ziel-Generators
- * mit (1 + factorPerUnit * Anzahl(perGeneratorId)).
+ * Effekt-Typen:
+ *  - "outputPerGenerator": Ziel-Generator-Output × (1 + faktor * Anzahl(perGeneratorId)),
+ *    wobei der Faktor durch "boostUpgradeFactor"-Upgrades erhöht werden kann.
+ *  - "boostUpgradeFactor": erhöht den factorPerUnit eines anderen Upgrades um
+ *    factorPerUnit * Anzahl(perGeneratorId).
  */
+export type GeneratorUpgradeEffect =
+  | { kind: "outputPerGenerator"; targetId: string; perGeneratorId: string; factorPerUnit: number }
+  | { kind: "boostUpgradeFactor"; targetUpgradeId: string; perGeneratorId: string; factorPerUnit: number };
+
 export interface GeneratorUpgradeDef {
   id: string;
   name: string;
@@ -14,7 +21,7 @@ export interface GeneratorUpgradeDef {
   cost: Decimal;
   /** Kaufbar, sobald generatorId >= amount besessen. */
   unlock: { generatorId: string; amount: number };
-  effect: { targetId: string; perGeneratorId: string; factorPerUnit: number };
+  effect: GeneratorUpgradeEffect;
 }
 
 export const GENERATOR_UPGRADES: GeneratorUpgradeDef[] = [
@@ -24,7 +31,15 @@ export const GENERATOR_UPGRADES: GeneratorUpgradeDef[] = [
     description: "+2 % Molekülwolken-Output je Wasserstoff-Filament.",
     cost: new Decimal(200_000),
     unlock: { generatorId: "g1", amount: 15 },
-    effect: { targetId: "g1", perGeneratorId: "g2", factorPerUnit: 0.02 },
+    effect: { kind: "outputPerGenerator", targetId: "g1", perGeneratorId: "g2", factorPerUnit: 0.02 },
+  },
+  {
+    id: "gu2",
+    name: "Filament-Verstärker",
+    description: "+1 Prozentpunkt auf den Filament-Resonanz-Bonus je Riesenmolekülwolke.",
+    cost: new Decimal("1e14"),
+    unlock: { generatorId: "g5", amount: 100 },
+    effect: { kind: "boostUpgradeFactor", targetUpgradeId: "gu1", perGeneratorId: "g5", factorPerUnit: 0.01 },
   },
 ];
 

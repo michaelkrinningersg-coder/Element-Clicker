@@ -9,10 +9,11 @@ import {
   GRAVITON_THRESHOLD_FACTOR,
   PERK_MILESTONES,
   RUN_TIME_BONUS_PER_SEC,
+  CLICK_TO_MOLEKULWOLKE_OUTPUT,
 } from "./constants";
 import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
-import { GENERATOR_UPGRADES } from "./generatorUpgrades";
+import { GENERATOR_UPGRADES, type GeneratorUpgradeDef } from "./generatorUpgrades";
 import { GENERATOR_MILESTONES } from "./milestones";
 import type { GameState } from "./state";
 
@@ -164,6 +165,22 @@ export function perkGlobalMultiplier(state: GameState): Decimal {
 }
 
 /** Output-Multiplikator eines Generators aus eigenen + fremden Perks. */
+/**
+ * Effektiver factorPerUnit eines "outputPerGenerator"-Upgrades, inkl. gekaufter
+ * "boostUpgradeFactor"-Upgrades, die es verstärken.
+ */
+export function effectiveUpgradeFactor(state: GameState, up: GeneratorUpgradeDef): number {
+  if (up.effect.kind !== "outputPerGenerator") return 0;
+  let f = up.effect.factorPerUnit;
+  for (const b of GENERATOR_UPGRADES) {
+    if (b.effect.kind !== "boostUpgradeFactor") continue;
+    if (b.effect.targetUpgradeId !== up.id) continue;
+    if (!state.generatorUpgrades.includes(b.id)) continue;
+    f += b.effect.factorPerUnit * (state.generators[b.effect.perGeneratorId]?.owned ?? 0);
+  }
+  return f;
+}
+
 export function generatorOutputMultiplier(state: GameState, genId: string): Decimal {
   let m = 1;
   for (const g of GENERATORS) {
@@ -176,12 +193,15 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
       }
     }
   }
-  // Gekaufte Generator-Upgrades: dynamischer Output-Bonus je Partner-Generator
+  // Klick-Synergie: jeder Gesamt-Klick +0,01 % Molekülwolken-Output
+  if (genId === "g1") m *= 1 + CLICK_TO_MOLEKULWOLKE_OUTPUT * state.totalClicks;
+  // Gekaufte Generator-Upgrades (dynamischer Output-Bonus je Partner-Generator)
   for (const up of GENERATOR_UPGRADES) {
+    if (up.effect.kind !== "outputPerGenerator") continue;
     if (up.effect.targetId !== genId) continue;
     if (!state.generatorUpgrades.includes(up.id)) continue;
     const perCount = state.generators[up.effect.perGeneratorId]?.owned ?? 0;
-    m *= 1 + up.effect.factorPerUnit * perCount;
+    m *= 1 + effectiveUpgradeFactor(state, up) * perCount;
   }
   return new Decimal(m);
 }

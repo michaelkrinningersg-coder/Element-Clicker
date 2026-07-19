@@ -2,9 +2,10 @@
   import { game, buyGeneratorUpgrade } from "../game/store";
   import { GENERATOR_UPGRADES } from "../game/generatorUpgrades";
   import { GENERATOR_BY_ID } from "../game/generators";
+  import { effectiveUpgradeFactor } from "../game/formulas";
   import { formatDecimal } from "../game/format";
 
-  const fmt = (n: number) => n.toLocaleString("de-DE");
+  const fmt = (n: number) => n.toLocaleString("de-DE", { maximumFractionDigits: 2 });
 </script>
 
 <div class="panel">
@@ -25,8 +26,10 @@
         <span class="info">
           <span class="name">{u.name}</span>
           <span class="desc dim">{u.description}</span>
-          {#if owned}
-            <span class="curr">aktuell +{fmt(u.effect.factorPerUnit * 100 * perCount)} %</span>
+          {#if owned && u.effect.kind === "outputPerGenerator"}
+            <span class="curr">aktuell +{fmt(effectiveUpgradeFactor($game, u) * 100 * perCount)} %</span>
+          {:else if owned}
+            <span class="curr">aktuell +{fmt(u.effect.factorPerUnit * 100 * perCount)} Pp.</span>
           {/if}
         </span>
         <span class="right">

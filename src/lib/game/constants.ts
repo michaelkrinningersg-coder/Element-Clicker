@@ -30,6 +30,10 @@ export const TWO_MOL_H = TWO_MOL;
 // ---- Klick ----
 export const CLICK_BASE = new Decimal(1); // 1 H-Atom pro Klick (Upgrades später)
 
+// ---- Klick-Synergie ----
+// Jeder (Gesamt-)Klick erhöht den Molekülwolken-Output zusätzlich um +0,01 %.
+export const CLICK_TO_MOLEKULWOLKE_OUTPUT = 0.0001;
+
 // ---- Run-Zeit-Bonus ----
 // Je Sekunde im aktuellen AE-Run steigt der Bonus auf Auto- UND Klick-Einkommen
 // um +0,01 % (additiv). Reset beim Wolke-/Nebel-Kollaps.
