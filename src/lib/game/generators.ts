@@ -38,6 +38,9 @@ export interface GeneratorDef {
   /** Additiver Output-Bonus JE besessenem Generator (alle Typen zusammen).
    *  z.B. 0,01 = +1 % Output pro Generator. */
   outputBonusPerGenerator?: number;
+  /** Erhöht outputBonusPerGenerator dynamisch um factorPerUnit je Einheit von
+   *  perGeneratorId (z.B. je Kosmisches Filament +0,0005). */
+  outputBonusPerGeneratorBoost?: { perGeneratorId: string; factorPerUnit: number };
 }
 
 export const GENERATORS: GeneratorDef[] = [
@@ -136,6 +139,8 @@ export const GENERATORS: GeneratorDef[] = [
     baseProd: new Decimal(22_000),
     clickBonusPerUnit: 0.25,
     outputBonusPerGenerator: 0.01, // +1 % Output je Generator (egal welcher Typ)
+    // Jedes Kosmische Filament erhöht diese Rate um +0,05 Prozentpunkte
+    outputBonusPerGeneratorBoost: { perGeneratorId: "g8", factorPerUnit: 0.0005 },
     perks: [
       { threshold: 10, label: "×2 Riesenmolekülwolke-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+10 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.1 }] },

@@ -61,6 +61,13 @@ describe("Riesenmolekülwolke – +1 % Output je Generator", () => {
     s.generators.g2.owned = 50;
     expect(generatorOutputMultiplier(s, "g3").toNumber()).toBeCloseTo(1, 9);
   });
+
+  it("Kosmische Filamente erhöhen die Rate um +0,05 Pp. je Stück", () => {
+    const s = createInitialState();
+    s.generators.g8.owned = 100; // Rate: 0,01 + 0,0005·100 = 0,06 ; gesamt = 100
+    // g5-Output: 1 + 0,06 · 100 = 7
+    expect(generatorOutputMultiplier(s, "g5").toNumber()).toBeCloseTo(7, 6);
+  });
 });
 
 describe("Max alle", () => {

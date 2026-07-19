@@ -10,6 +10,7 @@
     milestoneProductionMultiplier,
     nextPerk,
     totalGeneratorsOwned,
+    effectiveOutputBonusPerGenerator,
     bulkCost,
     maxAffordable,
   } from "../game/formulas";
@@ -128,10 +129,11 @@
               <span class="dim">(aktuell +{fmt(def.clickBonusPerUnit * 100 * gs.owned)} %)</span>
             </div>
           {/if}
-          {#if def.outputBonusPerGenerator}
+          {#if def.outputBonusPerGenerator || def.outputBonusPerGeneratorBoost}
+            {@const rate = effectiveOutputBonusPerGenerator($game, def)}
             <div class="clickbonus">
-              🌐 +{fmt(def.outputBonusPerGenerator * 100)} % Output je Generator
-              <span class="dim">(aktuell +{fmt(def.outputBonusPerGenerator * 100 * ownedTotal)} %)</span>
+              🌐 +{fmt(rate * 100)} % Output je Generator
+              <span class="dim">(aktuell +{fmt(rate * 100 * ownedTotal)} %)</span>
             </div>
           {/if}
           {#if def.perks.length === 0}

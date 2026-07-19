@@ -129,6 +129,17 @@ export function clickGeneratorBonusMultiplier(state: GameState): Decimal {
   return new Decimal(1 + bonus);
 }
 
+/** Effektive "Output je Generator"-Rate inkl. dynamischer Verstärkung. */
+export function effectiveOutputBonusPerGenerator(
+  state: GameState,
+  def: { outputBonusPerGenerator?: number; outputBonusPerGeneratorBoost?: { perGeneratorId: string; factorPerUnit: number } },
+): number {
+  let rate = def.outputBonusPerGenerator ?? 0;
+  const b = def.outputBonusPerGeneratorBoost;
+  if (b) rate += b.factorPerUnit * (state.generators[b.perGeneratorId]?.owned ?? 0);
+  return rate;
+}
+
 /** Summe aller besessenen Generatoren (über alle Typen). */
 export function totalGeneratorsOwned(state: GameState): number {
   let n = 0;
@@ -196,10 +207,11 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
   }
   // Klick-Synergie: jeder Gesamt-Klick +0,01 % Molekülwolken-Output
   if (genId === "g1") m *= 1 + CLICK_TO_MOLEKULWOLKE_OUTPUT * state.totalClicks;
-  // Output-Bonus je Generator (z.B. Riesenmolekülwolke +1 % je Generator)
+  // Output-Bonus je Generator (z.B. Riesenmolekülwolke +1 % je Generator,
+  // dynamisch erhöht durch Kosmische Filamente)
   const genDef = GENERATOR_BY_ID[genId];
-  if (genDef?.outputBonusPerGenerator) {
-    m *= 1 + genDef.outputBonusPerGenerator * totalGeneratorsOwned(state);
+  if (genDef?.outputBonusPerGenerator || genDef?.outputBonusPerGeneratorBoost) {
+    m *= 1 + effectiveOutputBonusPerGenerator(state, genDef) * totalGeneratorsOwned(state);
   }
   // Gekaufte Generator-Upgrades (dynamischer Output-Bonus je Partner-Generator)
   for (const up of GENERATOR_UPGRADES) {
