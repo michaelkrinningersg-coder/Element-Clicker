@@ -54,9 +54,9 @@ describe("Achievements", () => {
     expect(s.achievements.length).toBe(n);
   });
 
-  it("Gesamtzahl = 8 Generatoren × 7 + 8 Klick + 7 Zeit", () => {
+  it("Gesamtzahl = 11 Generatoren × 7 + 8 Klick + 7 Zeit", () => {
     expect(TOTAL_ACHIEVEMENTS).toBe(ACHIEVEMENTS.length);
-    expect(TOTAL_ACHIEVEMENTS).toBe(8 * 7 + 8 + 7);
+    expect(TOTAL_ACHIEVEMENTS).toBe(11 * 7 + 8 + 7);
   });
 
   it("Spielzeit-Achievements greifen ab der Schwelle", () => {

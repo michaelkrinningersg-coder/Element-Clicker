@@ -202,6 +202,9 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
       for (const e of p.effects) {
         if (e.kind === "selfOutputMult" && g.id === genId) m *= e.factor;
         else if (e.kind === "generatorOutputMult" && e.targetId === genId) m *= e.factor;
+        else if (e.kind === "generatorOutputPerOwner" && e.targetId === genId) {
+          m *= 1 + e.factor * owned; // owned = Anzahl des besitzenden Generators
+        }
       }
     }
   }

@@ -9,7 +9,8 @@ import { Decimal } from "./decimal";
 export type PerkEffectKind =
   | "clickMult" // multipliziert die Klick-Power (global)
   | "selfOutputMult" // multipliziert den Output des eigenen Generators
-  | "generatorOutputMult" // multipliziert den Output eines anderen Generators (targetId)
+  | "generatorOutputMult" // multipliziert den Output eines anderen Generators (targetId), fester factor
+  | "generatorOutputPerOwner" // Output von targetId × (1 + factor · Anzahl DIESES Generators)
   | "globalMult" // multipliziert die gesamte H/Sek.-Produktion
   | "aeGainMult"; // multipliziert den AE-Ertrag beim Wolke-Kollaps
 
@@ -192,6 +193,58 @@ export const GENERATORS: GeneratorDef[] = [
       { threshold: 50, label: "×3 Kosmisches-Filament-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
       { threshold: 75, label: "+30 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.3 }] },
       { threshold: 100, label: "×2 globale Produktion", effects: [{ kind: "globalMult", factor: 2 }] },
+    ],
+  },
+  {
+    id: "g9",
+    name: "Galaxienhaufen-Gas",
+    icon: "♨️",
+    baseCost: new Decimal("1e13"),
+    baseProd: new Decimal("1e11"),
+    clickBonusPerUnit: 0.25,
+    perks: [
+      { threshold: 10, label: "×2 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 25, label: "+20 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.2 }] },
+      { threshold: 50, label: "×3 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+      { threshold: 75, label: "×1,5 Kosmisches-Filament-Output", effects: [{ kind: "generatorOutputMult", factor: 1.5, targetId: "g8" }] },
+      { threshold: 100, label: "+40 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.4 }] },
+    ],
+  },
+  {
+    id: "g10",
+    name: "Kosmisches Netz",
+    icon: "💫",
+    baseCost: new Decimal("1e17"),
+    baseProd: new Decimal("1e15"),
+    clickBonusPerUnit: 0.25,
+    perks: [
+      { threshold: 10, label: "+15 % Molekülwolken-Output je Kosmisches Netz", effects: [{ kind: "generatorOutputPerOwner", factor: 0.15, targetId: "g1" }] },
+      { threshold: 25, label: "×2 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
+      { threshold: 50, label: "+25 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.25 }] },
+      { threshold: 75, label: "×3 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+      { threshold: 100, label: "×2 globale Produktion", effects: [{ kind: "globalMult", factor: 2 }] },
+    ],
+  },
+  {
+    id: "g11",
+    name: "Urwasserstoff",
+    icon: "🌠",
+    baseCost: new Decimal("1e22"),
+    baseProd: new Decimal("1e20"),
+    clickBonusPerUnit: 0.25,
+    perks: [
+      { threshold: 10, label: "×3 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
+      { threshold: 25, label: "+30 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.3 }] },
+      {
+        threshold: 50,
+        label: "×2 Eigen-Output & +25 % Klick",
+        effects: [
+          { kind: "selfOutputMult", factor: 2 },
+          { kind: "clickMult", factor: 1.25 },
+        ],
+      },
+      { threshold: 75, label: "×5 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 5 }] },
+      { threshold: 100, label: "×3 globale Produktion", effects: [{ kind: "globalMult", factor: 3 }] },
     ],
   },
 ];
