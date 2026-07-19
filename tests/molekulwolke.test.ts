@@ -71,12 +71,17 @@ describe("Riesenmolekülwolke – +1 % Output je Generator", () => {
 });
 
 describe("Max alle", () => {
-  it("kauft von jedem Generator mit dem verfügbaren H", () => {
+  it("kauft billigste zuerst, bis keiner mehr leistbar ist", () => {
     const s = getState();
     s.h = new Decimal(1000); // reicht für ein paar Molekülwolken (Basis 50)
-    // andere Zähler zurücksetzen für saubere Prüfung
-    for (const id in s.generators) s.generators[id].owned = 0;
     buyMaxAll();
     expect(getState().generators.g1.owned).toBeGreaterThan(0);
+    // Danach ist kein Generator mehr leistbar
+    let anyAffordable = false;
+    const st = getState();
+    for (const id in st.generators) {
+      if (st.h.gte(st.generators[id].nextCost)) anyAffordable = true;
+    }
+    expect(anyAffordable).toBe(false);
   });
 });

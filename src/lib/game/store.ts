@@ -92,24 +92,30 @@ export function buyGenerators(id: string, count: number): void {
   }
 }
 
-/** Kauft von JEDEM Generator so viel wie möglich (billigste zuerst). */
+/**
+ * Kauft Generatoren einzeln in Preisreihenfolge: jeweils den aktuell
+ * GÜNSTIGSTEN leistbaren Generator, so lange bis keiner mehr leistbar ist.
+ */
 export function buyMaxAll(): void {
   let anyBought = false;
-  for (const def of GENERATORS) {
-    const gs = state.generators[def.id];
-    let bought = 0;
-    for (let i = 0; i < 1_000_000; i++) {
-      if (state.h.lt(gs.nextCost)) break;
-      state.h = state.h.sub(gs.nextCost);
-      const oldOwned = gs.owned;
-      gs.owned += 1;
-      gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
-      bought++;
+  const SAFETY_CAP = 5_000_000;
+  for (let step = 0; step < SAFETY_CAP; step++) {
+    let cheapestId: string | null = null;
+    for (const def of GENERATORS) {
+      const gs = state.generators[def.id];
+      if (state.h.lt(gs.nextCost)) continue;
+      if (cheapestId === null || gs.nextCost.lt(state.generators[cheapestId].nextCost)) {
+        cheapestId = def.id;
+      }
     }
-    if (bought > 0) {
-      state.totalGeneratorsBought += bought;
-      anyBought = true;
-    }
+    if (cheapestId === null) break; // keiner mehr leistbar
+    const gs = state.generators[cheapestId];
+    state.h = state.h.sub(gs.nextCost);
+    const oldOwned = gs.owned;
+    gs.owned += 1;
+    gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+    state.totalGeneratorsBought += 1;
+    anyBought = true;
   }
   if (anyBought) {
     evaluateAchievements(state);
