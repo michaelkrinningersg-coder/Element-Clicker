@@ -42,6 +42,9 @@ export interface GeneratorDef {
   /** Erhöht outputBonusPerGenerator dynamisch um factorPerUnit je Einheit von
    *  perGeneratorId (z.B. je Kosmisches Filament +0,0005). */
   outputBonusPerGeneratorBoost?: { perGeneratorId: string; factorPerUnit: number };
+  /** Konstante Kosten-Wachstumsrate pro Kauf (überschreibt die globale,
+   *  abflachende Kurve). Höher = stärker skalierende Kosten. */
+  costGrowth?: number;
 }
 
 export const GENERATORS: GeneratorDef[] = [
@@ -202,6 +205,7 @@ export const GENERATORS: GeneratorDef[] = [
     baseCost: new Decimal("1e13"),
     baseProd: new Decimal("1e11"),
     clickBonusPerUnit: 0.25,
+    costGrowth: 1.2, // etwas stärker skalierend
     perks: [
       { threshold: 10, label: "×2 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+20 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.2 }] },
@@ -217,6 +221,7 @@ export const GENERATORS: GeneratorDef[] = [
     baseCost: new Decimal("1e17"),
     baseProd: new Decimal("1e15"),
     clickBonusPerUnit: 0.25,
+    costGrowth: 1.3, // stark skalierend
     perks: [
       { threshold: 10, label: "+15 % Molekülwolken-Output je Kosmisches Netz", effects: [{ kind: "generatorOutputPerOwner", factor: 0.15, targetId: "g1" }] },
       { threshold: 25, label: "×2 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
@@ -232,6 +237,7 @@ export const GENERATORS: GeneratorDef[] = [
     baseCost: new Decimal("1e22"),
     baseProd: new Decimal("1e20"),
     clickBonusPerUnit: 0.25,
+    costGrowth: 1.5, // am stärksten skalierend
     perks: [
       { threshold: 10, label: "×3 Eigen-Output", effects: [{ kind: "selfOutputMult", factor: 3 }] },
       { threshold: 25, label: "+30 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.3 }] },

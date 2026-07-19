@@ -105,6 +105,6 @@ export function softResetRun(state: GameState): void {
 export function recomputeNextCosts(state: GameState): void {
   for (const g of GENERATORS) {
     const gs = state.generators[g.id];
-    gs.nextCost = costForNext(g.baseCost, gs.owned);
+    gs.nextCost = costForNext(g.baseCost, gs.owned, g.costGrowth);
   }
 }

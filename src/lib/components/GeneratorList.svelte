@@ -78,8 +78,8 @@
   {#each GENERATORS as def (def.id)}
     {@const gs = $game.generators[def.id]}
     {@const tgt = targetCount(def.id, gs.owned)}
-    {@const buyCount = maxAffordable(gs.nextCost, gs.owned, $game.h.div(costMult), tgt)}
-    {@const buyCostTotal = bulkCost(gs.nextCost, gs.owned, buyCount).mul(costMult)}
+    {@const buyCount = maxAffordable(gs.nextCost, gs.owned, $game.h.div(costMult), tgt, def.costGrowth)}
+    {@const buyCostTotal = bulkCost(gs.nextCost, gs.owned, buyCount, def.costGrowth).mul(costMult)}
     {@const affordable = buyCount > 0}
     {@const prod = effectiveGeneratorProduction($game, def.id)}
     {@const nextBonus = def.baseProd

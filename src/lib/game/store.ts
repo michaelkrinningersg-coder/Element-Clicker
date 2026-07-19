@@ -66,7 +66,7 @@ export function buyGenerator(id: string): void {
   state.h = state.h.sub(gs.nextCost);
   const oldOwned = gs.owned;
   gs.owned += 1;
-  gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+  gs.nextCost = gs.nextCost.mul(growthRate(oldOwned, def.costGrowth));
   state.totalGeneratorsBought += 1;
   evaluateAchievements(state);
   commit();
@@ -86,7 +86,7 @@ export function buyGenerators(id: string, count: number): void {
     state.h = state.h.sub(cost);
     const oldOwned = gs.owned;
     gs.owned += 1;
-    gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+    gs.nextCost = gs.nextCost.mul(growthRate(oldOwned, def.costGrowth));
     bought++;
   }
   if (bought > 0) {
@@ -118,7 +118,7 @@ export function buyMaxAll(): void {
     state.h = state.h.sub(gs.nextCost.mul(costMult));
     const oldOwned = gs.owned;
     gs.owned += 1;
-    gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+    gs.nextCost = gs.nextCost.mul(growthRate(oldOwned, GENERATOR_BY_ID[cheapestId].costGrowth));
     state.totalGeneratorsBought += 1;
     anyBought = true;
   }

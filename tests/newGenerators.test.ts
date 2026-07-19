@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createInitialState } from "../src/lib/game/state";
 import { GENERATOR_BY_ID, GENERATORS } from "../src/lib/game/generators";
-import { generatorOutputMultiplier } from "../src/lib/game/formulas";
+import { generatorOutputMultiplier, costForNext } from "../src/lib/game/formulas";
 import { Decimal } from "../src/lib/game/decimal";
 
 describe("Neue Generatoren g9–g11", () => {
@@ -17,6 +17,23 @@ describe("Neue Generatoren g9–g11", () => {
       const def = GENERATOR_BY_ID[id];
       expect(def.baseProd.div(def.baseCost).toNumber()).toBeCloseTo(0.01, 6);
     }
+  });
+
+  it("steilere, gestaffelte Kosten-Wachstumsraten (g9<g10<g11)", () => {
+    expect(GENERATOR_BY_ID.g9.costGrowth).toBe(1.2);
+    expect(GENERATOR_BY_ID.g10.costGrowth).toBe(1.3);
+    expect(GENERATOR_BY_ID.g11.costGrowth).toBe(1.5);
+    // alle steiler als die Standard-Startrate (~1,15) und g8 (ohne Override)
+    expect(GENERATOR_BY_ID.g8.costGrowth).toBeUndefined();
+  });
+});
+
+describe("Konstante Kosten-Wachstumsrate (Endgame-Generatoren)", () => {
+  it("costForNext nutzt die konstante Rate", () => {
+    const def = GENERATOR_BY_ID.g11; // costGrowth 1,5
+    // 3. Einheit: baseCost · 1,5^2
+    const c = costForNext(def.baseCost, 2, def.costGrowth);
+    expect(c.div(def.baseCost).toNumber()).toBeCloseTo(1.5 * 1.5, 6);
   });
 });
 
