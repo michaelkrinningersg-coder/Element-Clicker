@@ -35,6 +35,9 @@ export interface GeneratorDef {
   /** Additiver Bonus auf das Klick-Einkommen JE besessener Einheit
    *  (z.B. 0,25 = +25 % pro Einheit, additiv). */
   clickBonusPerUnit?: number;
+  /** Additiver Output-Bonus JE besessenem Generator (alle Typen zusammen).
+   *  z.B. 0,01 = +1 % Output pro Generator. */
+  outputBonusPerGenerator?: number;
 }
 
 export const GENERATORS: GeneratorDef[] = [
@@ -132,6 +135,7 @@ export const GENERATORS: GeneratorDef[] = [
     baseCost: new Decimal("2.2e6"),
     baseProd: new Decimal(22_000),
     clickBonusPerUnit: 0.25,
+    outputBonusPerGenerator: 0.01, // +1 % Output je Generator (egal welcher Typ)
     perks: [
       { threshold: 10, label: "×2 Riesenmolekülwolke-Output", effects: [{ kind: "selfOutputMult", factor: 2 }] },
       { threshold: 25, label: "+10 % globale Produktion", effects: [{ kind: "globalMult", factor: 1.1 }] },

@@ -128,6 +128,12 @@
               <span class="dim">(aktuell +{fmt(def.clickBonusPerUnit * 100 * gs.owned)} %)</span>
             </div>
           {/if}
+          {#if def.outputBonusPerGenerator}
+            <div class="clickbonus">
+              🌐 +{fmt(def.outputBonusPerGenerator * 100)} % Output je Generator
+              <span class="dim">(aktuell +{fmt(def.outputBonusPerGenerator * 100 * ownedTotal)} %)</span>
+            </div>
+          {/if}
           {#if def.perks.length === 0}
             <p class="dim small">Perks für diesen Generator folgen noch.</p>
           {:else}

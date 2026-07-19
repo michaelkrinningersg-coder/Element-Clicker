@@ -48,6 +48,21 @@ describe("Molekülwolke – neue Perks 150–500", () => {
   });
 });
 
+describe("Riesenmolekülwolke – +1 % Output je Generator", () => {
+  it("skaliert mit der Gesamtzahl aller Generatoren", () => {
+    const s = createInitialState();
+    s.generators.g1.owned = 30;
+    s.generators.g2.owned = 20; // gesamt 50 -> +50 %
+    expect(generatorOutputMultiplier(s, "g5").toNumber()).toBeCloseTo(1.5, 9);
+  });
+
+  it("wirkt nur auf die Riesenmolekülwolke", () => {
+    const s = createInitialState();
+    s.generators.g2.owned = 50;
+    expect(generatorOutputMultiplier(s, "g3").toNumber()).toBeCloseTo(1, 9);
+  });
+});
+
 describe("Max alle", () => {
   it("kauft von jedem Generator mit dem verfügbaren H", () => {
     const s = getState();

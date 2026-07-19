@@ -196,6 +196,11 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
   }
   // Klick-Synergie: jeder Gesamt-Klick +0,01 % Molekülwolken-Output
   if (genId === "g1") m *= 1 + CLICK_TO_MOLEKULWOLKE_OUTPUT * state.totalClicks;
+  // Output-Bonus je Generator (z.B. Riesenmolekülwolke +1 % je Generator)
+  const genDef = GENERATOR_BY_ID[genId];
+  if (genDef?.outputBonusPerGenerator) {
+    m *= 1 + genDef.outputBonusPerGenerator * totalGeneratorsOwned(state);
+  }
   // Gekaufte Generator-Upgrades (dynamischer Output-Bonus je Partner-Generator)
   for (const up of GENERATOR_UPGRADES) {
     if (up.effect.kind !== "outputPerGenerator") continue;
