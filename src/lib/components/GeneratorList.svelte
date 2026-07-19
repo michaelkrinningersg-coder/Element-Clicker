@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { game, buyGenerators } from "../game/store";
+  import { game, buyGenerators, buyMaxAll } from "../game/store";
   import { GENERATORS } from "../game/generators";
   import {
     effectiveGeneratorProduction,
@@ -55,6 +55,7 @@
           {modeLabel(m)}
         </button>
       {/each}
+      <button class="modebtn maxall" on:click={buyMaxAll}>⚡ Max alle</button>
     </div>
   </div>
   <div class="rowline">
@@ -201,6 +202,10 @@
     background: var(--btn-primary);
     border-color: var(--accent);
     color: var(--text);
+  }
+  .modebtn.maxall {
+    border-color: var(--good);
+    color: var(--good);
   }
   .rowline {
     display: flex;

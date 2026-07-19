@@ -10,6 +10,7 @@ import {
   PERK_MILESTONES,
   RUN_TIME_BONUS_PER_SEC,
   CLICK_TO_MOLEKULWOLKE_OUTPUT,
+  MOLEKULWOLKE_AE_COUPLING,
 } from "./constants";
 import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
@@ -202,6 +203,24 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
     if (!state.generatorUpgrades.includes(up.id)) continue;
     const perCount = state.generators[up.effect.perGeneratorId]?.owned ?? 0;
     m *= 1 + effectiveUpgradeFactor(state, up) * perCount;
+  }
+  let result = new Decimal(m);
+  // Prestige-Kopplung der Molekülwolke: × (1 + 0,25 · AE) – in Decimal, da AE groß wird
+  if (genId === "g1") {
+    result = result.mul(ONE.add(state.ae.mul(MOLEKULWOLKE_AE_COUPLING)));
+  }
+  return result;
+}
+
+/** Multiplikator auf den AE-Ertrag beim Kollaps (aeGainMult-Perks). */
+export function aeGainMultiplier(state: GameState): Decimal {
+  let m = 1;
+  for (const g of GENERATORS) {
+    const owned = state.generators[g.id].owned;
+    for (const p of g.perks) {
+      if (owned < p.threshold) continue;
+      for (const e of p.effects) if (e.kind === "aeGainMult") m *= e.factor;
+    }
   }
   return new Decimal(m);
 }

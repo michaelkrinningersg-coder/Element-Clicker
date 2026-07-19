@@ -6,7 +6,7 @@
     ignite,
     collapseNebula,
   } from "../game/store";
-  import { potentialAE, aeThreshold, runTimeMultiplier } from "../game/formulas";
+  import { potentialAE, aeThreshold, runTimeMultiplier, aeGainMultiplier } from "../game/formulas";
   import { formatDuration } from "../game/format";
   import {
     IGNITION_KELVIN,
@@ -17,7 +17,9 @@
   import { formatDecimal, formatInt } from "../game/format";
   import { Decimal, ZERO } from "../game/decimal";
 
-  $: aeGain = potentialAE($game.runEarnedH, $game.gravitons);
+  $: aeGain = potentialAE($game.runEarnedH, $game.gravitons)
+    .mul(aeGainMultiplier($game))
+    .floor();
   $: canCollapse = aeGain.gt(0);
   $: runBonusPct = (runTimeMultiplier($game).toNumber() - 1) * 100;
 

@@ -10,10 +10,11 @@ import {
   TWO_MOL,
   TWO_MOL_H,
 } from "./constants";
-import { GENERATOR_BY_ID } from "./generators";
+import { GENERATORS, GENERATOR_BY_ID } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
 import { GENERATOR_UPGRADE_BY_ID } from "./generatorUpgrades";
 import {
+  aeGainMultiplier,
   clickValue,
   growthRate,
   potentialAE,
@@ -91,6 +92,31 @@ export function buyGenerators(id: string, count: number): void {
   }
 }
 
+/** Kauft von JEDEM Generator so viel wie möglich (billigste zuerst). */
+export function buyMaxAll(): void {
+  let anyBought = false;
+  for (const def of GENERATORS) {
+    const gs = state.generators[def.id];
+    let bought = 0;
+    for (let i = 0; i < 1_000_000; i++) {
+      if (state.h.lt(gs.nextCost)) break;
+      state.h = state.h.sub(gs.nextCost);
+      const oldOwned = gs.owned;
+      gs.owned += 1;
+      gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
+      bought++;
+    }
+    if (bought > 0) {
+      state.totalGeneratorsBought += bought;
+      anyBought = true;
+    }
+  }
+  if (anyBought) {
+    evaluateAchievements(state);
+    commit();
+  }
+}
+
 /** Kauft ein Generator-Upgrade (einmalig, permanent) – wenn freigeschaltet. */
 export function buyGeneratorUpgrade(id: string): void {
   const def = GENERATOR_UPGRADE_BY_ID[id];
@@ -118,7 +144,10 @@ export function buyClickUpgrade(id: string): void {
 export function collapseCloud(): void {
   // AE-Ertrag basiert auf dem gesamt im Run verdienten H (nicht dem aktuellen
   // Kontostand) – Ausgeben für Generatoren schmälert den Ertrag also nicht.
-  const gain = potentialAE(state.runEarnedH, state.gravitons);
+  // aeGainMultiplier: Molekülwolke-Perks bei 250/400 erhöhen den Ertrag.
+  const gain = potentialAE(state.runEarnedH, state.gravitons)
+    .mul(aeGainMultiplier(state))
+    .floor();
   if (gain.lte(0)) return;
   state.ae = state.ae.add(gain);
   state.collapseCount += 1;

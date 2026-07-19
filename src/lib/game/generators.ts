@@ -10,7 +10,8 @@ export type PerkEffectKind =
   | "clickMult" // multipliziert die Klick-Power (global)
   | "selfOutputMult" // multipliziert den Output des eigenen Generators
   | "generatorOutputMult" // multipliziert den Output eines anderen Generators (targetId)
-  | "globalMult"; // multipliziert die gesamte H/Sek.-Produktion
+  | "globalMult" // multipliziert die gesamte H/Sek.-Produktion
+  | "aeGainMult"; // multipliziert den AE-Ertrag beim Wolke-Kollaps
 
 export interface PerkEffect {
   kind: PerkEffectKind;
@@ -57,6 +58,26 @@ export const GENERATORS: GeneratorDef[] = [
           { kind: "clickMult", factor: 2 },
         ],
       },
+      {
+        threshold: 150,
+        label: "+50 % auf alles (Produktion & Klick)",
+        effects: [
+          { kind: "globalMult", factor: 1.5 },
+          { kind: "clickMult", factor: 1.5 },
+        ],
+      },
+      { threshold: 200, label: "×4 Molekülwolken-Output", effects: [{ kind: "selfOutputMult", factor: 4 }] },
+      { threshold: 250, label: "+25 % AE-Ertrag beim Prestige", effects: [{ kind: "aeGainMult", factor: 1.25 }] },
+      {
+        threshold: 300,
+        label: "+15 % auf alles (Produktion & Klick)",
+        effects: [
+          { kind: "globalMult", factor: 1.15 },
+          { kind: "clickMult", factor: 1.15 },
+        ],
+      },
+      { threshold: 400, label: "+25 % AE-Ertrag beim Prestige", effects: [{ kind: "aeGainMult", factor: 1.25 }] },
+      { threshold: 500, label: "×5 Molekülwolken-Output", effects: [{ kind: "selfOutputMult", factor: 5 }] },
     ],
   },
   {
