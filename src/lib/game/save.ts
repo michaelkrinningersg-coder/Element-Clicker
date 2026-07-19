@@ -47,6 +47,7 @@ function serialize(state: GameState): string {
       generators: gens,
       clickUpgrades: [...state.clickUpgrades],
       generatorUpgrades: [...state.generatorUpgrades],
+      fusionUpgrades: [...state.fusionUpgrades],
       achievements: [...state.achievements],
       totalClicks: state.totalClicks,
       totalGeneratorsBought: state.totalGeneratorsBought,
@@ -102,6 +103,9 @@ function deserialize(raw: string): GameState {
   }
   if (Array.isArray(s.generatorUpgrades)) {
     base.generatorUpgrades = s.generatorUpgrades.filter((x: unknown) => typeof x === "string");
+  }
+  if (Array.isArray(s.fusionUpgrades)) {
+    base.fusionUpgrades = s.fusionUpgrades.filter((x: unknown) => typeof x === "string");
   }
   if (Array.isArray(s.achievements)) {
     base.achievements = s.achievements.filter((x: unknown) => typeof x === "string");

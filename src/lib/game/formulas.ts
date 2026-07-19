@@ -11,11 +11,14 @@ import {
   RUN_TIME_BONUS_PER_SEC,
   CLICK_TO_MOLEKULWOLKE_OUTPUT,
   MOLEKULWOLKE_AE_COUPLING,
+  POSITRON_PRODUCTION_BONUS,
 } from "./constants";
 import { GENERATORS, GENERATOR_BY_ID, type Perk } from "./generators";
 import { CLICK_UPGRADE_BY_ID } from "./clickUpgrades";
 import { GENERATOR_UPGRADES, type GeneratorUpgradeDef } from "./generatorUpgrades";
 import { GENERATOR_MILESTONES } from "./milestones";
+import { ELEMENTS } from "./elements";
+import { FUSION_UPGRADES } from "./fusionUpgrades";
 import type { GameState } from "./state";
 
 /**
@@ -225,9 +228,11 @@ export function generatorOutputMultiplier(state: GameState, genId: string): Deci
     m *= 1 + effectiveUpgradeFactor(state, up) * perCount;
   }
   let result = new Decimal(m);
-  // Prestige-Kopplung der Molekülwolke: × (1 + 0,25 · AE) – in Decimal, da AE groß wird
   if (genId === "g1") {
+    // Prestige-Kopplung: × (1 + 0,25 · AE)
     result = result.mul(ONE.add(state.ae.mul(MOLEKULWOLKE_AE_COUPLING)));
+    // Element-Massenzahl-Bonus (He → +400 %/Atom, Li → +700 %, Be → +900 % …)
+    result = result.mul(molekulwolkeElementBonus(state));
   }
   return result;
 }
@@ -255,9 +260,44 @@ export function achievementMultiplier(state: GameState): Decimal {
   return new Decimal(1 + 0.1 * state.achievements.length);
 }
 
-/** Run-Zeit-Bonus: 1 + 0,01 % je Sekunde im aktuellen Run (Auto & Klick). */
+/** Faktor auf die Run-Zeit-Bonus-Rate aus Fusions-Upgrades (z.B. Lawson ×2). */
+export function runTimeBonusFactor(state: GameState): number {
+  let f = 1;
+  for (const u of FUSION_UPGRADES) {
+    if (u.effect.kind !== "runTimeBonusMult") continue;
+    if (state.fusionUpgrades.includes(u.id)) f *= u.effect.factor;
+  }
+  return f;
+}
+
+/** Run-Zeit-Bonus: 1 + 0,01 % (× Fusions-Faktor) je Sekunde im aktuellen Run. */
 export function runTimeMultiplier(state: GameState): Decimal {
-  return new Decimal(1 + RUN_TIME_BONUS_PER_SEC * state.runSeconds);
+  return new Decimal(1 + RUN_TIME_BONUS_PER_SEC * runTimeBonusFactor(state) * state.runSeconds);
+}
+
+/** Multiplikator auf ALLE Generator-Kosten aus Fusions-Upgrades (z.B. Katalysator 0,75). */
+export function generatorCostMultiplier(state: GameState): Decimal {
+  let m = 1;
+  for (const u of FUSION_UPGRADES) {
+    if (u.effect.kind !== "generatorCostMult") continue;
+    if (state.fusionUpgrades.includes(u.id)) m *= u.effect.factor;
+  }
+  return new Decimal(m);
+}
+
+/** Molekülwolke-Bonus aus gesammelten Elementen: 1 + Σ (Massenzahl · Anzahl). */
+export function molekulwolkeElementBonus(state: GameState): Decimal {
+  let bonus = ZERO;
+  for (const sym of ["He", "Li", "Be"] as const) {
+    const massNumber = ELEMENTS[sym].protons + ELEMENTS[sym].neutrons;
+    bonus = bonus.add(state.elements[sym].mul(massNumber));
+  }
+  return ONE.add(bonus);
+}
+
+/** Globaler Produktions-Bonus aus Positronen: 1 + 0,5 % je Positron. */
+export function positronProductionMultiplier(state: GameState): Decimal {
+  return ONE.add(state.particles.positrons.mul(POSITRON_PRODUCTION_BONUS));
 }
 
 /** Roh-Produktion eines Generators (baseProd * Anzahl * Output-Perks), ohne globale Faktoren. */
@@ -275,7 +315,8 @@ export function effectiveGeneratorProduction(state: GameState, id: string): Deci
     .mul(perkGlobalMultiplier(state))
     .mul(milestoneProductionMultiplier(state))
     .mul(achievementMultiplier(state))
-    .mul(runTimeMultiplier(state));
+    .mul(runTimeMultiplier(state))
+    .mul(positronProductionMultiplier(state));
 }
 
 /** Gesamte H/Sek. inkl. globaler Faktoren. */
@@ -287,7 +328,8 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(perkGlobalMultiplier(state))
     .mul(milestoneProductionMultiplier(state))
     .mul(achievementMultiplier(state))
-    .mul(runTimeMultiplier(state));
+    .mul(runTimeMultiplier(state))
+    .mul(positronProductionMultiplier(state));
 }
 
 /** Wert eines Klicks: Basis * Generator-Klickbonus * Perks * Upgrades * Meilenstein * Achievements * Run-Zeit * AE. */

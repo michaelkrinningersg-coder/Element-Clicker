@@ -16,10 +16,12 @@ import { GENERATOR_UPGRADE_BY_ID } from "./generatorUpgrades";
 import {
   aeGainMultiplier,
   clickValue,
+  generatorCostMultiplier,
   growthRate,
   potentialAE,
   totalProductionPerSec,
 } from "./formulas";
+import { FUSION_UPGRADE_BY_ID } from "./fusionUpgrades";
 import {
   createInitialState,
   softResetRun,
@@ -75,11 +77,13 @@ export function buyGenerators(id: string, count: number): void {
   const def = GENERATOR_BY_ID[id];
   if (!def) return;
   const gs = state.generators[id];
+  const costMult = generatorCostMultiplier(state);
   let bought = 0;
   const cap = Math.min(count, 1_000_000);
   for (let i = 0; i < cap; i++) {
-    if (state.h.lt(gs.nextCost)) break;
-    state.h = state.h.sub(gs.nextCost);
+    const cost = gs.nextCost.mul(costMult);
+    if (state.h.lt(cost)) break;
+    state.h = state.h.sub(cost);
     const oldOwned = gs.owned;
     gs.owned += 1;
     gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
@@ -98,19 +102,20 @@ export function buyGenerators(id: string, count: number): void {
  */
 export function buyMaxAll(): void {
   let anyBought = false;
+  const costMult = generatorCostMultiplier(state);
   const SAFETY_CAP = 5_000_000;
   for (let step = 0; step < SAFETY_CAP; step++) {
     let cheapestId: string | null = null;
     for (const def of GENERATORS) {
       const gs = state.generators[def.id];
-      if (state.h.lt(gs.nextCost)) continue;
+      if (state.h.lt(gs.nextCost.mul(costMult))) continue;
       if (cheapestId === null || gs.nextCost.lt(state.generators[cheapestId].nextCost)) {
         cheapestId = def.id;
       }
     }
     if (cheapestId === null) break; // keiner mehr leistbar
     const gs = state.generators[cheapestId];
-    state.h = state.h.sub(gs.nextCost);
+    state.h = state.h.sub(gs.nextCost.mul(costMult));
     const oldOwned = gs.owned;
     gs.owned += 1;
     gs.nextCost = gs.nextCost.mul(growthRate(oldOwned));
@@ -132,6 +137,18 @@ export function buyGeneratorUpgrade(id: string): void {
   if (state.h.lt(def.cost)) return;
   state.h = state.h.sub(def.cost);
   state.generatorUpgrades = [...state.generatorUpgrades, id];
+  commit();
+}
+
+/** Kauft ein Fusions-/Chemie-Upgrade (einmalig, permanent) – wenn freigeschaltet. */
+export function buyFusionUpgrade(id: string): void {
+  const def = FUSION_UPGRADE_BY_ID[id];
+  if (!def) return;
+  if (state.fusionUpgrades.includes(id)) return;
+  if (state.lifetimeH.lt(def.unlockH)) return;
+  if (state.h.lt(def.cost)) return;
+  state.h = state.h.sub(def.cost);
+  state.fusionUpgrades = [...state.fusionUpgrades, id];
   commit();
 }
 

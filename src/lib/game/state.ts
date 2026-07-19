@@ -40,6 +40,9 @@ export interface GameState {
   // Gekaufte Generator-Upgrades (permanent)
   generatorUpgrades: string[];
 
+  // Gekaufte Fusions-/Chemie-Upgrades (permanent)
+  fusionUpgrades: string[];
+
   // Freigeschaltete Achievements (permanent)
   achievements: string[];
 
@@ -74,6 +77,7 @@ export function createInitialState(): GameState {
     generators,
     clickUpgrades: [],
     generatorUpgrades: [],
+    fusionUpgrades: [],
     achievements: [],
     totalClicks: 0,
     totalGeneratorsBought: 0,

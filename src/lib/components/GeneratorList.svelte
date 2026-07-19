@@ -11,6 +11,8 @@
     nextPerk,
     totalGeneratorsOwned,
     effectiveOutputBonusPerGenerator,
+    generatorCostMultiplier,
+    molekulwolkeElementBonus,
     bulkCost,
     maxAffordable,
   } from "../game/formulas";
@@ -20,6 +22,7 @@
 
   $: total = totalProductionPerSec($game);
   $: ownedTotal = totalGeneratorsOwned($game);
+  $: costMult = generatorCostMultiplier($game);
 
   const fmt = (n: number) => n.toLocaleString("de-DE");
 
@@ -75,8 +78,8 @@
   {#each GENERATORS as def (def.id)}
     {@const gs = $game.generators[def.id]}
     {@const tgt = targetCount(def.id, gs.owned)}
-    {@const buyCount = maxAffordable(gs.nextCost, gs.owned, $game.h, tgt)}
-    {@const buyCostTotal = bulkCost(gs.nextCost, gs.owned, buyCount)}
+    {@const buyCount = maxAffordable(gs.nextCost, gs.owned, $game.h.div(costMult), tgt)}
+    {@const buyCostTotal = bulkCost(gs.nextCost, gs.owned, buyCount).mul(costMult)}
     {@const affordable = buyCount > 0}
     {@const prod = effectiveGeneratorProduction($game, def.id)}
     {@const nextBonus = def.baseProd
@@ -104,7 +107,7 @@
           <span class="r count">×{gs.owned}</span>
           <span class="r prod">{gs.owned > 0 ? `${formatDecimal(prod)} /s` : "—"}</span>
           <span class="r cost" class:ok={affordable}>
-            {#if buyCount > 1}×{buyCount} · {/if}{formatDecimal(affordable ? buyCostTotal : gs.nextCost)} H
+            {#if buyCount > 1}×{buyCount} · {/if}{formatDecimal(affordable ? buyCostTotal : gs.nextCost.mul(costMult))} H
           </span>
           <span class="r basebonus">+{formatDecimal(def.baseProd)} /s</span>
           <span class="r bonus">+{formatDecimal(nextBonus)} /s</span>
@@ -134,6 +137,12 @@
             <div class="clickbonus">
               🌐 +{fmt(rate * 100)} % Output je Generator
               <span class="dim">(aktuell +{fmt(rate * 100 * ownedTotal)} %)</span>
+            </div>
+          {/if}
+          {#if def.id === "g1"}
+            <div class="clickbonus">
+              🧪 Element-Bonus: ×{formatDecimal(molekulwolkeElementBonus($game))}
+              <span class="dim">(je Atom: Massenzahl × 100 %)</span>
             </div>
           {/if}
           {#if def.perks.length === 0}

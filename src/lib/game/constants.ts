@@ -38,6 +38,10 @@ export const CLICK_TO_MOLEKULWOLKE_OUTPUT = 0.0001;
 // Molekülwolken-Output × (1 + 0,25 · AE).
 export const MOLEKULWOLKE_AE_COUPLING = 0.25;
 
+// ---- Teilchen-Boni ----
+// Jedes Positron gibt +0,5 % auf die gesamte H-Produktion.
+export const POSITRON_PRODUCTION_BONUS = 0.005;
+
 // ---- Run-Zeit-Bonus ----
 // Je Sekunde im aktuellen AE-Run steigt der Bonus auf Auto- UND Klick-Einkommen
 // um +0,01 % (additiv). Reset beim Wolke-/Nebel-Kollaps.
