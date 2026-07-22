@@ -5,16 +5,18 @@
   import PrestigePanel from "./lib/components/PrestigePanel.svelte";
   import StatsPanel from "./lib/components/StatsPanel.svelte";
   import AchievementsPanel from "./lib/components/AchievementsPanel.svelte";
+  import DigPanel from "./lib/components/DigPanel.svelte";
   import { offlineReport, game } from "./lib/game/store";
   import { formatDecimal } from "./lib/game/format";
   import { unlockedCount, ACHIEVEMENTS } from "./lib/game/achievements";
 
   let showOffline = offlineReport.seconds > 2 && offlineReport.gained.gt(0);
 
-  type Tab = "spiel" | "statistiken" | "bauwerke";
+  type Tab = "spiel" | "graben" | "statistiken" | "bauwerke";
   let tab: Tab = "spiel";
   const TABS: { id: Tab; label: string }[] = [
     { id: "spiel", label: "Spiel" },
+    { id: "graben", label: "Graben" },
     { id: "statistiken", label: "Statistiken" },
     { id: "bauwerke", label: "Bauwerke" },
   ];
@@ -56,6 +58,8 @@
       <PrestigePanel />
     </div>
   </div>
+{:else if tab === "graben"}
+  <DigPanel />
 {:else if tab === "statistiken"}
   <StatsPanel />
 {:else if tab === "bauwerke"}

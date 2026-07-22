@@ -5,8 +5,11 @@ import {
   COST_GROWTH_FLOOR,
   COST_GROWTH_KAPPA,
   COST_GROWTH_SPAN,
+  DIG_TIERS,
+  EARTH_DIAMETER_M,
   GLAS_BONUS_PER,
   GLAS_UNLOCK,
+  TONNE_IN_GRAINS,
 } from "./constants";
 import { BUILDINGS, BUILDING_BY_ID } from "./buildings";
 import { unlockedCount } from "./achievements";
@@ -119,6 +122,59 @@ export function totalProductionPerSec(state: GameState): Decimal {
     }
   }
   return sum.mul(glasMultiplier(state)).mul(achievementProductionMult(state));
+}
+
+// ---- Graben: Tiefe aus gesammeltem Sandgewicht ----
+
+/** Stufen mit kumulierter Tonnage bis zu ihrem Beginn (einmalig berechnet). */
+const DIG_BOUNDS = (() => {
+  const out: { fromM: number; tPerM: number; cumWeight: number }[] = [];
+  let cum = 0;
+  for (let i = 0; i < DIG_TIERS.length; i++) {
+    const t = DIG_TIERS[i];
+    out.push({ fromM: t.fromM, tPerM: t.tPerM, cumWeight: cum });
+    const nextFrom = DIG_TIERS[i + 1]?.fromM ?? EARTH_DIAMETER_M;
+    cum += (nextFrom - t.fromM) * t.tPerM;
+  }
+  return out;
+})();
+
+/** Tonnage, um bis zum Erddurchmesser zu graben (Deckel). */
+const DIG_MAX_WEIGHT = (() => {
+  const last = DIG_BOUNDS[DIG_BOUNDS.length - 1];
+  return last.cumWeight + (EARTH_DIAMETER_M - last.fromM) * last.tPerM;
+})();
+
+/** Gegrabene Tiefe (Meter) aus gesammelten Sandkörnern, gedeckelt beim Erddurchmesser. */
+export function digDepthMeters(grains: Decimal): number {
+  const tonnes = grains.div(TONNE_IN_GRAINS);
+  if (tonnes.gte(DIG_MAX_WEIGHT)) return EARTH_DIAMETER_M;
+  const w = tonnes.toNumber();
+  let depth = 0;
+  for (let i = DIG_BOUNDS.length - 1; i >= 0; i--) {
+    if (w >= DIG_BOUNDS[i].cumWeight) {
+      depth = DIG_BOUNDS[i].fromM + (w - DIG_BOUNDS[i].cumWeight) / DIG_BOUNDS[i].tPerM;
+      break;
+    }
+  }
+  return Math.min(depth, EARTH_DIAMETER_M);
+}
+
+/** Tonnage, die ein Meter in der aktuellen Tiefe kostet. */
+export function tonnesPerMeterAt(depthM: number): number {
+  let tPerM = DIG_TIERS[0].tPerM;
+  for (const t of DIG_TIERS) if (depthM >= t.fromM) tPerM = t.tPerM;
+  return tPerM;
+}
+
+/** Gesammeltes Gewicht in Tonnen (für die Graben-Anzeige). */
+export function weightInTonnes(grains: Decimal): Decimal {
+  return grains.div(TONNE_IN_GRAINS);
+}
+
+/** Ist die maximale Grabtiefe (Erddurchmesser) erreicht? */
+export function isMaxDepth(depthM: number): boolean {
+  return depthM >= EARTH_DIAMETER_M;
 }
 
 /** Prestige erlaubt, sobald Sand ≥ 1e9. */

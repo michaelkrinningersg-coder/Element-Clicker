@@ -76,6 +76,37 @@ export function formatScientific(d: Decimal, decimals = 2): string {
   return `${d.mantissa.toFixed(decimals).replace(".", ",")}·10^${d.exponent}`;
 }
 
+/**
+ * Grabtiefe: bis 100 m auf Zentimeter genau, 100–600 m auf Dezimeter,
+ * darüber ganze Meter (mit Tausenderpunkten).
+ */
+export function formatDepth(m: number): string {
+  if (m < 100) {
+    let whole = Math.floor(m);
+    let cm = Math.round((m - whole) * 100);
+    if (cm >= 100) {
+      whole += 1;
+      cm = 0;
+    }
+    return `${whole} m ${cm} cm`;
+  }
+  if (m < 600) {
+    let whole = Math.floor(m);
+    let dm = Math.round((m - whole) * 10);
+    if (dm >= 10) {
+      whole += 1;
+      dm = 0;
+    }
+    return `${whole} m ${dm} dm`;
+  }
+  return `${Math.floor(m).toLocaleString("de-DE")} m`;
+}
+
+/** Tiefe in Kilometern (2 Nachkommastellen) für Sekundär-Anzeige. */
+export function formatKm(m: number): string {
+  return `${(m / 1000).toLocaleString("de-DE", { maximumFractionDigits: 2 })} km`;
+}
+
 /** Sekunden als "Xd Yh Zm Ws". */
 export function formatDuration(totalSeconds: number): string {
   const s = Math.floor(totalSeconds);

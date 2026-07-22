@@ -17,6 +17,17 @@ export const CLICK_BASE = new Decimal(1); // 1 Sandkorn pro Klick (Basis)
 export const GRAINS_PER_MG = 100; // 100 Sandkörner wiegen 1 mg
 // Erdmasse 5,972·10^24 kg → in Sandkörnern (1 kg = 1e6 mg = 1e8 Körner).
 export const EARTH_MASS_GRAINS = new Decimal("5.972e32");
+export const TONNE_IN_GRAINS = new Decimal("1e11"); // 1 t = 1e9 mg = 1e11 Körner
+
+// ---- Graben: Tiefe aus Sandgewicht ----
+export const EARTH_DIAMETER_M = 12_742_000; // Erddurchmesser (max. Grabtiefe)
+// Benötigte Tonnage je Meter, gestaffelt nach Tiefe.
+export const DIG_TIERS: { fromM: number; tPerM: number }[] = [
+  { fromM: 0, tPerM: 10 },
+  { fromM: 100, tPerM: 15 },
+  { fromM: 1000, tPerM: 20 },
+  { fromM: 5000, tPerM: 30 },
+];
 
 // ---- Gebäude-Kostenkurve (abflachend) ----
 export const COST_GROWTH_FLOOR = 1.05;

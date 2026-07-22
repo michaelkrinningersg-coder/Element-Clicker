@@ -6,7 +6,9 @@ import {
   formatWeight,
   earthMassPercent,
   formatFixedPercent,
+  formatDepth,
 } from "../src/lib/game/format";
+import { EARTH_DIAMETER_M } from "../src/lib/game/constants";
 import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../src/lib/game/achievements";
 import {
   clickValue,
@@ -20,6 +22,9 @@ import {
   maxAffordable,
   achievementProductionMult,
   costMultiplier,
+  digDepthMeters,
+  tonnesPerMeterAt,
+  isMaxDepth,
 } from "../src/lib/game/formulas";
 
 describe("Klick (Hand)", () => {
@@ -145,6 +150,36 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
     expect(unlockedCount(s)).toBe(1);
     s.totalSandEver = new Decimal("6e9");
     expect(unlockedCount(s)).toBe(3);
+  });
+});
+
+describe("Graben (Tiefe aus Sandgewicht)", () => {
+  it("10 t je Meter bis 100 m (1 t = 1e11 Körner)", () => {
+    // 50 m → 500 t → 5e13 Körner
+    expect(digDepthMeters(new Decimal("5e13"))).toBeCloseTo(50, 6);
+    expect(tonnesPerMeterAt(0)).toBe(10);
+    expect(tonnesPerMeterAt(50)).toBe(10);
+  });
+
+  it("gestaffelte Tonnage: 15 ab 100 m, 20 ab 1000 m, 30 ab 5000 m", () => {
+    expect(tonnesPerMeterAt(100)).toBe(15);
+    expect(tonnesPerMeterAt(1000)).toBe(20);
+    expect(tonnesPerMeterAt(5000)).toBe(30);
+    // 500 m: 100 m·10 t + 400 m·15 t = 7000 t → 7e14 Körner
+    expect(digDepthMeters(new Decimal("7e14"))).toBeCloseTo(500, 6);
+  });
+
+  it("nicht tiefer als der Erddurchmesser", () => {
+    const huge = new Decimal("1e40");
+    expect(digDepthMeters(huge)).toBe(EARTH_DIAMETER_M);
+    expect(isMaxDepth(digDepthMeters(huge))).toBe(true);
+    expect(isMaxDepth(1000)).toBe(false);
+  });
+
+  it("Anzeige: cm bis 100 m, dm bis 600 m, sonst ganze Meter", () => {
+    expect(formatDepth(42.37)).toBe("42 m 37 cm");
+    expect(formatDepth(250.4)).toBe("250 m 4 dm");
+    expect(formatDepth(1234.5)).toBe("1.234 m");
   });
 });
 
