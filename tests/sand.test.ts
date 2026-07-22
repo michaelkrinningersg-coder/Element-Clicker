@@ -135,14 +135,22 @@ describe("Fortschritt zur Erdmasse", () => {
 });
 
 describe("Bauwerke aus Sand (Erfolge)", () => {
-  it("sechs Bauwerke mit den vereinbarten Schwellen", () => {
-    expect(ACHIEVEMENTS.length).toBe(6);
-    expect(ACHIEVEMENTS[0].threshold.toNumber()).toBe(5e6);
-    expect(ACHIEVEMENTS[1].threshold.toNumber()).toBe(30e6);
-    expect(ACHIEVEMENTS[2].threshold.toNumber()).toBe(6e9);
-    expect(ACHIEVEMENTS[3].threshold.toNumber()).toBe(2.4e12);
-    expect(ACHIEVEMENTS[4].threshold.toNumber()).toBe(15e15);
-    expect(ACHIEVEMENTS[5].threshold.toNumber()).toBe(200e15);
+  it("zwölf Bauwerke mit den vereinbarten Schwellen", () => {
+    expect(ACHIEVEMENTS.length).toBe(12);
+    const byId = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a.threshold]));
+    const eq = (id: string, v: string) => expect(byId[id].eq(new Decimal(v))).toBe(true);
+    eq("sanduhr", "1e6");
+    eq("schaufel-voll", "5e6");
+    eq("eimer-voll", "30e6");
+    eq("sandkuchen", "48e6");
+    eq("sandburg", "6e9");
+    eq("koelner-dom", "65e9");
+    eq("sandkasten", "110e9");
+    eq("sphinx", "400e9");
+    eq("lkw", "2.4e12");
+    eq("cheops", "600e12");
+    eq("duene", "15e15");
+    eq("strand", "200e15");
   });
 
   it("Schwellen sind aufsteigend sortiert", () => {
@@ -154,13 +162,13 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
   it("schalten sich an totalSandEver frei", () => {
     const s = createInitialState();
     expect(unlockedCount(s)).toBe(0);
-    s.totalSandEver = new Decimal("5e6");
+    s.totalSandEver = new Decimal("5e6"); // Sanduhr + Schaufel
     expect(isUnlocked(s, ACHIEVEMENTS[0])).toBe(true);
-    expect(unlockedCount(s)).toBe(1);
-    s.totalSandEver = new Decimal("6e9");
-    expect(unlockedCount(s)).toBe(3);
-    s.totalSandEver = new Decimal("200e15");
-    expect(unlockedCount(s)).toBe(6);
+    expect(unlockedCount(s)).toBe(2);
+    s.totalSandEver = new Decimal("6e9"); // + Eimer, Sandkuchen, Sandburg
+    expect(unlockedCount(s)).toBe(5);
+    s.totalSandEver = new Decimal("200e15"); // alle
+    expect(unlockedCount(s)).toBe(12);
   });
 });
 
@@ -200,20 +208,22 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     s.buildings.eimer.owned = 10; // Basis 10 · 0,2 = 2 /s
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2, 9);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1, 9);
-    s.totalSandEver = new Decimal("30e6"); // 2 Bauwerke frei
-    expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** 2, 9);
-    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2 * 1.02 ** 2, 9);
+    s.totalSandEver = new Decimal("30e6"); // einige Bauwerke frei
+    const n = unlockedCount(s);
+    expect(n).toBeGreaterThan(0);
+    expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2 * 1.02 ** n, 9);
   });
 
-  it("Kosten: (0,99)^Anzahl → bei 3 Bauwerken weniger als −3 %", () => {
+  it("Kosten: (0,99)^Anzahl, multiplikativ (weniger Rabatt als linear)", () => {
     const s = createInitialState();
     expect(costMultiplier(s).toNumber()).toBeCloseTo(1, 9);
-    s.totalSandEver = new Decimal("6e9"); // alle 3 Bauwerke
+    s.totalSandEver = new Decimal("6e9");
+    const n = unlockedCount(s);
     const mult = costMultiplier(s).toNumber();
-    expect(mult).toBeCloseTo(0.99 ** 3, 9); // 0,970299
-    // Rabatt (2,97 %) ist geringer als lineare 3 %
-    expect(1 - mult).toBeLessThan(0.03);
-    expect(1 - mult).toBeCloseTo(0.029701, 6);
+    expect(mult).toBeCloseTo(0.99 ** n, 9);
+    // multiplikativ → Gesamtrabatt kleiner als lineare n · 1 %
+    expect(1 - mult).toBeLessThan(n * 0.01);
   });
 
   it("costForNext wendet den Kosten-Multiplikator an", () => {
@@ -221,7 +231,7 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     s.totalSandEver = new Decimal("6e9");
     const mult = costMultiplier(s);
     const c = costForNext(new Decimal(1000), 0, undefined, mult);
-    expect(c.toNumber()).toBeCloseTo(1000 * 0.99 ** 3, 6);
+    expect(c.toNumber()).toBeCloseTo(1000 * mult.toNumber(), 6);
   });
 });
 

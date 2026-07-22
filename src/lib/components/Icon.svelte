@@ -134,6 +134,98 @@
       <line x1="30" y1="26" x2="30" y2="35" stroke="#9a6f2e" stroke-width="1.4" stroke-linecap="round" />
       <path d="M24 27 a6 6 0 0 1 12 0 z" fill="#e0654b" stroke="#b84d36" stroke-width="1" stroke-linejoin="round" />
     </g>
+  {:else if id === "ach-sphinx"}
+    <g fill="#e2bd76" stroke="#c8993f" stroke-width="1.3" stroke-linejoin="round">
+      <!-- Körper (liegend) -->
+      <path d="M6 34 h28 v-6 q-6 -2 -12 -2 q-10 0 -16 5 z" />
+      <!-- Vorderpfoten -->
+      <rect x="7" y="31" width="14" height="3.4" rx="1.2" />
+      <!-- Kopf mit Nemes-Kopftuch -->
+      <path d="M26 26 q-1 -10 6 -10 q7 0 6 10 z" />
+      <path d="M26 26 q-1 -10 6 -10 q7 0 6 10 z" fill="none" stroke="#c8993f" />
+      <!-- Gesicht -->
+      <rect x="29" y="17.5" width="6" height="8.5" rx="2.4" fill="#eccf92" stroke="#c8993f" stroke-width="1" />
+      <g fill="#7d5122" stroke="none"><circle cx="30.8" cy="20.5" r="0.8" /><circle cx="33.4" cy="20.5" r="0.8" /></g>
+      <!-- Kopftuch-Streifen -->
+      <g stroke="#b8862f" stroke-width="0.8" fill="none"><path d="M27 20 h2.2 M35 20 h2.2 M27 23 h1.8 M35.2 23 h1.8" /></g>
+    </g>
+  {:else if id === "ach-pyramide"}
+    <g>
+      <!-- Sonnenbeschienene Seite -->
+      <path d="M22 7 L38 35 H22 z" fill="#e9c987" stroke="#c8993f" stroke-width="1.3" stroke-linejoin="round" />
+      <!-- Schattenseite -->
+      <path d="M22 7 L6 35 H22 z" fill="#d3a758" stroke="#c8993f" stroke-width="1.3" stroke-linejoin="round" />
+      <!-- Steinlagen -->
+      <g stroke="#c8993f" stroke-width="0.7" opacity="0.55" fill="none">
+        <path d="M14 21 h16 M11 26.5 h22 M8.5 31 h27" />
+      </g>
+      <!-- Deckstein -->
+      <path d="M22 7 l3 5 h-6 z" fill="#f4e3b8" stroke="#c8993f" stroke-width="0.8" stroke-linejoin="round" />
+    </g>
+  {:else if id === "ach-sanduhr"}
+    <g>
+      <!-- Rahmen oben/unten -->
+      <rect x="12" y="6" width="20" height="3" rx="1.4" fill="#a06a34" stroke="#7d5122" stroke-width="1" />
+      <rect x="12" y="35" width="20" height="3" rx="1.4" fill="#a06a34" stroke="#7d5122" stroke-width="1" />
+      <!-- Glaskolben -->
+      <path d="M15 9 h14 q0 7 -7 13 q-7 6 -7 13 h14" fill="none" stroke="#8fbcc7" stroke-width="1.6" stroke-linejoin="round" />
+      <!-- oberer Sand -->
+      <path d="M16.5 10 h11 q-0.4 4.6 -5.5 8 q-5.1 -3.4 -5.5 -8 z" fill="#ecca7d" />
+      <!-- unterer Sandhaufen -->
+      <path d="M16.5 34 q1.5 -6 5.5 -7.4 q4 1.4 5.5 7.4 z" fill="#e2bd76" />
+      <!-- rieselnder Sand -->
+      <line x1="22" y1="20" x2="22" y2="30" stroke="#d9a441" stroke-width="1.1" stroke-linecap="round" />
+    </g>
+  {:else if id === "ach-sandkuchen"}
+    <g>
+      <!-- Sandkuchen (Förmchen-Form) -->
+      <path d="M9 22 h26 l-2.5 12 a3 3 0 0 1 -3 2.4 h-15 a3 3 0 0 1 -3 -2.4 z" fill="#e2bd76" stroke="#c8993f" stroke-width="1.3" stroke-linejoin="round" />
+      <ellipse cx="22" cy="22" rx="13" ry="4" fill="#ecca7d" stroke="#c8993f" stroke-width="1.3" />
+      <!-- Zacken/Riffelung oben -->
+      <g fill="#d9b160" stroke="none">
+        <circle cx="13" cy="21.5" r="1.3" /><circle cx="18" cy="20.6" r="1.3" /><circle cx="22" cy="20.3" r="1.3" />
+        <circle cx="26" cy="20.6" r="1.3" /><circle cx="31" cy="21.5" r="1.3" />
+      </g>
+      <!-- kleines Schäufelchen -->
+      <g transform="rotate(20 33 14)">
+        <rect x="31.6" y="7" width="2" height="10" rx="1" fill="#4d84bb" />
+        <path d="M29.6 16 h5 l-0.8 4 a2 2 0 0 1 -1.7 1.5 h-0 a2 2 0 0 1 -1.7 -1.5 z" fill="#6aa8de" stroke="#3a6591" stroke-width="0.9" stroke-linejoin="round" />
+      </g>
+    </g>
+  {:else if id === "ach-koelnerdom"}
+    <g fill="#cbb48f" stroke="#9c8965" stroke-width="1.1" stroke-linejoin="round">
+      <!-- Mittelschiff -->
+      <rect x="18" y="20" width="8" height="17" />
+      <!-- zwei Türme -->
+      <rect x="9" y="14" width="7" height="23" />
+      <rect x="28" y="14" width="7" height="23" />
+      <!-- Turmspitzen -->
+      <path d="M9 14 l3.5 -8 l3.5 8 z" fill="#b7a074" />
+      <path d="M28 14 l3.5 -8 l3.5 8 z" fill="#b7a074" />
+      <path d="M18 20 l4 -5 l4 5 z" fill="#b7a074" />
+      <!-- Fenster/Portal -->
+      <g fill="#8a7454" stroke="none">
+        <path d="M20.6 37 v-6 a1.4 1.4 0 0 1 2.8 0 v6 z" />
+        <rect x="11" y="20" width="3" height="5" rx="1.5" />
+        <rect x="30" y="20" width="3" height="5" rx="1.5" />
+      </g>
+    </g>
+  {:else if id === "ach-sandkasten"}
+    <g>
+      <!-- Sandfläche -->
+      <rect x="7" y="18" width="30" height="17" rx="2" fill="#ecca7d" stroke="#c8993f" stroke-width="1.3" />
+      <!-- Holzrahmen-Ecken (Sitzbretter) -->
+      <g fill="#a06a34" stroke="#7d5122" stroke-width="1" stroke-linejoin="round">
+        <path d="M5 16 h13 v4 h-13 z" />
+        <path d="M26 16 h13 v4 h-13 z" />
+        <path d="M5 33 h13 v4 h-13 z" />
+        <path d="M26 33 h13 v4 h-13 z" />
+      </g>
+      <!-- kleine Sandburg drin -->
+      <path d="M18 30 h8 v-4 h-8 z M18 26 h1.6 v-2 h1.6 v2 h1.6 v-2 h1.6 v2 h1.6" fill="#e2bd76" stroke="#c8993f" stroke-width="0.9" stroke-linejoin="round" />
+      <!-- Förmchen -->
+      <path d="M29 31 h4 l-0.7 3 h-2.6 z" fill="#e0654b" stroke="#b84d36" stroke-width="0.9" stroke-linejoin="round" />
+    </g>
   {/if}
 </svg>
 

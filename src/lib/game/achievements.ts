@@ -13,7 +13,15 @@ export interface AchievementDef {
   desc: string;
 }
 
+// Nach Schwelle aufsteigend sortiert.
 export const ACHIEVEMENTS: AchievementDef[] = [
+  {
+    id: "sanduhr",
+    name: "Eine Sanduhr",
+    icon: "ach-sanduhr",
+    threshold: new Decimal("1e6"),
+    desc: "Genug Sand, um die Zeit rinnen zu lassen.",
+  },
   {
     id: "schaufel-voll",
     name: "Eine Schaufel voll Sand",
@@ -29,6 +37,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "Ein randvoll gefüllter Eimer – bereit für die Burg.",
   },
   {
+    id: "sandkuchen",
+    name: "Ein Sandkuchen",
+    icon: "ach-sandkuchen",
+    threshold: new Decimal("48e6"),
+    desc: "Aus dem Förmchen gestürzt – der perfekte Sandkuchen.",
+  },
+  {
     id: "sandburg",
     name: "Eine Sandburg",
     icon: "ach-sandburg",
@@ -36,11 +51,39 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "Türme, Zinnen, Burggraben – eine echte Sandburg.",
   },
   {
+    id: "koelner-dom",
+    name: "Der Kölner Dom",
+    icon: "ach-koelnerdom",
+    threshold: new Decimal("65e9"),
+    desc: "Zwei gotische Türme – nachgebaut aus Sand.",
+  },
+  {
+    id: "sandkasten",
+    name: "Ein Sandkasten",
+    icon: "ach-sandkasten",
+    threshold: new Decimal("110e9"),
+    desc: "Der ganze Spielplatz-Sandkasten, randvoll.",
+  },
+  {
+    id: "sphinx",
+    name: "Die Sphinx",
+    icon: "ach-sphinx",
+    threshold: new Decimal("400e9"),
+    desc: "Der große Wächter von Gizeh – aus reinem Sand.",
+  },
+  {
     id: "lkw",
     name: "Ein LKW voll Sand",
     icon: "ach-lkw",
     threshold: new Decimal("2.4e12"),
     desc: "Eine ganze Ladung – Sand für die Baustelle.",
+  },
+  {
+    id: "cheops",
+    name: "Die Cheops-Pyramide",
+    icon: "ach-pyramide",
+    threshold: new Decimal("600e12"),
+    desc: "Das größte Bauwerk der Antike, Korn für Korn errichtet.",
   },
   {
     id: "duene",
