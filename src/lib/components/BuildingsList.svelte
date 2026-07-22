@@ -21,6 +21,22 @@
   $: total = totalProductionPerSec($game);
   $: glasMult = glasMultiplier($game);
 
+  // Effizientester Kauf = höchste Produktion pro Sand (nächste Einheit).
+  // Nur Generatoren (Klick-Gebäude produzieren kein Sand/Sek.).
+  $: bestBuyId = (() => {
+    let bestId: string | null = null;
+    let bestEff: Decimal | null = null;
+    for (const b of BUILDINGS) {
+      if (b.kind !== "generator" || !b.prodPerUnit) continue;
+      const eff = b.prodPerUnit.div($game.buildings[b.id].nextCost);
+      if (bestEff === null || eff.gt(bestEff)) {
+        bestEff = eff;
+        bestId = b.id;
+      }
+    }
+    return bestId;
+  })();
+
   // Grundwert je Einheit (Basis) als Decimal
   function baseUnit(id: string): Decimal {
     const def = BUILDING_BY_ID[id];
@@ -44,6 +60,8 @@
     </div>
   </div>
 
+  <p class="legend dim">⭐ = effizientester Kauf (meiste Produktion pro Sand)</p>
+
   <div class="thead">
     <span>Gebäude</span>
     <span class="r">Anzahl</span>
@@ -66,12 +84,16 @@
     {@const share = isGen && total.gt(0) && prod.gt(0) ? prod.div(total).mul(100) : ZERO}
     <button
       class="trow"
+      class:best={def.id === bestBuyId}
       disabled={!affordable}
       on:click={() => buyBuildings(def.id, buyCount)}
     >
       <span class="gen">
         <Icon id={def.id} size={30} />
         <span class="name">{def.name}</span>
+        {#if def.id === bestBuyId}
+          <span class="beststar" title="Effizientester Kauf: meiste Produktion pro Sand">⭐</span>
+        {/if}
       </span>
       <span class="r count">×{bs.owned}</span>
       <span class="r prod">{isGen ? (bs.owned > 0 ? `${formatDecimal(prod)} /s` : "—") : "—"}</span>
@@ -160,6 +182,19 @@
   .trow:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+  }
+  .trow.best {
+    border-color: var(--accent);
+    background: #fff6e2;
+    box-shadow: 0 0 0 2px rgba(217, 164, 65, 0.22);
+  }
+  .beststar {
+    font-size: 13px;
+    line-height: 1;
+  }
+  .legend {
+    font-size: 12px;
+    margin: 0 0 10px;
   }
   .gen {
     display: flex;
