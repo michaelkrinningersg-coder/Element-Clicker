@@ -19,13 +19,16 @@
 
 <ResourceBar />
 
+<div class="fullwidth">
+  <BuildingsList />
+</div>
+
 <div class="layout">
   <div class="col">
     <ClickArea />
-    <PrestigePanel />
   </div>
   <div class="col">
-    <BuildingsList />
+    <PrestigePanel />
   </div>
 </div>
 
@@ -49,9 +52,12 @@
     color: var(--text-dim);
     font-size: 1rem;
   }
+  .fullwidth {
+    margin-bottom: 18px;
+  }
   .layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.1fr 1fr;
     gap: 18px;
     align-items: start;
   }
