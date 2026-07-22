@@ -8,7 +8,7 @@ import {
   formatFixedPercent,
   formatDepth,
 } from "../src/lib/game/format";
-import { EARTH_DIAMETER_M } from "../src/lib/game/constants";
+import { EARTH_DIAMETER_M, DIG_CENTER_M, DIG_MILESTONES } from "../src/lib/game/constants";
 import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../src/lib/game/achievements";
 import {
   clickValue,
@@ -25,6 +25,8 @@ import {
   digDepthMeters,
   tonnesPerMeterAt,
   isMaxDepth,
+  digMilestonesReached,
+  digIncomeMultiplier,
 } from "../src/lib/game/formulas";
 
 describe("Klick (Hand)", () => {
@@ -172,33 +174,67 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
   });
 });
 
-describe("Graben (Tiefe aus Sandgewicht)", () => {
-  it("10 t je Meter bis 100 m (1 t = 1e11 Körner)", () => {
-    // 50 m → 500 t → 5e13 Körner
-    expect(digDepthMeters(new Decimal("5e13"))).toBeCloseTo(50, 6);
-    expect(tonnesPerMeterAt(0)).toBe(10);
-    expect(tonnesPerMeterAt(50)).toBe(10);
+describe("Graben (exponentiell schwerer mit der Tiefe)", () => {
+  it("Start unverändert: 10 t je Meter an der Oberfläche", () => {
+    expect(tonnesPerMeterAt(0)).toBeCloseTo(10, 6);
   });
 
-  it("gestaffelte Tonnage: 15 ab 100 m, 20 ab 1000 m, 30 ab 5000 m", () => {
-    expect(tonnesPerMeterAt(100)).toBe(15);
-    expect(tonnesPerMeterAt(1000)).toBe(20);
-    expect(tonnesPerMeterAt(5000)).toBe(30);
-    // 500 m: 100 m·10 t + 400 m·15 t = 7000 t → 7e14 Körner
-    expect(digDepthMeters(new Decimal("7e14"))).toBeCloseTo(500, 6);
+  it("im Erdmittelpunkt 1e15× so schwer wie am Start", () => {
+    const ratio = tonnesPerMeterAt(DIG_CENTER_M) / tonnesPerMeterAt(0);
+    expect(ratio).toBeGreaterThan(1e15 * 0.999);
+    expect(ratio).toBeLessThan(1e15 * 1.001);
+  });
+
+  it("nahe der Oberfläche noch ~linear mit 10 t/m", () => {
+    // 500 t → ~50 m (1 t = 1e11 Körner)
+    expect(digDepthMeters(new Decimal("5e13"))).toBeCloseTo(50, 1);
+  });
+
+  it("Tiefe wächst monoton mit Gewicht", () => {
+    const a = digDepthMeters(new Decimal("1e18"));
+    const b = digDepthMeters(new Decimal("1e22"));
+    expect(b).toBeGreaterThan(a);
   });
 
   it("nicht tiefer als der Erddurchmesser", () => {
-    const huge = new Decimal("1e40");
+    const huge = new Decimal("1e60");
     expect(digDepthMeters(huge)).toBe(EARTH_DIAMETER_M);
     expect(isMaxDepth(digDepthMeters(huge))).toBe(true);
     expect(isMaxDepth(1000)).toBe(false);
   });
 
-  it("Anzeige: cm bis 100 m, dm bis 600 m, sonst ganze Meter", () => {
+  it("Anzeige: mm bis 10 m, cm bis 100 m, dm bis 600 m, sonst Meter", () => {
+    expect(formatDepth(3.456)).toBe("3 m 456 mm");
     expect(formatDepth(42.37)).toBe("42 m 37 cm");
     expect(formatDepth(250.4)).toBe("250 m 4 dm");
     expect(formatDepth(1234.5)).toBe("1.234 m");
+  });
+});
+
+describe("Graben-Meilensteine (+1 % je erreichter Tiefe)", () => {
+  it("zählt erreichte Meilensteine nach Tiefe", () => {
+    expect(digMilestonesReached(0)).toBe(0);
+    expect(digMilestonesReached(1.8)).toBe(1); // Mensch
+    expect(digMilestonesReached(25)).toBe(3); // Mensch, Sphinx, Sandburg
+    expect(digMilestonesReached(EARTH_DIAMETER_M)).toBe(DIG_MILESTONES.length);
+  });
+
+  it("+1 % auf Klick und Produktion je Meilenstein", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 10; // 2 /s Basis
+    // 2,5e13 Körner → ~25 m → 3 Meilensteine → +3 %
+    s.totalSandEver = new Decimal("2.5e13");
+    const depth = digDepthMeters(s.totalSandEver);
+    const n = digMilestonesReached(depth);
+    expect(n).toBe(3);
+    expect(digIncomeMultiplier(s).toNumber()).toBeCloseTo(1 + 0.01 * n, 9);
+    // Klick: Basis 1 · Glas 1 · Graben (1+0,03) = 1,03
+    expect(clickValue(s).toNumber()).toBeCloseTo(1.03, 9);
+    // Produktion enthält den Graben-Faktor ebenfalls
+    const withoutDig = new Decimal(2)
+      .mul(glasMultiplier(s))
+      .mul(achievementProductionMult(s));
+    expect(totalProductionPerSec(s).gt(withoutDig)).toBe(true);
   });
 });
 

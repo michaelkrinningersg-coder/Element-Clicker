@@ -5,7 +5,11 @@ import {
   COST_GROWTH_FLOOR,
   COST_GROWTH_KAPPA,
   COST_GROWTH_SPAN,
-  DIG_TIERS,
+  DIG_CENTER_FACTOR,
+  DIG_CENTER_M,
+  DIG_MILESTONE_BONUS_PER,
+  DIG_MILESTONES,
+  DIG_START_TPM,
   EARTH_DIAMETER_M,
   GLAS_BONUS_PER,
   GLAS_UNLOCK,
@@ -98,7 +102,7 @@ export function clickValue(state: GameState): Decimal {
       base += b.clickPerUnit * state.buildings[b.id].owned;
     }
   }
-  return new Decimal(base).mul(glasMultiplier(state));
+  return new Decimal(base).mul(glasMultiplier(state)).mul(digIncomeMultiplier(state));
 }
 
 /** Sand/Sek. eines einzelnen Generator-Gebäudes inkl. Glas & Bauwerken (für die Anzeige). */
@@ -108,7 +112,8 @@ export function buildingProduction(state: GameState, id: string): Decimal {
     return b.prodPerUnit
       .mul(state.buildings[id].owned)
       .mul(glasMultiplier(state))
-      .mul(achievementProductionMult(state));
+      .mul(achievementProductionMult(state))
+      .mul(digIncomeMultiplier(state));
   }
   return ZERO;
 }
@@ -121,50 +126,46 @@ export function totalProductionPerSec(state: GameState): Decimal {
       sum = sum.add(b.prodPerUnit.mul(state.buildings[b.id].owned));
     }
   }
-  return sum.mul(glasMultiplier(state)).mul(achievementProductionMult(state));
+  return sum
+    .mul(glasMultiplier(state))
+    .mul(achievementProductionMult(state))
+    .mul(digIncomeMultiplier(state));
 }
 
-// ---- Graben: Tiefe aus gesammeltem Sandgewicht ----
+// ---- Graben: Tiefe aus gesammeltem Sandgewicht (exponentiell schwerer) ----
+//
+// Tonnage je Meter wächst exponentiell mit der Tiefe:
+//   tPerM(d) = DIG_START_TPM · B^(d / DIG_CENTER_M),  B = DIG_CENTER_FACTOR
+// (Oberfläche: DIG_START_TPM t/m; Erdmittelpunkt: das B-fache davon.)
+// Gewicht bis Tiefe D = ∫₀ᴰ tPerM(d) dd = DIG_START_TPM·DIG_CENTER_M/ln(B)·(B^(D/DIG_CENTER_M) − 1).
 
-/** Stufen mit kumulierter Tonnage bis zu ihrem Beginn (einmalig berechnet). */
-const DIG_BOUNDS = (() => {
-  const out: { fromM: number; tPerM: number; cumWeight: number }[] = [];
-  let cum = 0;
-  for (let i = 0; i < DIG_TIERS.length; i++) {
-    const t = DIG_TIERS[i];
-    out.push({ fromM: t.fromM, tPerM: t.tPerM, cumWeight: cum });
-    const nextFrom = DIG_TIERS[i + 1]?.fromM ?? EARTH_DIAMETER_M;
-    cum += (nextFrom - t.fromM) * t.tPerM;
-  }
-  return out;
-})();
+const DIG_K = Math.log(DIG_CENTER_FACTOR); // ln(B)
 
-/** Tonnage, um bis zum Erddurchmesser zu graben (Deckel). */
-const DIG_MAX_WEIGHT = (() => {
-  const last = DIG_BOUNDS[DIG_BOUNDS.length - 1];
-  return last.cumWeight + (EARTH_DIAMETER_M - last.fromM) * last.tPerM;
-})();
+/** Benötigte Tonnage, um bis Tiefe D (Meter) zu graben. */
+function digWeightForDepth(depthM: number): number {
+  return (
+    (DIG_START_TPM * DIG_CENTER_M) / DIG_K * (Math.exp((DIG_K * depthM) / DIG_CENTER_M) - 1)
+  );
+}
+
+/** Tonnage bis zum Erddurchmesser (Deckel). */
+const DIG_MAX_WEIGHT = digWeightForDepth(EARTH_DIAMETER_M);
 
 /** Gegrabene Tiefe (Meter) aus gesammelten Sandkörnern, gedeckelt beim Erddurchmesser. */
 export function digDepthMeters(grains: Decimal): number {
   const tonnes = grains.div(TONNE_IN_GRAINS);
   if (tonnes.gte(DIG_MAX_WEIGHT)) return EARTH_DIAMETER_M;
   const w = tonnes.toNumber();
-  let depth = 0;
-  for (let i = DIG_BOUNDS.length - 1; i >= 0; i--) {
-    if (w >= DIG_BOUNDS[i].cumWeight) {
-      depth = DIG_BOUNDS[i].fromM + (w - DIG_BOUNDS[i].cumWeight) / DIG_BOUNDS[i].tPerM;
-      break;
-    }
-  }
+  if (w <= 0) return 0;
+  // D = DIG_CENTER_M · ln(1 + w·ln(B)/(DIG_START_TPM·DIG_CENTER_M)) / ln(B)
+  const depth =
+    (DIG_CENTER_M * Math.log(1 + (w * DIG_K) / (DIG_START_TPM * DIG_CENTER_M))) / DIG_K;
   return Math.min(depth, EARTH_DIAMETER_M);
 }
 
-/** Tonnage, die ein Meter in der aktuellen Tiefe kostet. */
+/** Tonnage, die ein Meter in der aktuellen Tiefe kostet (exponentiell). */
 export function tonnesPerMeterAt(depthM: number): number {
-  let tPerM = DIG_TIERS[0].tPerM;
-  for (const t of DIG_TIERS) if (depthM >= t.fromM) tPerM = t.tPerM;
-  return tPerM;
+  return DIG_START_TPM * Math.exp((DIG_K * depthM) / DIG_CENTER_M);
 }
 
 /** Gesammeltes Gewicht in Tonnen (für die Graben-Anzeige). */
@@ -175,6 +176,19 @@ export function weightInTonnes(grains: Decimal): Decimal {
 /** Ist die maximale Grabtiefe (Erddurchmesser) erreicht? */
 export function isMaxDepth(depthM: number): boolean {
   return depthM >= EARTH_DIAMETER_M;
+}
+
+/** Anzahl erreichter Graben-Meilensteine bei der aktuellen Tiefe. */
+export function digMilestonesReached(depthM: number): number {
+  let n = 0;
+  for (const m of DIG_MILESTONES) if (depthM >= m.m) n++;
+  return n;
+}
+
+/** Einkommens-Multiplikator aus Graben-Meilensteinen: 1 + 0,01 je Meilenstein (Klick & Produktion). */
+export function digIncomeMultiplier(state: GameState): Decimal {
+  const reached = digMilestonesReached(digDepthMeters(state.totalSandEver));
+  return new Decimal(1 + DIG_MILESTONE_BONUS_PER * reached);
 }
 
 /** Prestige erlaubt, sobald Sand ≥ 1e9. */

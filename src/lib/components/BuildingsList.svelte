@@ -21,21 +21,24 @@
   $: total = totalProductionPerSec($game);
   $: glasMult = glasMultiplier($game);
 
-  // Effizientester Kauf = höchste Produktion pro Sand (nächste Einheit).
-  // Nur Generatoren (Klick-Gebäude produzieren kein Sand/Sek.).
-  $: bestBuyId = (() => {
-    let bestId: string | null = null;
-    let bestEff: Decimal | null = null;
+  // Effizienteste Käufe = höchste Produktion pro Sand (nächste Einheit).
+  // Rang 1/2/3 → Gold/Silber/Bronze. Nur Generatoren.
+  $: buyRank = (() => {
+    const gens: { id: string; eff: Decimal }[] = [];
     for (const b of BUILDINGS) {
       if (b.kind !== "generator" || !b.prodPerUnit) continue;
-      const eff = b.prodPerUnit.div($game.buildings[b.id].nextCost);
-      if (bestEff === null || eff.gt(bestEff)) {
-        bestEff = eff;
-        bestId = b.id;
-      }
+      gens.push({ id: b.id, eff: b.prodPerUnit.div($game.buildings[b.id].nextCost) });
     }
-    return bestId;
+    gens.sort((a, c) => (c.eff.gt(a.eff) ? 1 : c.eff.lt(a.eff) ? -1 : 0));
+    const rank: Record<string, number> = {};
+    gens.slice(0, 3).forEach((g, i) => (rank[g.id] = i + 1));
+    return rank;
   })();
+  const STAR_TITLE: Record<number, string> = {
+    1: "Effizientester Kauf (meiste Produktion pro Sand)",
+    2: "Zweiteffizientester Kauf",
+    3: "Dritteffizientester Kauf",
+  };
 
   // Grundwert je Einheit (Basis) als Decimal
   function baseUnit(id: string): Decimal {
@@ -60,7 +63,10 @@
     </div>
   </div>
 
-  <p class="legend dim">⭐ = effizientester Kauf (meiste Produktion pro Sand)</p>
+  <p class="legend dim">
+    Effizientester Kauf (Produktion pro Sand): <span class="star rank1">★</span> Gold ·
+    <span class="star rank2">★</span> Silber · <span class="star rank3">★</span> Bronze
+  </p>
 
   <div class="thead">
     <span>Gebäude</span>
@@ -82,17 +88,20 @@
     {@const base = baseUnit(def.id)}
     {@const boni = base.mul(glasMult)}
     {@const share = isGen && total.gt(0) && prod.gt(0) ? prod.div(total).mul(100) : ZERO}
+    {@const rank = buyRank[def.id]}
     <button
       class="trow"
-      class:best={def.id === bestBuyId}
+      class:best={rank === 1}
+      class:rank2={rank === 2}
+      class:rank3={rank === 3}
       disabled={!affordable}
       on:click={() => buyBuildings(def.id, buyCount)}
     >
       <span class="gen">
         <Icon id={def.id} size={30} />
         <span class="name">{def.name}</span>
-        {#if def.id === bestBuyId}
-          <span class="beststar" title="Effizientester Kauf: meiste Produktion pro Sand">⭐</span>
+        {#if rank}
+          <span class="star rank{rank}" title={STAR_TITLE[rank]}>★</span>
         {/if}
       </span>
       <span class="r count">×{bs.owned}</span>
@@ -188,9 +197,26 @@
     background: #fff6e2;
     box-shadow: 0 0 0 2px rgba(217, 164, 65, 0.22);
   }
-  .beststar {
-    font-size: 13px;
+  .trow.rank2 {
+    border-color: #b8bec6;
+    background: #f7f8fa;
+  }
+  .trow.rank3 {
+    border-color: #d3a578;
+    background: #fbf3ea;
+  }
+  .star {
+    font-size: 15px;
     line-height: 1;
+  }
+  .star.rank1 {
+    color: #e6b422;
+  }
+  .star.rank2 {
+    color: #9aa3ab;
+  }
+  .star.rank3 {
+    color: #c17a3a;
   }
   .legend {
     font-size: 12px;

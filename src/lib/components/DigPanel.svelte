@@ -5,8 +5,15 @@
     tonnesPerMeterAt,
     weightInTonnes,
     isMaxDepth,
+    digMilestonesReached,
+    digIncomeMultiplier,
   } from "../game/formulas";
-  import { DIG_TIERS, EARTH_DIAMETER_M } from "../game/constants";
+  import {
+    DIG_MILESTONES,
+    DIG_CENTER_M,
+    DIG_START_TPM,
+    EARTH_DIAMETER_M,
+  } from "../game/constants";
   import { formatDepth, formatKm, formatDecimal, formatScientific } from "../game/format";
   import { Decimal } from "../game/decimal";
 
@@ -16,29 +23,16 @@
   $: atMax = isMaxDepth(depth);
   $: pctToDiameter = new Decimal(depth).div(EARTH_DIAMETER_M).mul(100);
   $: barPct = Math.max(0, Math.min(100, (depth / EARTH_DIAMETER_M) * 100));
+  $: reachedCount = digMilestonesReached(depth);
+  $: incomeBonusPct = (digIncomeMultiplier($game).toNumber() - 1) * 100;
+  // Nächster noch nicht erreichter Meilenstein.
+  $: nextMs = DIG_MILESTONES.find((m) => depth < m.m);
 
   const pctLabel = (p: Decimal): string =>
     p.gte(0.01) ? `${formatDecimal(p, 4)} %` : `${formatScientific(p)} %`;
+  const tpm = (n: number): string => `${formatDecimal(new Decimal(n))} t / m`;
 
-  // Reale Vergleichstiefen (motivierende Meilensteine).
-  const REFS = [
-    { name: "Tiefster Punkt im Meer (Marianengraben)", m: 10_994 },
-    { name: "Tiefste Bohrung (Kola, Russland)", m: 12_262 },
-    { name: "Untergrenze der Erdkruste", m: 35_000 },
-    { name: "Oberer Erdmantel", m: 410_000 },
-    { name: "Äußerer Erdkern", m: 2_890_000 },
-    { name: "Erdmittelpunkt", m: EARTH_DIAMETER_M / 2 },
-  ];
-
-  // Tonnage-Regeln als Bereiche für die Tabelle.
-  const RANGES = DIG_TIERS.map((t, i) => {
-    const to = DIG_TIERS[i + 1]?.fromM;
-    return { fromM: t.fromM, toM: to, tPerM: t.tPerM };
-  });
-  const rangeLabel = (r: { fromM: number; toM?: number }): string =>
-    r.toM == null
-      ? `ab ${r.fromM.toLocaleString("de-DE")} m`
-      : `${r.fromM.toLocaleString("de-DE")}–${r.toM.toLocaleString("de-DE")} m`;
+  const REFS = DIG_MILESTONES;
 </script>
 
 <div class="panel">
@@ -50,13 +44,14 @@
   </div>
   <p class="legend dim">
     Dein gesammelter Sand bemisst, wie tief du gräbst. Tiefer wird das Gestein schwerer –
-    tiefer als der Erddurchmesser geht es nicht.
+    tiefer als der Erddurchmesser geht es nicht. Jede erreichte Vergleichstiefe gibt
+    <b>+1 % auf alle Einkünfte</b> (Klick &amp; Produktion).
   </p>
 
   <div class="depthbox">
     <span class="dlabel">Gegrabene Tiefe</span>
     <span class="dval mono">{formatDepth(depth)}</span>
-    <span class="dkm dim">{formatKm(depth)} · aktuell {tPerM} t je Meter</span>
+    <span class="dkm dim">{formatKm(depth)} · aktuell {tpm(tPerM)}</span>
   </div>
 
   <div class="prog">
@@ -73,27 +68,55 @@
     </span>
   </div>
 
-  <div class="grp">
-    <h4>Gestein je Meter</h4>
-    <div class="rules">
-      {#each RANGES as r (r.fromM)}
-        {@const active = depth >= r.fromM && (r.toM == null || depth < r.toM)}
-        <div class="rule" class:active>
-          <span class="range">{rangeLabel(r)}</span>
-          <span class="tpm">{r.tPerM} t / m</span>
-        </div>
-      {/each}
+  <div class="bonusbox">
+    <div class="bcol">
+      <span class="blabel">Erreichte Meilensteine</span>
+      <span class="bval">{reachedCount} / {DIG_MILESTONES.length}</span>
     </div>
+    <div class="bcol">
+      <span class="blabel">Bonus auf alle Einkünfte</span>
+      <span class="bval accent">+{formatDecimal(new Decimal(incomeBonusPct), 0)} %</span>
+    </div>
+    {#if nextMs}
+      <div class="bcol next">
+        <span class="blabel">Nächster Meilenstein</span>
+        <span class="bnext">{nextMs.name} · {formatDepth(nextMs.m)}</span>
+      </div>
+    {/if}
   </div>
 
   <div class="grp">
-    <h4>Vergleichstiefen</h4>
+    <h4>Gestein je Meter (wird exponentiell schwerer)</h4>
+    <div class="rules">
+      <div class="rule">
+        <span class="range">Oberfläche (0 m)</span>
+        <span class="tpm">{tpm(DIG_START_TPM)}</span>
+      </div>
+      <div class="rule active">
+        <span class="range">Aktuelle Tiefe ({formatDepth(depth)})</span>
+        <span class="tpm">{tpm(tPerM)}</span>
+      </div>
+      <div class="rule">
+        <span class="range">Erdmittelpunkt ({formatKm(DIG_CENTER_M)})</span>
+        <span class="tpm">{tpm(tonnesPerMeterAt(DIG_CENTER_M))}</span>
+      </div>
+    </div>
+    <p class="note dim">
+      An der Oberfläche unverändert {DIG_START_TPM} t/m – im Erdmittelpunkt das
+      1·10<sup>15</sup>-fache. Du sammelst gleich viel Sand, aber jeder Meter dauert
+      immer länger.
+    </p>
+  </div>
+
+  <div class="grp">
+    <h4>Vergleichstiefen &amp; Meilensteine</h4>
     <div class="refs">
-      {#each REFS as r (r.name)}
+      {#each REFS as r (r.id)}
         {@const reached = depth >= r.m}
         <div class="ref" class:reached>
           <span class="rmark">{reached ? "✓" : "○"}</span>
           <span class="rname">{r.name}</span>
+          <span class="rbonus" class:on={reached}>+1 %</span>
           <span class="rm mono">{formatDepth(r.m)}</span>
         </div>
       {/each}
@@ -151,7 +174,47 @@
     font-size: 13px;
   }
   .prog {
+    margin-bottom: 14px;
+  }
+  .bonusbox {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--panel-2);
+    border: 1px solid var(--border-row);
+    border-left: 3px solid var(--accent-2);
+    border-radius: 10px;
+    padding: 11px 14px;
     margin-bottom: 18px;
+  }
+  .bcol {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+  }
+  .bcol.next {
+    flex: 1;
+    min-width: 160px;
+  }
+  .blabel {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-head);
+  }
+  .bval {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .bval.accent {
+    color: var(--accent-2);
+  }
+  .bnext {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
   }
   .progtop {
     display: flex;
@@ -216,9 +279,14 @@
     color: var(--gold);
     font-weight: 700;
   }
+  .note {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
   .ref {
     display: grid;
-    grid-template-columns: 22px 1fr auto;
+    grid-template-columns: 22px 1fr auto auto;
     align-items: center;
     gap: 10px;
     background: var(--panel-2);
@@ -226,6 +294,20 @@
     border-radius: 9px;
     padding: 8px 13px;
     font-size: 13px;
+  }
+  .rbonus {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-locked);
+    background: var(--panel-dim);
+    border: 1px solid var(--border-row);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  .rbonus.on {
+    color: var(--prod);
+    background: var(--chip-grav-bg);
+    border-color: var(--chip-grav-bd);
   }
   .ref.reached {
     border-color: var(--accent-2);

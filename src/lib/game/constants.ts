@@ -21,12 +21,39 @@ export const TONNE_IN_GRAINS = new Decimal("1e11"); // 1 t = 1e9 mg = 1e11 Körn
 
 // ---- Graben: Tiefe aus Sandgewicht ----
 export const EARTH_DIAMETER_M = 12_742_000; // Erddurchmesser (max. Grabtiefe)
-// Benötigte Tonnage je Meter, gestaffelt nach Tiefe.
-export const DIG_TIERS: { fromM: number; tPerM: number }[] = [
-  { fromM: 0, tPerM: 10 },
-  { fromM: 100, tPerM: 15 },
-  { fromM: 1000, tPerM: 20 },
-  { fromM: 5000, tPerM: 30 },
+export const DIG_CENTER_M = EARTH_DIAMETER_M / 2; // Erdmittelpunkt (Referenz für Skalierung)
+// Graben wird mit der Tiefe exponentiell schwerer: an der Oberfläche DIG_START_TPM
+// Tonnen je Meter, im Erdmittelpunkt das DIG_CENTER_FACTOR-fache davon.
+export const DIG_START_TPM = 10; // t/m an der Oberfläche (unverändert)
+export const DIG_CENTER_FACTOR = 1e15; // im Erdmittelpunkt 1e15× so schwer
+
+// Vergleichstiefen als Meilensteine (nach Tiefe aufsteigend). Jeder erreichte
+// Meilenstein gibt +1 % auf alle Einkünfte (Klick & Produktion).
+export const DIG_MILESTONE_BONUS_PER = 0.01;
+export const DIG_MILESTONES: { id: string; name: string; m: number }[] = [
+  { id: "mensch", name: "Größe eines Menschen", m: 1.8 },
+  { id: "sphinx", name: "Die Sphinx (Höhe)", m: 20 },
+  { id: "sandburg-rekord", name: "Höchste Sandburg der Welt", m: 21.16 },
+  { id: "duene-de", name: "Höchste Düne Deutschlands", m: 52 },
+  { id: "duene-eu", name: "Höchste Düne Europas (Dune du Pilat)", m: 110 },
+  { id: "baum", name: "Höchster Baum der Erde (Hyperion)", m: 115.7 },
+  { id: "cheops", name: "Cheops-Pyramide (Höhe)", m: 139 },
+  { id: "koelner-dom", name: "Kölner Dom", m: 157 },
+  { id: "see-de", name: "Tiefster See Deutschlands (Bodensee)", m: 251 },
+  { id: "empire-state", name: "Empire State Building (Dach)", m: 381 },
+  { id: "burj-khalifa", name: "Burj Khalifa", m: 828 },
+  { id: "brocken", name: "Brocken (Harz)", m: 1141 },
+  { id: "duene-welt", name: "Höchste Düne der Welt (Cerro Blanco)", m: 1176 },
+  { id: "see-welt", name: "Tiefster See der Erde (Baikalsee)", m: 1642 },
+  { id: "zugspitze", name: "Zugspitze", m: 2962 },
+  { id: "montblanc", name: "Mont Blanc", m: 4808 },
+  { id: "everest", name: "Mount Everest", m: 8849 },
+  { id: "marianengraben", name: "Tiefster Punkt im Meer (Marianengraben)", m: 10_994 },
+  { id: "kola", name: "Tiefste Bohrung (Kola, Russland)", m: 12_262 },
+  { id: "erdkruste", name: "Untergrenze der Erdkruste", m: 35_000 },
+  { id: "erdmantel", name: "Oberer Erdmantel", m: 410_000 },
+  { id: "erdkern", name: "Äußerer Erdkern", m: 2_890_000 },
+  { id: "erdmittelpunkt", name: "Erdmittelpunkt", m: 6_371_000 },
 ];
 
 // ---- Gebäude-Kostenkurve (abflachend) ----

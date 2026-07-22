@@ -77,10 +77,19 @@ export function formatScientific(d: Decimal, decimals = 2): string {
 }
 
 /**
- * Grabtiefe: bis 100 m auf Zentimeter genau, 100–600 m auf Dezimeter,
- * darüber ganze Meter (mit Tausenderpunkten).
+ * Grabtiefe: bis 10 m auf Millimeter, bis 100 m auf Zentimeter,
+ * 100–600 m auf Dezimeter, darüber ganze Meter (mit Tausenderpunkten).
  */
 export function formatDepth(m: number): string {
+  if (m < 10) {
+    let whole = Math.floor(m);
+    let mm = Math.round((m - whole) * 1000);
+    if (mm >= 1000) {
+      whole += 1;
+      mm = 0;
+    }
+    return `${whole} m ${mm} mm`;
+  }
   if (m < 100) {
     let whole = Math.floor(m);
     let cm = Math.round((m - whole) * 100);
