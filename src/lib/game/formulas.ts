@@ -2,6 +2,7 @@ import { Decimal, ZERO, ONE } from "./decimal";
 import {
   ACH_COST_PER,
   ACH_PROD_PER,
+  ARBEITER_BOOST_PER,
   COST_GROWTH_FLOOR,
   COST_GROWTH_KAPPA,
   COST_GROWTH_SPAN,
@@ -109,6 +110,12 @@ export function generatorBoostMultiplier(state: GameState): Decimal {
   return new Decimal(1 + GENERATOR_BOOST_PER * generatorCount(state));
 }
 
+/** Boost auf alle Generatoren aus den Arbeitern: 1 + 1 % je Arbeiter. */
+export function arbeiterBoostMultiplier(state: GameState): Decimal {
+  const owned = state.buildings.arbeiter?.owned ?? 0;
+  return new Decimal(1 + ARBEITER_BOOST_PER * owned);
+}
+
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */
 export function clickValue(state: GameState): Decimal {
   let base = 1;
@@ -129,7 +136,8 @@ export function buildingProduction(state: GameState, id: string): Decimal {
       .mul(glasMultiplier(state))
       .mul(achievementProductionMult(state))
       .mul(digIncomeMultiplier(state))
-      .mul(generatorBoostMultiplier(state));
+      .mul(generatorBoostMultiplier(state))
+      .mul(arbeiterBoostMultiplier(state));
   }
   return ZERO;
 }
@@ -146,7 +154,8 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(glasMultiplier(state))
     .mul(achievementProductionMult(state))
     .mul(digIncomeMultiplier(state))
-    .mul(generatorBoostMultiplier(state));
+    .mul(generatorBoostMultiplier(state))
+    .mul(arbeiterBoostMultiplier(state));
 }
 
 // ---- Graben: Tiefe aus gesammeltem Sandgewicht (exponentiell schwerer) ----

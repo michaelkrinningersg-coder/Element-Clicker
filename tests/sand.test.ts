@@ -31,6 +31,8 @@ import {
   grainsForDepth,
   generatorCount,
   generatorBoostMultiplier,
+  arbeiterBoostMultiplier,
+  buildingProduction,
 } from "../src/lib/game/formulas";
 
 describe("Klick (Hand)", () => {
@@ -262,6 +264,26 @@ describe("Generator-Synergie (+0,1 % Produktion je Generator)", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 100; // 100 · 0,2 = 20 /s, × 1,1 = 22
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(20 * 1.1, 6);
+  });
+});
+
+describe("Arbeiter-Boost (+1 % auf alle Generatoren je Arbeiter)", () => {
+  it("Multiplikator = 1 + 0,01 · Arbeiter", () => {
+    const s = createInitialState();
+    expect(arbeiterBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
+    s.buildings.arbeiter.owned = 5; // +5 %
+    expect(arbeiterBoostMultiplier(s).toNumber()).toBeCloseTo(1.05, 9);
+  });
+
+  it("boostet die Produktion aller Generatoren", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 10; // 2 /s Basis
+    s.buildings.arbeiter.owned = 5; // +5 % auf alle Generatoren
+    // Eimer-Anteil = 2 · Generator-Boost · Arbeiter-Boost
+    const expected = new Decimal(2)
+      .mul(generatorBoostMultiplier(s))
+      .mul(arbeiterBoostMultiplier(s));
+    expect(buildingProduction(s, "eimer").toNumber()).toBeCloseTo(expected.toNumber(), 6);
   });
 });
 

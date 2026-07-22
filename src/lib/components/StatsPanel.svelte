@@ -7,6 +7,7 @@
     costMultiplier,
     generatorBoostMultiplier,
     generatorCount,
+    arbeiterBoostMultiplier,
   } from "../game/formulas";
   import { unlockedCount } from "../game/achievements";
   import {
@@ -103,6 +104,10 @@
       <div class="stat">
         <span class="k">Produktions-Multiplikator (+0,1 % je Generator)</span>
         <span class="v mono">×{formatDecimal(generatorBoostMultiplier($game), 3)}</span>
+      </div>
+      <div class="stat">
+        <span class="k">Arbeiter ({formatNumber($game.buildings.arbeiter.owned)}) · +1 % je Arbeiter</span>
+        <span class="v mono">×{formatDecimal(arbeiterBoostMultiplier($game), 3)}</span>
       </div>
     </div>
   </div>
