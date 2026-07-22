@@ -11,6 +11,7 @@ import {
   DIG_MILESTONES,
   DIG_START_TPM,
   EARTH_DIAMETER_M,
+  GENERATOR_BOOST_PER,
   GLAS_BONUS_PER,
   GLAS_UNLOCK,
   TONNE_IN_GRAINS,
@@ -94,6 +95,20 @@ export function costMultiplier(state: GameState): Decimal {
   return new Decimal(Math.pow(1 - ACH_COST_PER, unlockedCount(state)));
 }
 
+/** Gesamtzahl aller gebauten Generatoren (Einheiten). */
+export function generatorCount(state: GameState): number {
+  let n = 0;
+  for (const b of BUILDINGS) {
+    if (b.kind === "generator") n += state.buildings[b.id].owned;
+  }
+  return n;
+}
+
+/** Produktions-Boost aus der Generator-Gesamtzahl: 1 + 0,1 % je Generator. */
+export function generatorBoostMultiplier(state: GameState): Decimal {
+  return new Decimal(1 + GENERATOR_BOOST_PER * generatorCount(state));
+}
+
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */
 export function clickValue(state: GameState): Decimal {
   let base = 1;
@@ -113,7 +128,8 @@ export function buildingProduction(state: GameState, id: string): Decimal {
       .mul(state.buildings[id].owned)
       .mul(glasMultiplier(state))
       .mul(achievementProductionMult(state))
-      .mul(digIncomeMultiplier(state));
+      .mul(digIncomeMultiplier(state))
+      .mul(generatorBoostMultiplier(state));
   }
   return ZERO;
 }
@@ -129,7 +145,8 @@ export function totalProductionPerSec(state: GameState): Decimal {
   return sum
     .mul(glasMultiplier(state))
     .mul(achievementProductionMult(state))
-    .mul(digIncomeMultiplier(state));
+    .mul(digIncomeMultiplier(state))
+    .mul(generatorBoostMultiplier(state));
 }
 
 // ---- Graben: Tiefe aus gesammeltem Sandgewicht (exponentiell schwerer) ----

@@ -5,6 +5,8 @@
     clickValue,
     achievementProductionMult,
     costMultiplier,
+    generatorBoostMultiplier,
+    generatorCount,
   } from "../game/formulas";
   import { unlockedCount } from "../game/achievements";
   import {
@@ -18,6 +20,7 @@
   $: production = totalProductionPerSec($game);
   $: perClick = clickValue($game);
   $: built = unlockedCount($game);
+  $: genCount = generatorCount($game);
 </script>
 
 <div class="panel">
@@ -86,6 +89,20 @@
       <div class="stat">
         <span class="k">Kosten-Multiplikator</span>
         <span class="v mono">×{formatDecimal(costMultiplier($game), 3)}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h4>Generator-Synergie</h4>
+    <div class="rows">
+      <div class="stat">
+        <span class="k">Generatoren insgesamt</span>
+        <span class="v mono">{formatNumber(genCount)}</span>
+      </div>
+      <div class="stat">
+        <span class="k">Produktions-Multiplikator (+0,1 % je Generator)</span>
+        <span class="v mono">×{formatDecimal(generatorBoostMultiplier($game), 3)}</span>
       </div>
     </div>
   </div>

@@ -68,3 +68,6 @@ export const GLAS_BONUS_PER = 0.1; // +10 % auf Sand-Produktion & Klick je Glas
 // ---- Bauwerke (Erfolge) ----
 export const ACH_PROD_PER = 0.02; // +2 % auf alle Produktion je gebautem Bauwerk (multiplikativ)
 export const ACH_COST_PER = 0.01; // −1 % Kosten je Bauwerk (multiplikativ, 0,99^n)
+
+// ---- Generator-Synergie ----
+export const GENERATOR_BOOST_PER = 0.001; // +0,1 % Produktion je gebautem Generator (gesamt)

@@ -29,6 +29,8 @@ import {
   digMilestonesReached,
   digIncomeMultiplier,
   grainsForDepth,
+  generatorCount,
+  generatorBoostMultiplier,
 } from "../src/lib/game/formulas";
 
 describe("Klick (Hand)", () => {
@@ -50,10 +52,10 @@ describe("Produktion (Eimer)", () => {
     expect(totalProductionPerSec(s).toNumber()).toBe(0);
   });
 
-  it("jeder Eimer gibt +0,2 Sand/s", () => {
+  it("jeder Eimer gibt +0,2 Sand/s (× Generator-Boost)", () => {
     const s = createInitialState();
-    s.buildings.eimer.owned = 10; // 10 · 0,2 = 2
-    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2, 9);
+    s.buildings.eimer.owned = 10; // 10 · 0,2 = 2, × (1 + 0,001·10) = 1,01
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2 * 1.01, 9);
   });
 });
 
@@ -240,6 +242,29 @@ describe("Graben-Meilensteine (+1 % je erreichter Tiefe)", () => {
   });
 });
 
+describe("Generator-Synergie (+0,1 % Produktion je Generator)", () => {
+  it("zählt nur Generatoren (nicht die Hand)", () => {
+    const s = createInitialState();
+    s.buildings.hand.owned = 50; // Klick-Gebäude, kein Generator
+    s.buildings.eimer.owned = 30;
+    s.buildings.schaufel.owned = 20;
+    expect(generatorCount(s)).toBe(50); // 30 + 20
+  });
+
+  it("Multiplikator = 1 + 0,001 · Generatoranzahl", () => {
+    const s = createInitialState();
+    expect(generatorBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
+    s.buildings.eimer.owned = 100; // +10 %
+    expect(generatorBoostMultiplier(s).toNumber()).toBeCloseTo(1.1, 9);
+  });
+
+  it("wirkt multiplikativ auf die Produktion", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 100; // 100 · 0,2 = 20 /s, × 1,1 = 22
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(20 * 1.1, 6);
+  });
+});
+
 describe("Zeit-Schätzung (ETA) bei aktueller Produktion", () => {
   it("Sekunden / Minuten / Stunden / Tage", () => {
     // 100 Körner Rest, 10/s → 10 s
@@ -268,13 +293,14 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
   it("Produktion: (1,02)^Anzahl, multiplikativ auf Sand/s", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 10; // Basis 10 · 0,2 = 2 /s
-    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2, 9);
+    const base = new Decimal(2).mul(generatorBoostMultiplier(s)); // inkl. Generator-Boost
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber(), 9);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1, 9);
     s.totalSandEver = new Decimal("30e6"); // einige Bauwerke frei
     const n = unlockedCount(s);
     expect(n).toBeGreaterThan(0);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
-    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(2 * 1.02 ** n, 9);
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 1.02 ** n, 9);
   });
 
   it("Kosten: (0,99)^Anzahl, multiplikativ (weniger Rabatt als linear)", () => {
