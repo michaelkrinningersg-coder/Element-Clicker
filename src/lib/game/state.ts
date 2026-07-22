@@ -15,7 +15,8 @@ export interface GameState {
   glas: Decimal;
   prestigeCount: number;
 
-  // Meta
+  // Statistik / Lifetime
+  totalSandEver: Decimal; // je gesammelte Sandkörner (bleibt bei Prestige)
   totalClicks: number;
   playtimeSeconds: number;
   lastSaved: number;
@@ -29,6 +30,7 @@ export function createInitialState(): GameState {
     buildings,
     glas: ZERO,
     prestigeCount: 0,
+    totalSandEver: ZERO,
     totalClicks: 0,
     playtimeSeconds: 0,
     lastSaved: Date.now(),

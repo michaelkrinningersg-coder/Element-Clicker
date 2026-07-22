@@ -13,6 +13,9 @@ export const SAVE_VERSION = 1;
 // ---- Klick ----
 export const CLICK_BASE = new Decimal(1); // 1 Sandkorn pro Klick (Basis)
 
+// ---- Physik: Gewicht ----
+export const GRAINS_PER_MG = 100; // 100 Sandkörner wiegen 1 mg
+
 // ---- Gebäude-Kostenkurve (abflachend) ----
 export const COST_GROWTH_FLOOR = 1.05;
 export const COST_GROWTH_SPAN = 0.1;

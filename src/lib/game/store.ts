@@ -25,7 +25,9 @@ function commit(): void {
 // ---- Aktionen ----
 
 export function click(): void {
-  state.sand = state.sand.add(clickValue(state));
+  const gained = clickValue(state);
+  state.sand = state.sand.add(gained);
+  state.totalSandEver = state.totalSandEver.add(gained);
   state.totalClicks += 1;
   commit();
 }
@@ -86,7 +88,9 @@ export function prestige(): void {
 // ---- Tick-Engine ----
 
 export function tick(dtSeconds: number): void {
-  state.sand = state.sand.add(totalProductionPerSec(state).mul(dtSeconds));
+  const gained = totalProductionPerSec(state).mul(dtSeconds);
+  state.sand = state.sand.add(gained);
+  state.totalSandEver = state.totalSandEver.add(gained);
   state.playtimeSeconds += dtSeconds;
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {

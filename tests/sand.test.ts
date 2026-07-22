@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { Decimal } from "../src/lib/game/decimal";
 import { createInitialState } from "../src/lib/game/state";
 import { BUILDINGS, BUILDING_BY_ID } from "../src/lib/game/buildings";
+import { formatWeight } from "../src/lib/game/format";
+import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../src/lib/game/achievements";
 import {
   clickValue,
   totalProductionPerSec,
@@ -78,6 +80,44 @@ describe("Kaufkurve", () => {
     const base = new Decimal(10);
     const total = bulkCost(base, 0, 2).toNumber(); // 10 + 10·1,15
     expect(total).toBeCloseTo(10 + 11.5, 4);
+  });
+});
+
+describe("Gewicht (100 Körner = 1 mg)", () => {
+  it("100 Körner = 1 mg", () => {
+    expect(formatWeight(new Decimal(100))).toBe("1,00 mg");
+  });
+
+  it("skaliert zu g / kg / t", () => {
+    // 100.000 Körner = 1000 mg = 1 g
+    expect(formatWeight(new Decimal(1e5))).toBe("1,00 g");
+    // 1e8 Körner = 1e6 mg = 1 kg
+    expect(formatWeight(new Decimal(1e8))).toBe("1,00 kg");
+    // 1e11 Körner = 1e9 mg = 1 t
+    expect(formatWeight(new Decimal(1e11))).toBe("1,00 t");
+  });
+
+  it("0 Körner wiegen 0 mg", () => {
+    expect(formatWeight(new Decimal(0))).toBe("0 mg");
+  });
+});
+
+describe("Bauwerke aus Sand (Erfolge)", () => {
+  it("drei Bauwerke mit den vereinbarten Schwellen", () => {
+    expect(ACHIEVEMENTS.length).toBe(3);
+    expect(ACHIEVEMENTS[0].threshold.toNumber()).toBe(5e6);
+    expect(ACHIEVEMENTS[1].threshold.toNumber()).toBe(30e6);
+    expect(ACHIEVEMENTS[2].threshold.toNumber()).toBe(6e9);
+  });
+
+  it("schalten sich an totalSandEver frei", () => {
+    const s = createInitialState();
+    expect(unlockedCount(s)).toBe(0);
+    s.totalSandEver = new Decimal("5e6");
+    expect(isUnlocked(s, ACHIEVEMENTS[0])).toBe(true);
+    expect(unlockedCount(s)).toBe(1);
+    s.totalSandEver = new Decimal("6e9");
+    expect(unlockedCount(s)).toBe(3);
   });
 });
 

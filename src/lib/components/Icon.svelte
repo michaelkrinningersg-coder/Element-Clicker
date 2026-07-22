@@ -59,6 +59,40 @@
       <circle cx="18.6" cy="33.5" r="4.4" fill="#5b4a37" stroke="#3f3123" stroke-width="1.2" />
       <circle cx="18.6" cy="33.5" r="1.4" fill="#e0cfae" />
     </g>
+  {:else if id === "ach-schaufel"}
+    <g>
+      <!-- Sandhaufen -->
+      <path d="M6 35 q10 -13 16 0 z" fill="#e6c684" stroke="#cf9f45" stroke-width="1.4" stroke-linejoin="round" />
+      <g fill="#cea94f" opacity="0.6"><circle cx="12" cy="31" r="0.9" /><circle cx="15" cy="33" r="0.9" /><circle cx="18" cy="31.5" r="0.9" /></g>
+      <!-- Schaufel im Haufen -->
+      <g transform="rotate(24 27 22)">
+        <rect x="25.6" y="8" width="2.6" height="17" rx="1.3" fill="#b07a3e" />
+        <circle cx="26.9" cy="8" r="2.6" fill="none" stroke="#b07a3e" stroke-width="2" />
+        <path d="M23.4 24 h7 l-1 6.5 a2.6 2.6 0 0 1 -2.3 2 h-0.4 a2.6 2.6 0 0 1 -2.3 -2 z" fill="#c2c6cc" stroke="#8f959d" stroke-width="1.2" stroke-linejoin="round" />
+      </g>
+    </g>
+  {:else if id === "ach-eimer"}
+    <g stroke="#4d84bb" stroke-width="1.5" stroke-linejoin="round">
+      <path d="M12 17 h20 l-2.4 18 a2.2 2.2 0 0 1 -2.2 2 h-11 a2.2 2.2 0 0 1 -2.2 -2 z" fill="#6aa8de" />
+      <path d="M13 17 Q22 6 31 17" fill="none" stroke-linecap="round" />
+      <!-- randvoller Sand -->
+      <path d="M13.2 18.5 q8.8 6 17.6 0 q0 2.4 -8.8 2.4 q-8.8 0 -8.8 -2.4 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1" />
+      <path d="M17 15 q5 -4 10 0 q-5 3 -10 0 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1" />
+    </g>
+  {:else if id === "ach-sandburg"}
+    <g fill="#e6c684" stroke="#cf9f45" stroke-width="1.4" stroke-linejoin="round">
+      <!-- Hauptkörper -->
+      <rect x="9" y="20" width="26" height="15" rx="1.5" />
+      <!-- Zinnen -->
+      <path d="M9 20 v-4 h3 v4 M15.5 20 v-4 h3 v4 M22 20 v-4 h3 v4 M28.5 20 v-4 h3 v4" fill="#e6c684" stroke="none" />
+      <path d="M9 16 h3 v4 M15.5 16 h3 v4 M22 16 h3 v4 M28.5 16 h3 v4 M9 20 h26" fill="none" />
+      <!-- Türme -->
+      <rect x="6" y="14" width="6" height="21" rx="1.5" />
+      <rect x="32" y="14" width="6" height="21" rx="1.5" />
+      <path d="M6 14 l3 -5 l3 5 z M32 14 l3 -5 l3 5 z" fill="#e0a838" stroke="#c8922f" />
+      <!-- Tor -->
+      <path d="M19 35 v-7 a3 3 0 0 1 6 0 v7 z" fill="#b98a3e" stroke="#9a6f2e" />
+    </g>
   {/if}
 </svg>
 
