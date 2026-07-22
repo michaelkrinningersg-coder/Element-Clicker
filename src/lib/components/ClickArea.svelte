@@ -1,7 +1,6 @@
 <script lang="ts">
   import { game, click } from "../game/store";
   import { clickValue } from "../game/formulas";
-  import { CLICK_BASE } from "../game/constants";
   import { formatDecimal } from "../game/format";
 
   let pulsing = false;
@@ -11,15 +10,15 @@
     setTimeout(() => (pulsing = false), 90);
   }
 
-  $: perClick = clickValue($game, CLICK_BASE);
+  $: perClick = clickValue($game);
 </script>
 
 <div class="panel clickpanel">
-  <button class="orb" class:pulse={pulsing} on:click={onClick} aria-label="Wasserstoff sammeln">
-    <span class="glyph">🌫️</span>
-    <span class="hint">KLICK</span>
+  <button class="orb" class:pulse={pulsing} on:click={onClick} aria-label="Sand sammeln">
+    <span class="glyph">🏖️</span>
+    <span class="hint">SAMMELN</span>
   </button>
-  <div class="perclick mono">+{formatDecimal(perClick)} H / Klick</div>
+  <div class="perclick mono">+{formatDecimal(perClick)} Sand / Klick</div>
 </div>
 
 <style>
@@ -34,15 +33,18 @@
     width: 190px;
     height: 190px;
     border-radius: 50%;
-    border: 2px solid var(--accent);
+    border: 3px solid #e0b968;
     background: var(--orb-fill);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    animation: coreGlow 3.4s ease-in-out infinite;
-    transition: transform 0.06s ease;
+    box-shadow: 0 6px 22px rgba(216, 164, 65, 0.32);
+    transition: transform 0.06s ease, box-shadow 0.1s ease;
+  }
+  .orb:hover {
+    box-shadow: 0 8px 26px rgba(216, 164, 65, 0.45);
   }
   .orb.pulse {
     transform: scale(0.96);
@@ -53,26 +55,11 @@
   .hint {
     letter-spacing: 4px;
     font-size: 12px;
-    color: var(--text-dim);
+    color: #7a5f2a;
+    font-weight: 600;
   }
   .perclick {
     font-size: 14px;
     color: var(--text-dim);
-  }
-
-  @keyframes coreGlow {
-    0%,
-    100% {
-      box-shadow: 0 0 42px rgba(110, 168, 255, 0.32);
-    }
-    50% {
-      box-shadow: 0 0 70px rgba(150, 120, 255, 0.5);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .orb {
-      animation: none;
-      box-shadow: 0 0 42px rgba(110, 168, 255, 0.32);
-    }
   }
 </style>

@@ -1,14 +1,8 @@
 <script lang="ts">
   import ResourceBar from "./lib/components/ResourceBar.svelte";
   import ClickArea from "./lib/components/ClickArea.svelte";
-  import ClickUpgradesPanel from "./lib/components/ClickUpgradesPanel.svelte";
-  import GeneratorUpgradesPanel from "./lib/components/GeneratorUpgradesPanel.svelte";
-  import FusionUpgradesPanel from "./lib/components/FusionUpgradesPanel.svelte";
-  import GeneratorList from "./lib/components/GeneratorList.svelte";
-  import PeriodicTable from "./lib/components/PeriodicTable.svelte";
+  import BuildingsList from "./lib/components/BuildingsList.svelte";
   import PrestigePanel from "./lib/components/PrestigePanel.svelte";
-  import AchievementsPanel from "./lib/components/AchievementsPanel.svelte";
-  import StatisticsPanel from "./lib/components/StatisticsPanel.svelte";
   import { offlineReport } from "./lib/game/store";
   import { formatDecimal } from "./lib/game/format";
 
@@ -18,41 +12,29 @@
 {#if showOffline}
   <div class="offline" role="status">
     Willkommen zurück! In deiner Abwesenheit gesammelt:
-    <b class="mono">+{formatDecimal(offlineReport.gained)} H</b>
+    <b class="mono">+{formatDecimal(offlineReport.gained)} Sand</b>
     <button class="close" on:click={() => (showOffline = false)}>✕</button>
   </div>
 {/if}
 
 <ResourceBar />
 
-<GeneratorList />
-
 <div class="layout">
   <div class="col">
     <ClickArea />
-    <PeriodicTable />
-  </div>
-  <div class="col">
     <PrestigePanel />
   </div>
   <div class="col">
-    <ClickUpgradesPanel />
-    <GeneratorUpgradesPanel />
-    <FusionUpgradesPanel />
+    <BuildingsList />
   </div>
 </div>
 
-<div class="bottom">
-  <AchievementsPanel />
-  <StatisticsPanel />
-</div>
-
-<footer class="dim">Frühphasen-Prototyp · Balancing-Werte sind Platzhalter.</footer>
+<footer class="dim">Sandkörner-Prototyp · Balancing-Werte sind Platzhalter.</footer>
 
 <style>
   .offline {
-    background: linear-gradient(90deg, #1d2a52, #241b3a);
-    border: 1px solid var(--accent);
+    background: #fff4dc;
+    border: 1px solid #e9cf95;
     border-radius: 12px;
     padding: 10px 14px;
     margin-bottom: 16px;
@@ -69,7 +51,7 @@
   }
   .layout {
     display: grid;
-    grid-template-columns: 1.1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 18px;
     align-items: start;
   }
@@ -79,29 +61,12 @@
     gap: 18px;
     min-width: 0;
   }
-  .bottom {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 18px;
-    margin-top: 18px;
-    align-items: start;
-  }
-  @media (max-width: 900px) {
-    .bottom {
-      grid-template-columns: 1fr;
-    }
-  }
   footer {
     margin-top: 20px;
     text-align: center;
     font-size: 12px;
   }
-  @media (max-width: 980px) {
-    .layout {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  @media (max-width: 620px) {
+  @media (max-width: 700px) {
     .layout {
       grid-template-columns: 1fr;
     }

@@ -1,197 +1,80 @@
 <script lang="ts">
-  import {
-    game,
-    collapseCloud,
-    convertAllAEtoKelvin,
-    ignite,
-    collapseNebula,
-  } from "../game/store";
-  import { potentialAE, aeThreshold, runTimeMultiplier, aeGainMultiplier } from "../game/formulas";
-  import { formatDuration } from "../game/format";
-  import {
-    IGNITION_KELVIN,
-    KELVIN_PER_AE,
-    GRAVITON_AE_COST,
-    GRAVITON_H_COST,
-  } from "../game/constants";
+  import { game, prestige } from "../game/store";
+  import { glasGain, glasMultiplier } from "../game/formulas";
+  import { GLAS_UNLOCK, GLAS_BONUS_PER } from "../game/constants";
   import { formatDecimal, formatInt } from "../game/format";
-  import { Decimal, ZERO } from "../game/decimal";
+  import { Decimal } from "../game/decimal";
 
-  $: aeGain = potentialAE($game.runEarnedH, $game.gravitons)
-    .mul(aeGainMultiplier($game))
-    .floor();
-  $: canCollapse = aeGain.gt(0);
-  $: runBonusPct = (runTimeMultiplier($game).toNumber() - 1) * 100;
-
-  // Fortschritt bis zur nächsten AE-Einheit.
-  $: aeTier = aeGain.toNumber();
-  $: aePrevThreshold = aeTier >= 1 ? aeThreshold(aeTier, $game.gravitons) : ZERO;
-  $: aeNextThreshold = aeThreshold(aeTier + 1, $game.gravitons);
-  $: aeNextPct = (() => {
-    const span = aeNextThreshold.sub(aePrevThreshold);
-    if (span.lte(0)) return 0;
-    const p = $game.runEarnedH.sub(aePrevThreshold).div(span).mul(100).toNumber();
-    return Math.max(0, Math.min(100, p));
-  })();
-  $: kelvinPct = Decimal.min($game.kelvin.div(IGNITION_KELVIN), new Decimal(1))
-    .mul(100)
-    .toNumber();
-  $: canIgnite = !$game.ignited && $game.kelvin.gte(IGNITION_KELVIN);
-  $: canNebula =
-    $game.ignited && $game.ae.gte(GRAVITON_AE_COST) && $game.h.gte(GRAVITON_H_COST);
+  $: gain = glasGain($game);
+  $: unlocked = $game.sand.gte(GLAS_UNLOCK);
+  $: progressPct = Decimal.min($game.sand.div(GLAS_UNLOCK), new Decimal(1)).mul(100).toNumber();
+  $: bonusPct = (glasMultiplier($game).toNumber() - 1) * 100;
 </script>
 
 <div class="panel">
-  <h3>Kollaps &amp; Zündung</h3>
+  <h3>Prestige · Glas</h3>
 
-  <!-- Ebene 0: Wolke kollabieren -> AE -->
-  <div class="block">
-    <div class="head">
-      <span>🌀 Wolke kollabieren</span>
-      <span class="dim">+{formatInt(aeGain)} 🔥 AE</span>
-    </div>
-    <p class="dim small">
-      Setzt H, Elemente und Generatoren zurück. Jede AE gibt +2 % globale
-      H-Produktion (bleibt erhalten).
-    </p>
-    <div class="runbonus">
-      ⏱ Run-Bonus: <b>+{runBonusPct.toLocaleString("de-DE", { maximumFractionDigits: 2 })} %</b>
-      Auto &amp; Klick
-      <span class="dim">· {formatDuration($game.runSeconds)} · 0,01 %/s · Reset bei Kollaps</span>
-    </div>
-    <div class="nextae">
-      <div class="nextae-row">
-        <span class="dim small">Nächste AE bei</span>
-        <span class="mono small">{formatDecimal(aeNextThreshold)} H</span>
-      </div>
-      <div class="mini-progress">
-        <div class="mini-fill" style="width:{aeNextPct}%"></div>
-      </div>
-    </div>
-    <button class="btn primary full" disabled={!canCollapse} on:click={collapseCloud}>
-      Kollabieren
+  <p class="dim small">
+    Aus vielen Sandkörnern wird Glas. Jedes Glas gibt <b>+{GLAS_BONUS_PER * 100} %</b>
+    auf Sand-Produktion &amp; Klick (bleibt erhalten). Prestige setzt Sand &amp; Gebäude zurück.
+  </p>
+
+  <div class="stat">
+    <span>🔷 Glas</span>
+    <span class="mono"><b>{formatInt($game.glas)}</b> · Bonus +{bonusPct.toLocaleString("de-DE", { maximumFractionDigits: 1 })} %</span>
+  </div>
+
+  {#if unlocked}
+    <button class="btn primary full" on:click={prestige}>
+      Zu Glas schmelzen · +{formatInt(gain)} 🔷
     </button>
-  </div>
-
-  <!-- AE -> Kelvin + Zündung -->
-  <div class="block">
-    <div class="head">
-      <span>🌡️ Zündung</span>
-      <span class="dim mono">{formatDecimal($game.kelvin)} / {formatDecimal(IGNITION_KELVIN)} K</span>
+  {:else}
+    <div class="lockrow">
+      <span class="dim small">🔒 Glas ab {formatDecimal(GLAS_UNLOCK)} Sand</span>
+      <span class="mono small">{formatDecimal($game.sand)} / {formatDecimal(GLAS_UNLOCK)}</span>
     </div>
-    <div class="progress">
-      <div class="fill" style="width:{kelvinPct}%"></div>
-    </div>
-    {#if !$game.ignited}
-      <div class="btnrow">
-        <button class="btn" disabled={$game.ae.lte(0)} on:click={convertAllAEtoKelvin}>
-          AE → Kelvin (1 AE = {formatDecimal(KELVIN_PER_AE)} K)
-        </button>
-        <button class="btn hot" disabled={!canIgnite} on:click={ignite}>🔥 Zünden</button>
-      </div>
-      <p class="dim small">
-        AE in Kelvin umwandeln (einweg – umgewandelte AE geben keinen Boost mehr).
-        Bei {formatDecimal(IGNITION_KELVIN)} K kannst du zünden und schaltest die
-        Fusion H→He frei.
-      </p>
-    {:else}
-      <p class="good small">✓ Gezündet – Fusion H→He freigeschaltet.</p>
-    {/if}
-  </div>
-
-  <!-- Ebene 2: Nebel kollabieren -> Gravitonen (nach Zündung) -->
-  {#if $game.ignited}
-    <div class="block">
-      <div class="head">
-        <span>🌌 Nebel kollabieren</span>
-        <span class="dim">+1 🌀 Graviton</span>
-      </div>
-      <p class="dim small">
-        Kostet {formatInt(GRAVITON_AE_COST)} AE + {formatDecimal(GRAVITON_H_COST)} H.
-        Jedes Graviton senkt die AE-Schwellen dauerhaft (×0,95).
-      </p>
-      <button class="btn full" disabled={!canNebula} on:click={collapseNebula}>
-        Nebel kollabieren
-      </button>
-    </div>
+    <div class="progress"><div class="fill" style="width:{progressPct}%"></div></div>
   {/if}
 </div>
 
 <style>
-  .block {
-    border-top: 1px solid var(--border);
-    padding-top: 12px;
-    margin-top: 12px;
+  .small {
+    font-size: 12.5px;
+    margin: 6px 0;
   }
-  .block:first-of-type {
-    border-top: none;
-    padding-top: 0;
-    margin-top: 8px;
-  }
-  .head {
+  .stat {
     display: flex;
     justify-content: space-between;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  .small {
-    font-size: 0.8rem;
-    margin: 6px 0;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border-row);
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin: 8px 0 12px;
+    font-size: 14px;
   }
   .full {
     width: 100%;
   }
-  .btnrow {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .btnrow .btn {
-    flex: 1;
-  }
-  .progress {
-    height: 14px;
-    background: #0d1326;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    overflow: hidden;
-    margin: 6px 0;
-  }
-  .fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--hot), var(--gold));
-    transition: width 0.2s ease;
-  }
-  .good {
-    color: var(--good);
-  }
-  .runbonus {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin: 6px 0;
-  }
-  .runbonus b {
-    color: var(--accent);
-  }
-  .nextae {
-    margin: 8px 0;
-  }
-  .nextae-row {
+  .lockrow {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
+    gap: 10px;
+    margin-top: 4px;
   }
-  .mini-progress {
-    height: 6px;
-    background: #0d1326;
-    border: 1px solid var(--border);
+  .progress {
+    height: 12px;
+    background: #efe6d3;
+    border: 1px solid var(--border-row);
     border-radius: 999px;
     overflow: hidden;
-    margin-top: 5px;
+    margin-top: 6px;
   }
-  .mini-fill {
+  .fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--hot), var(--accent-2));
+    background: var(--progress-fill);
     transition: width 0.2s ease;
   }
 </style>
