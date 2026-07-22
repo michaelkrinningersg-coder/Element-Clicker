@@ -116,6 +116,30 @@ export function formatKm(m: number): string {
   return `${(m / 1000).toLocaleString("de-DE", { maximumFractionDigits: 2 })} km`;
 }
 
+/**
+ * Kompakte Restdauer aus einer (evtl. sehr großen) Sekundenzahl:
+ * s / min / h / d / Jahre (darüber wissenschaftlich).
+ */
+export function formatEtaSeconds(sec: Decimal): string {
+  if (sec.lte(0)) return "0 s";
+  if (sec.lt(60)) return `${Math.max(1, Math.ceil(sec.toNumber()))} s`;
+  if (sec.lt(3600)) return `${Math.round(sec.toNumber() / 60)} min`;
+  if (sec.lt(86400)) return `${Math.round(sec.toNumber() / 3600)} h`;
+  if (sec.lt(31557600)) return `${Math.round(sec.toNumber() / 86400)} d`;
+  const years = sec.div(31557600);
+  return `${years.lt(1e6) ? formatInt(years) : formatDecimal(years)} Jahre`;
+}
+
+/**
+ * Geschätzte Zeit, bis `current` das `target` erreicht, bei `perSec` pro Sekunde.
+ * Gibt "—" zurück, wenn keine Produktion läuft.
+ */
+export function formatEta(target: Decimal, current: Decimal, perSec: Decimal): string {
+  if (current.gte(target)) return "erreicht";
+  if (perSec.lte(0)) return "—";
+  return formatEtaSeconds(target.sub(current).div(perSec));
+}
+
 /** Sekunden als "Xd Yh Zm Ws". */
 export function formatDuration(totalSeconds: number): string {
   const s = Math.floor(totalSeconds);

@@ -7,6 +7,8 @@
     isMaxDepth,
     digMilestonesReached,
     digIncomeMultiplier,
+    grainsForDepth,
+    totalProductionPerSec,
   } from "../game/formulas";
   import {
     DIG_MILESTONES,
@@ -14,9 +16,16 @@
     DIG_START_TPM,
     EARTH_DIAMETER_M,
   } from "../game/constants";
-  import { formatDepth, formatKm, formatDecimal, formatScientific } from "../game/format";
+  import {
+    formatDepth,
+    formatKm,
+    formatDecimal,
+    formatScientific,
+    formatEta,
+  } from "../game/format";
   import { Decimal } from "../game/decimal";
 
+  $: prod = totalProductionPerSec($game);
   $: depth = digDepthMeters($game.totalSandEver);
   $: tonnes = weightInTonnes($game.totalSandEver);
   $: tPerM = tonnesPerMeterAt(depth);
@@ -115,7 +124,12 @@
         {@const reached = depth >= r.m}
         <div class="ref" class:reached>
           <span class="rmark">{reached ? "✓" : "○"}</span>
-          <span class="rname">{r.name}</span>
+          <div class="rinfo">
+            <span class="rname">{r.name}</span>
+            {#if !reached}
+              <span class="reta dim">⏱ {formatEta(grainsForDepth(r.m), $game.totalSandEver, prod)}</span>
+            {/if}
+          </div>
           <span class="rbonus" class:on={reached}>+1 %</span>
           <span class="rm mono">{formatDepth(r.m)}</span>
         </div>
@@ -294,6 +308,16 @@
     border-radius: 9px;
     padding: 8px 13px;
     font-size: 13px;
+  }
+  .rinfo {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  .reta {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
   }
   .rbonus {
     font-size: 11px;

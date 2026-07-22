@@ -7,6 +7,7 @@ import {
   earthMassPercent,
   formatFixedPercent,
   formatDepth,
+  formatEta,
 } from "../src/lib/game/format";
 import { EARTH_DIAMETER_M, DIG_CENTER_M, DIG_MILESTONES } from "../src/lib/game/constants";
 import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../src/lib/game/achievements";
@@ -27,6 +28,7 @@ import {
   isMaxDepth,
   digMilestonesReached,
   digIncomeMultiplier,
+  grainsForDepth,
 } from "../src/lib/game/formulas";
 
 describe("Klick (Hand)", () => {
@@ -235,6 +237,30 @@ describe("Graben-Meilensteine (+1 % je erreichter Tiefe)", () => {
       .mul(glasMultiplier(s))
       .mul(achievementProductionMult(s));
     expect(totalProductionPerSec(s).gt(withoutDig)).toBe(true);
+  });
+});
+
+describe("Zeit-Schätzung (ETA) bei aktueller Produktion", () => {
+  it("Sekunden / Minuten / Stunden / Tage", () => {
+    // 100 Körner Rest, 10/s → 10 s
+    expect(formatEta(new Decimal(100), new Decimal(0), new Decimal(10))).toBe("10 s");
+    // 600 Rest, 1/s → 10 min
+    expect(formatEta(new Decimal(600), new Decimal(0), new Decimal(1))).toBe("10 min");
+    // 7200 Rest, 1/s → 2 h
+    expect(formatEta(new Decimal(7200), new Decimal(0), new Decimal(1))).toBe("2 h");
+  });
+
+  it("erreicht, wenn Ziel schon überschritten", () => {
+    expect(formatEta(new Decimal(100), new Decimal(200), new Decimal(5))).toBe("erreicht");
+  });
+
+  it("— ohne Produktion", () => {
+    expect(formatEta(new Decimal(100), new Decimal(0), new Decimal(0))).toBe("—");
+  });
+
+  it("grainsForDepth passt zur Tiefe (Rundlauf)", () => {
+    const grains = grainsForDepth(500);
+    expect(digDepthMeters(grains)).toBeCloseTo(500, 3);
   });
 });
 

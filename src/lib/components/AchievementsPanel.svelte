@@ -1,18 +1,24 @@
 <script lang="ts">
   import { game } from "../game/store";
   import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../game/achievements";
-  import { achievementProductionMult, costMultiplier } from "../game/formulas";
+  import {
+    achievementProductionMult,
+    costMultiplier,
+    totalProductionPerSec,
+  } from "../game/formulas";
   import {
     formatDecimal,
     formatWeight,
     earthMassPercent,
     formatFixedPercent,
     formatScientific,
+    formatEta,
   } from "../game/format";
   import { Decimal } from "../game/decimal";
   import Icon from "./Icon.svelte";
 
   $: done = unlockedCount($game);
+  $: prod = totalProductionPerSec($game);
   // Aktive Boni: +2 % Produktion & −1 % Kosten je Bauwerk (multiplikativ).
   $: prodBonusPct = (achievementProductionMult($game).toNumber() - 1) * 100;
   $: costCutPct = (1 - costMultiplier($game).toNumber()) * 100;
@@ -89,7 +95,11 @@
             <div class="bar" aria-hidden="true">
               <div class="fill" style="width:{progressPct(a.threshold)}%"></div>
             </div>
-            <span class="pct dim">{formatDecimal(new Decimal(progressPct(a.threshold)), 1)} %</span>
+            <span class="pct dim">
+              {formatDecimal(new Decimal(progressPct(a.threshold)), 1)} % ·
+              ⏱ {formatEta(a.threshold, $game.totalSandEver, prod)}
+              {#if prod.gt(0)}bei aktueller Produktion{/if}
+            </span>
           {/if}
         </div>
       </div>

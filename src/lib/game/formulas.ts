@@ -168,6 +168,11 @@ export function tonnesPerMeterAt(depthM: number): number {
   return DIG_START_TPM * Math.exp((DIG_K * depthM) / DIG_CENTER_M);
 }
 
+/** Benötigte Sandkörner, um bis Tiefe D (Meter) zu graben. */
+export function grainsForDepth(depthM: number): Decimal {
+  return new Decimal(digWeightForDepth(depthM)).mul(TONNE_IN_GRAINS);
+}
+
 /** Gesammeltes Gewicht in Tonnen (für die Graben-Anzeige). */
 export function weightInTonnes(grains: Decimal): Decimal {
   return grains.div(TONNE_IN_GRAINS);
