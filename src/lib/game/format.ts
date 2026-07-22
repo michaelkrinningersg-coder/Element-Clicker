@@ -1,5 +1,5 @@
 import { Decimal } from "./decimal";
-import { GRAINS_PER_MG } from "./constants";
+import { EARTH_MASS_GRAINS, GRAINS_PER_MG } from "./constants";
 
 /** Große Zahlen als Mantisse×10^Exponent, kleine mit Tausenderpunkten (de-DE). */
 export function formatDecimal(d: Decimal, decimals = 2): string {
@@ -56,6 +56,24 @@ export function formatWeight(grains: Decimal): string {
       })
     : formatDecimal(value, 2);
   return `${num} ${chosen.u}`;
+}
+
+/** Anteil der gesammelten Sandmenge an der Erdmasse, in Prozent. */
+export function earthMassPercent(grains: Decimal): Decimal {
+  if (grains.lte(0)) return new Decimal(0);
+  return grains.div(EARTH_MASS_GRAINS).mul(100);
+}
+
+/** Fester Prozentwert mit `decimals` Nachkommastellen (de-DE, Komma). */
+export function formatFixedPercent(value: Decimal, decimals = 15): string {
+  const n = value.toNumber();
+  return n.toFixed(decimals).replace(".", ",");
+}
+
+/** Wissenschaftliche Notation m·10^e (auch für sehr kleine Zahlen). */
+export function formatScientific(d: Decimal, decimals = 2): string {
+  if (d.lte(0)) return "0";
+  return `${d.mantissa.toFixed(decimals).replace(".", ",")}·10^${d.exponent}`;
 }
 
 /** Sekunden als "Xd Yh Zm Ws". */

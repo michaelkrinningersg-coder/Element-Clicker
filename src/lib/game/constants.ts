@@ -15,6 +15,8 @@ export const CLICK_BASE = new Decimal(1); // 1 Sandkorn pro Klick (Basis)
 
 // ---- Physik: Gewicht ----
 export const GRAINS_PER_MG = 100; // 100 Sandkörner wiegen 1 mg
+// Erdmasse 5,972·10^24 kg → in Sandkörnern (1 kg = 1e6 mg = 1e8 Körner).
+export const EARTH_MASS_GRAINS = new Decimal("5.972e32");
 
 // ---- Gebäude-Kostenkurve (abflachend) ----
 export const COST_GROWTH_FLOOR = 1.05;
@@ -24,3 +26,7 @@ export const COST_GROWTH_KAPPA = 100;
 // ---- Prestige: Glas ----
 export const GLAS_UNLOCK = new Decimal("1e9"); // ab 1 Mrd. Sand freigeschaltet
 export const GLAS_BONUS_PER = 0.1; // +10 % auf Sand-Produktion & Klick je Glas
+
+// ---- Bauwerke (Erfolge) ----
+export const ACH_PROD_PER = 0.02; // +2 % auf alle Produktion je gebautem Bauwerk (multiplikativ)
+export const ACH_COST_PER = 0.01; // −1 % Kosten je Bauwerk (multiplikativ, 0,99^n)

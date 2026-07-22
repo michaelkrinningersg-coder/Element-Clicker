@@ -8,18 +8,37 @@ import {
   growthRate,
   totalProductionPerSec,
 } from "./formulas";
-import { createInitialState, prestigeReset, type GameState } from "./state";
+import {
+  createInitialState,
+  prestigeReset,
+  recomputeNextCosts,
+  type GameState,
+} from "./state";
+import { unlockedCount } from "./achievements";
 import { applyOfflineProgress, loadGame, saveGame } from "./save";
 
 const initial = loadGame();
 export const offlineReport = applyOfflineProgress(initial);
 
 let state: GameState = initial;
+// Offline-Sand kann Bauwerke freischalten → Rabatt auf Startkosten anwenden.
+recomputeNextCosts(state);
+let lastUnlocked = unlockedCount(state);
+
 export const game = writable<GameState>(state);
 
 let sinceAutosave = 0;
 function commit(): void {
   game.set(state);
+}
+
+/** Prüft, ob ein neues Bauwerk freigeschaltet wurde, und wendet den Rabatt an. */
+function syncAchievements(): void {
+  const count = unlockedCount(state);
+  if (count !== lastUnlocked) {
+    lastUnlocked = count;
+    recomputeNextCosts(state);
+  }
 }
 
 // ---- Aktionen ----
@@ -29,6 +48,7 @@ export function click(): void {
   state.sand = state.sand.add(gained);
   state.totalSandEver = state.totalSandEver.add(gained);
   state.totalClicks += 1;
+  syncAchievements();
   commit();
 }
 
@@ -92,6 +112,7 @@ export function tick(dtSeconds: number): void {
   state.sand = state.sand.add(gained);
   state.totalSandEver = state.totalSandEver.add(gained);
   state.playtimeSeconds += dtSeconds;
+  syncAchievements();
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {
     sinceAutosave = 0;
@@ -106,6 +127,7 @@ export function forceSave(): void {
 
 export function hardReset(): void {
   state = createInitialState();
+  lastUnlocked = unlockedCount(state);
   saveGame(state);
   commit();
 }

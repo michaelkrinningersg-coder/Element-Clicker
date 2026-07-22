@@ -1,6 +1,12 @@
 <script lang="ts">
   import { game } from "../game/store";
-  import { totalProductionPerSec, clickValue } from "../game/formulas";
+  import {
+    totalProductionPerSec,
+    clickValue,
+    achievementProductionMult,
+    costMultiplier,
+  } from "../game/formulas";
+  import { unlockedCount } from "../game/achievements";
   import {
     formatDecimal,
     formatInt,
@@ -11,6 +17,7 @@
 
   $: production = totalProductionPerSec($game);
   $: perClick = clickValue($game);
+  $: built = unlockedCount($game);
 </script>
 
 <div class="panel">
@@ -61,6 +68,24 @@
       <div class="stat">
         <span class="k">Spielzeit</span>
         <span class="v mono">{formatDuration($game.playtimeSeconds)}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h4>Bauwerk-Boni</h4>
+    <div class="rows">
+      <div class="stat">
+        <span class="k">Gebaute Bauwerke</span>
+        <span class="v mono">{built}</span>
+      </div>
+      <div class="stat">
+        <span class="k">Produktions-Multiplikator</span>
+        <span class="v mono">×{formatDecimal(achievementProductionMult($game), 3)}</span>
+      </div>
+      <div class="stat">
+        <span class="k">Kosten-Multiplikator</span>
+        <span class="v mono">×{formatDecimal(costMultiplier($game), 3)}</span>
       </div>
     </div>
   </div>

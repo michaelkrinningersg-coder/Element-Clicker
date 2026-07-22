@@ -1,16 +1,29 @@
 <script lang="ts">
   import { game } from "../game/store";
   import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../game/achievements";
-  import { formatDecimal, formatWeight } from "../game/format";
+  import { achievementProductionMult, costMultiplier } from "../game/formulas";
+  import {
+    formatDecimal,
+    formatWeight,
+    earthMassPercent,
+    formatFixedPercent,
+    formatScientific,
+  } from "../game/format";
   import { Decimal } from "../game/decimal";
   import Icon from "./Icon.svelte";
 
   $: done = unlockedCount($game);
+  // Aktive Boni: +2 % Produktion & −1 % Kosten je Bauwerk (multiplikativ).
+  $: prodBonusPct = (achievementProductionMult($game).toNumber() - 1) * 100;
+  $: costCutPct = (1 - costMultiplier($game).toNumber()) * 100;
+  // Fortschritt zur Erdmasse (5,972·10^24 kg).
+  $: earthPct = earthMassPercent($game.totalSandEver);
 
   const progressPct = (threshold: Decimal): number => {
     const p = $game.totalSandEver.div(threshold).toNumber() * 100;
     return Math.max(0, Math.min(100, p));
   };
+  const pct1 = (n: number) => formatDecimal(new Decimal(n), 1);
 </script>
 
 <div class="panel">
@@ -20,7 +33,33 @@
   </div>
   <p class="legend dim">
     Meilensteine, die sich an den insgesamt gesammelten Sandkörnern freischalten.
+    Jedes Bauwerk gibt <b>+2 % Produktion</b> und <b>−1 % Kosten</b> (multiplikativ).
   </p>
+
+  <div class="totals">
+    <div class="tot prod">
+      <span class="tk">Produktion</span>
+      <span class="tv">×{formatDecimal(achievementProductionMult($game), 3)}</span>
+      <span class="ts dim">+{pct1(prodBonusPct)} %</span>
+    </div>
+    <div class="tot cost">
+      <span class="tk">Kosten</span>
+      <span class="tv">×{formatDecimal(costMultiplier($game), 3)}</span>
+      <span class="ts dim">−{pct1(costCutPct)} %</span>
+    </div>
+  </div>
+
+  <div class="earth">
+    <div class="ehead">
+      <span class="etitle">🌍 Fortschritt zur Erdmasse</span>
+      <span class="esci dim">{formatScientific(earthPct)} %</span>
+    </div>
+    <div class="epct mono">{formatFixedPercent(earthPct, 15)} %</div>
+    <p class="enote dim">
+      Erdmasse ≈ 5,972·10<sup>24</sup> kg ≈ 5,972·10<sup>32</sup> Sandkörner ·
+      gesammelt: {formatDecimal($game.totalSandEver)} Körner ({formatWeight($game.totalSandEver)})
+    </p>
+  </div>
 
   <div class="list">
     {#each ACHIEVEMENTS as a (a.id)}
@@ -37,6 +76,10 @@
             {/if}
           </div>
           <p class="desc dim">{a.desc}</p>
+          <div class="reward">
+            <span class="rw">+2 % Produktion</span>
+            <span class="rw">−1 % Kosten</span>
+          </div>
           <div class="meta">
             <span class="req mono">{formatDecimal(a.threshold)} Körner</span>
             <span class="dot">·</span>
@@ -76,7 +119,94 @@
   }
   .legend {
     font-size: 13px;
-    margin: 0 0 14px;
+    margin: 0 0 12px;
+  }
+  .totals {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .tot {
+    flex: 1;
+    min-width: 130px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--panel-2);
+    border: 1px solid var(--border-row);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .tot.prod {
+    border-left: 3px solid var(--prod);
+  }
+  .tot.cost {
+    border-left: 3px solid var(--accent);
+  }
+  .tk {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-head);
+  }
+  .tv {
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .ts {
+    font-size: 12px;
+  }
+  .reward {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .rw {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--prod);
+    background: var(--chip-grav-bg);
+    border: 1px solid var(--chip-grav-bd);
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+  .earth {
+    background: var(--panel-2);
+    border: 1px solid var(--border-row);
+    border-left: 3px solid var(--accent-2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .ehead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .etitle {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .esci {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .epct {
+    margin-top: 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent-2);
+    word-break: break-all;
+  }
+  .enote {
+    margin: 8px 0 0;
+    font-size: 11px;
+    line-height: 1.5;
   }
   .list {
     display: flex;

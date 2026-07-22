@@ -1,6 +1,6 @@
 import { Decimal, ZERO } from "./decimal";
 import { BUILDINGS } from "./buildings";
-import { costForNext } from "./formulas";
+import { costForNext, costMultiplier } from "./formulas";
 
 export interface BuildingState {
   owned: number;
@@ -37,18 +37,21 @@ export function createInitialState(): GameState {
   };
 }
 
-/** Stellt nextCost aller Gebäude aus den `owned`-Zahlen wieder her. */
+/** Stellt nextCost aller Gebäude aus den `owned`-Zahlen wieder her (inkl. Bauwerk-Rabatt). */
 export function recomputeNextCosts(state: GameState): void {
+  const costMult = costMultiplier(state);
   for (const b of BUILDINGS) {
     const bs = state.buildings[b.id];
-    bs.nextCost = costForNext(b.baseCost, bs.owned, b.costGrowth);
+    bs.nextCost = costForNext(b.baseCost, bs.owned, b.costGrowth, costMult);
   }
 }
 
-/** Prestige-Reset: Sand + Gebäude zurück (Glas & Meta bleiben). */
+/** Prestige-Reset: Sand + Gebäude zurück (Glas & Meta & Bauwerke bleiben). */
 export function prestigeReset(state: GameState): void {
   state.sand = ZERO;
   for (const b of BUILDINGS) {
     state.buildings[b.id] = { owned: 0, nextCost: b.baseCost };
   }
+  // Bauwerk-Rabatt weiterhin anwenden (Bauwerke bleiben freigeschaltet).
+  recomputeNextCosts(state);
 }

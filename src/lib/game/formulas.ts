@@ -1,5 +1,7 @@
 import { Decimal, ZERO, ONE } from "./decimal";
 import {
+  ACH_COST_PER,
+  ACH_PROD_PER,
   COST_GROWTH_FLOOR,
   COST_GROWTH_KAPPA,
   COST_GROWTH_SPAN,
@@ -7,6 +9,7 @@ import {
   GLAS_UNLOCK,
 } from "./constants";
 import { BUILDINGS, BUILDING_BY_ID } from "./buildings";
+import { unlockedCount } from "./achievements";
 import type { GameState } from "./state";
 
 /** Reine Formelfunktionen (keine Seiteneffekte). */
@@ -21,8 +24,13 @@ export function growthRate(ownedIndex: number, constant?: number): number {
 }
 
 /** Kosten der nächsten Einheit, komplett aus `owned` neu berechnet. */
-export function costForNext(baseCost: Decimal, owned: number, constant?: number): Decimal {
-  let cost = baseCost;
+export function costForNext(
+  baseCost: Decimal,
+  owned: number,
+  constant?: number,
+  costMult: Decimal = ONE,
+): Decimal {
+  let cost = baseCost.mul(costMult);
   for (let i = 0; i < owned; i++) cost = cost.mul(growthRate(i, constant));
   return cost;
 }
@@ -69,6 +77,16 @@ export function glasMultiplier(state: GameState): Decimal {
   return ONE.add(state.glas.mul(GLAS_BONUS_PER));
 }
 
+/** Produktions-Multiplikator aus Bauwerken: (1 + 0,02)^Anzahl (nur Produktion). */
+export function achievementProductionMult(state: GameState): Decimal {
+  return new Decimal(Math.pow(1 + ACH_PROD_PER, unlockedCount(state)));
+}
+
+/** Kosten-Multiplikator aus Bauwerken: (1 − 0,01)^Anzahl (multiplikativ, günstiger). */
+export function costMultiplier(state: GameState): Decimal {
+  return new Decimal(Math.pow(1 - ACH_COST_PER, unlockedCount(state)));
+}
+
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */
 export function clickValue(state: GameState): Decimal {
   let base = 1;
@@ -80,16 +98,19 @@ export function clickValue(state: GameState): Decimal {
   return new Decimal(base).mul(glasMultiplier(state));
 }
 
-/** Sand/Sek. eines einzelnen Generator-Gebäudes inkl. Glas (für die Anzeige). */
+/** Sand/Sek. eines einzelnen Generator-Gebäudes inkl. Glas & Bauwerken (für die Anzeige). */
 export function buildingProduction(state: GameState, id: string): Decimal {
   const b = BUILDING_BY_ID[id];
   if (b?.kind === "generator" && b.prodPerUnit) {
-    return b.prodPerUnit.mul(state.buildings[id].owned).mul(glasMultiplier(state));
+    return b.prodPerUnit
+      .mul(state.buildings[id].owned)
+      .mul(glasMultiplier(state))
+      .mul(achievementProductionMult(state));
   }
   return ZERO;
 }
 
-/** Gesamte Sand/Sek. inkl. Glas. */
+/** Gesamte Sand/Sek. inkl. Glas & Bauwerk-Bonus. */
 export function totalProductionPerSec(state: GameState): Decimal {
   let sum = ZERO;
   for (const b of BUILDINGS) {
@@ -97,7 +118,7 @@ export function totalProductionPerSec(state: GameState): Decimal {
       sum = sum.add(b.prodPerUnit.mul(state.buildings[b.id].owned));
     }
   }
-  return sum.mul(glasMultiplier(state));
+  return sum.mul(glasMultiplier(state)).mul(achievementProductionMult(state));
 }
 
 /** Prestige erlaubt, sobald Sand ≥ 1e9. */
