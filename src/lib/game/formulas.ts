@@ -11,25 +11,34 @@ import type { GameState } from "./state";
 
 /** Reine Formelfunktionen (keine Seiteneffekte). */
 
-/** Abflachende Wachstumsrate für den Kauf der (ownedIndex+1)-ten Einheit. */
-export function growthRate(ownedIndex: number): number {
+/**
+ * Wachstumsrate pro Kauf. Mit `constant` eine feste Rate je Gebäude,
+ * ohne `constant` die globale abflachende Kurve (Fallback).
+ */
+export function growthRate(ownedIndex: number, constant?: number): number {
+  if (constant !== undefined) return constant;
   return COST_GROWTH_FLOOR + COST_GROWTH_SPAN * Math.pow(0.5, ownedIndex / COST_GROWTH_KAPPA);
 }
 
 /** Kosten der nächsten Einheit, komplett aus `owned` neu berechnet. */
-export function costForNext(baseCost: Decimal, owned: number): Decimal {
+export function costForNext(baseCost: Decimal, owned: number, constant?: number): Decimal {
   let cost = baseCost;
-  for (let i = 0; i < owned; i++) cost = cost.mul(growthRate(i));
+  for (let i = 0; i < owned; i++) cost = cost.mul(growthRate(i, constant));
   return cost;
 }
 
 /** Gesamtkosten, um `count` Einheiten ab `owned` zu kaufen (Start: nextCost). */
-export function bulkCost(nextCost: Decimal, owned: number, count: number): Decimal {
+export function bulkCost(
+  nextCost: Decimal,
+  owned: number,
+  count: number,
+  constant?: number,
+): Decimal {
   let total = ZERO;
   let cost = nextCost;
   for (let i = 0; i < count; i++) {
     total = total.add(cost);
-    cost = cost.mul(growthRate(owned + i));
+    cost = cost.mul(growthRate(owned + i, constant));
   }
   return total;
 }
@@ -40,6 +49,7 @@ export function maxAffordable(
   owned: number,
   sand: Decimal,
   limit = 1_000_000,
+  constant?: number,
 ): number {
   let count = 0;
   let cost = nextCost;
@@ -48,7 +58,7 @@ export function maxAffordable(
     const next = spent.add(cost);
     if (next.gt(sand)) break;
     spent = next;
-    cost = cost.mul(growthRate(owned + count));
+    cost = cost.mul(growthRate(owned + count, constant));
     count++;
   }
   return count;

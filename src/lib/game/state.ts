@@ -39,7 +39,7 @@ export function createInitialState(): GameState {
 export function recomputeNextCosts(state: GameState): void {
   for (const b of BUILDINGS) {
     const bs = state.buildings[b.id];
-    bs.nextCost = costForNext(b.baseCost, bs.owned);
+    bs.nextCost = costForNext(b.baseCost, bs.owned, b.costGrowth);
   }
 }
 

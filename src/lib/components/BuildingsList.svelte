@@ -10,6 +10,7 @@
   } from "../game/formulas";
   import { formatDecimal } from "../game/format";
   import { Decimal, ZERO } from "../game/decimal";
+  import Icon from "./Icon.svelte";
 
   type BuyMode = number | "max";
   const BUY_MODES: BuyMode[] = [1, 10, 100, "max"];
@@ -56,8 +57,8 @@
   {#each BUILDINGS as def (def.id)}
     {@const bs = $game.buildings[def.id]}
     {@const isGen = def.kind === "generator"}
-    {@const buyCount = maxAffordable(bs.nextCost, bs.owned, $game.sand, targetCount(buyMode))}
-    {@const buyCostTotal = bulkCost(bs.nextCost, bs.owned, buyCount)}
+    {@const buyCount = maxAffordable(bs.nextCost, bs.owned, $game.sand, targetCount(buyMode), def.costGrowth)}
+    {@const buyCostTotal = bulkCost(bs.nextCost, bs.owned, buyCount, def.costGrowth)}
     {@const affordable = buyCount > 0}
     {@const prod = isGen ? buildingProduction($game, def.id) : ZERO}
     {@const base = baseUnit(def.id)}
@@ -69,7 +70,7 @@
       on:click={() => buyBuildings(def.id, buyCount)}
     >
       <span class="gen">
-        <span class="icon">{def.icon}</span>
+        <Icon id={def.id} size={30} />
         <span class="name">{def.name}</span>
       </span>
       <span class="r count">×{bs.owned}</span>
@@ -165,9 +166,6 @@
     align-items: center;
     gap: 10px;
     min-width: 0;
-  }
-  .icon {
-    font-size: 22px;
   }
   .name {
     font-size: 15px;

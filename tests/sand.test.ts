@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Decimal } from "../src/lib/game/decimal";
 import { createInitialState } from "../src/lib/game/state";
+import { BUILDINGS, BUILDING_BY_ID } from "../src/lib/game/buildings";
 import {
   clickValue,
   totalProductionPerSec,
@@ -8,6 +9,7 @@ import {
   glasGain,
   canPrestige,
   growthRate,
+  costForNext,
   bulkCost,
   maxAffordable,
 } from "../src/lib/game/formulas";
@@ -76,5 +78,31 @@ describe("Kaufkurve", () => {
     const base = new Decimal(10);
     const total = bulkCost(base, 0, 2).toNumber(); // 10 + 10·1,15
     expect(total).toBeCloseTo(10 + 11.5, 4);
+  });
+});
+
+describe("Gebäude & Ramping je Gebäude", () => {
+  it("7 Gebäude mit den vereinbarten Startkosten", () => {
+    expect(BUILDINGS.length).toBe(7);
+    expect(BUILDING_BY_ID.schaufel.baseCost.toNumber()).toBe(150);
+    expect(BUILDING_BY_ID.sieb.baseCost.toNumber()).toBe(3000);
+    expect(BUILDING_BY_ID.arbeiter.baseCost.toNumber()).toBe(36000);
+    expect(BUILDING_BY_ID.lasttiere.baseCost.toNumber()).toBe(900000);
+    expect(BUILDING_BY_ID.handkarren.baseCost.toNumber()).toBe(16000000);
+  });
+
+  it("Produktionssprünge liegen bei ~75 % (nur ~×7 bis ×21 statt ×9–×28)", () => {
+    const p = (id: string) => BUILDING_BY_ID[id].prodPerUnit!.toNumber();
+    expect(p("schaufel") / p("eimer")).toBeCloseTo(11, 0);
+    expect(p("lasttiere") / p("arbeiter")).toBeCloseTo(21, 0);
+  });
+
+  it("eigenes Ramping je Gebäude (konstante Rate)", () => {
+    expect(BUILDING_BY_ID.eimer.costGrowth).toBe(1.12);
+    expect(BUILDING_BY_ID.handkarren.costGrowth).toBe(1.17);
+    // costForNext nutzt die konstante Rate
+    const def = BUILDING_BY_ID.handkarren;
+    const c = costForNext(def.baseCost, 2, def.costGrowth);
+    expect(c.div(def.baseCost).toNumber()).toBeCloseTo(1.17 * 1.17, 6);
   });
 });

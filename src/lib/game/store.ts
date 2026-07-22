@@ -42,7 +42,7 @@ export function buyBuildings(id: string, count: number): void {
     state.sand = state.sand.sub(bs.nextCost);
     const oldOwned = bs.owned;
     bs.owned += 1;
-    bs.nextCost = bs.nextCost.mul(growthRate(oldOwned));
+    bs.nextCost = bs.nextCost.mul(growthRate(oldOwned, def.costGrowth));
     bought++;
   }
   if (bought > 0) commit();
@@ -66,7 +66,7 @@ export function buyMaxAll(): void {
     state.sand = state.sand.sub(bs.nextCost);
     const oldOwned = bs.owned;
     bs.owned += 1;
-    bs.nextCost = bs.nextCost.mul(growthRate(oldOwned));
+    bs.nextCost = bs.nextCost.mul(growthRate(oldOwned, BUILDING_BY_ID[cheapestId].costGrowth));
     anyBought = true;
   }
   if (anyBought) commit();
