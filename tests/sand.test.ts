@@ -135,11 +135,20 @@ describe("Fortschritt zur Erdmasse", () => {
 });
 
 describe("Bauwerke aus Sand (Erfolge)", () => {
-  it("drei Bauwerke mit den vereinbarten Schwellen", () => {
-    expect(ACHIEVEMENTS.length).toBe(3);
+  it("sechs Bauwerke mit den vereinbarten Schwellen", () => {
+    expect(ACHIEVEMENTS.length).toBe(6);
     expect(ACHIEVEMENTS[0].threshold.toNumber()).toBe(5e6);
     expect(ACHIEVEMENTS[1].threshold.toNumber()).toBe(30e6);
     expect(ACHIEVEMENTS[2].threshold.toNumber()).toBe(6e9);
+    expect(ACHIEVEMENTS[3].threshold.toNumber()).toBe(2.4e12);
+    expect(ACHIEVEMENTS[4].threshold.toNumber()).toBe(15e15);
+    expect(ACHIEVEMENTS[5].threshold.toNumber()).toBe(200e15);
+  });
+
+  it("Schwellen sind aufsteigend sortiert", () => {
+    for (let i = 1; i < ACHIEVEMENTS.length; i++) {
+      expect(ACHIEVEMENTS[i].threshold.gt(ACHIEVEMENTS[i - 1].threshold)).toBe(true);
+    }
   });
 
   it("schalten sich an totalSandEver frei", () => {
@@ -150,6 +159,8 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
     expect(unlockedCount(s)).toBe(1);
     s.totalSandEver = new Decimal("6e9");
     expect(unlockedCount(s)).toBe(3);
+    s.totalSandEver = new Decimal("200e15");
+    expect(unlockedCount(s)).toBe(6);
   });
 });
 

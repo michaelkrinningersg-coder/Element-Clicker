@@ -93,6 +93,47 @@
       <!-- Tor -->
       <path d="M19 35 v-7 a3 3 0 0 1 6 0 v7 z" fill="#b98a3e" stroke="#9a6f2e" />
     </g>
+  {:else if id === "ach-lkw"}
+    <g>
+      <!-- Fahrerhaus -->
+      <path d="M6 20 h9 v13 h-11 v-8 a2 2 0 0 1 0.6 -1.4 z" fill="#4d84bb" stroke="#3a6591" stroke-width="1.3" stroke-linejoin="round" />
+      <rect x="7.5" y="22" width="5.5" height="4.5" rx="1" fill="#bfe0f2" stroke="#3a6591" stroke-width="1" />
+      <!-- Mulde mit Sand -->
+      <path d="M15 22 h22 v11 h-22 z" fill="#d9a441" stroke="#b07f2c" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M16 22 q5.5 -4.5 11 0 q5.5 -4.5 10 0 q0 1.6 -5 1.6 q-5 0 -5 -1.6 q0 1.6 -5 1.6 q-6 0 -6 -1.6 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1" />
+      <!-- Räder -->
+      <circle cx="12" cy="35" r="3.4" fill="#3f3123" stroke="#2a2016" stroke-width="1.2" />
+      <circle cx="30" cy="35" r="3.4" fill="#3f3123" stroke="#2a2016" stroke-width="1.2" />
+      <circle cx="12" cy="35" r="1.1" fill="#c9b89a" /><circle cx="30" cy="35" r="1.1" fill="#c9b89a" />
+    </g>
+  {:else if id === "ach-duene"}
+    <g>
+      <path d="M3 34 q9 -15 19 -9 q7 4 19 9 z" fill="#e6c684" stroke="#cf9f45" stroke-width="1.4" stroke-linejoin="round" />
+      <path d="M22 25 q10 4 19 9 h-19 z" fill="#d9b160" stroke="none" opacity="0.55" />
+      <!-- Windrippel -->
+      <g fill="none" stroke="#cf9f45" stroke-width="0.9" opacity="0.6" stroke-linecap="round">
+        <path d="M9 31 q3 -1.6 6 0" /><path d="M17 29 q3 -1.6 6 0" /><path d="M26 31 q3 -1.6 6 0" />
+      </g>
+      <!-- Grasbüschel -->
+      <g stroke="#7fa85a" stroke-width="1.2" stroke-linecap="round" fill="none">
+        <path d="M14 24 v-5 M14 24 l-2.4 -4 M14 24 l2.4 -4.4" />
+      </g>
+    </g>
+  {:else if id === "ach-strand"}
+    <g>
+      <!-- Meer -->
+      <path d="M3 12 h38 v10 h-38 z" fill="#6cc3d4" />
+      <g fill="none" stroke="#bfe9f0" stroke-width="1" opacity="0.8" stroke-linecap="round">
+        <path d="M6 15 q3 -1.6 6 0 t6 0 t6 0 t6 0" /><path d="M6 19 q3 -1.6 6 0 t6 0 t6 0 t6 0" />
+      </g>
+      <!-- Wellensaum -->
+      <path d="M3 22 q6 3 12 1 q7 -2 13 1 q6 2 13 -1 v0 h-38 z" fill="#eaf6f8" />
+      <!-- Sand -->
+      <path d="M3 24 q6 2.6 12 1 q7 -1.8 13 1 q6 1.8 13 -1 v11 h-38 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1.2" stroke-linejoin="round" />
+      <!-- Sonnenschirm -->
+      <line x1="30" y1="26" x2="30" y2="35" stroke="#9a6f2e" stroke-width="1.4" stroke-linecap="round" />
+      <path d="M24 27 a6 6 0 0 1 12 0 z" fill="#e0654b" stroke="#b84d36" stroke-width="1" stroke-linejoin="round" />
+    </g>
   {/if}
 </svg>
 

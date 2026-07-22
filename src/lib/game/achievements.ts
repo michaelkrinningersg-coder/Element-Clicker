@@ -35,6 +35,27 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: new Decimal("6e9"),
     desc: "Türme, Zinnen, Burggraben – eine echte Sandburg.",
   },
+  {
+    id: "lkw",
+    name: "Ein LKW voll Sand",
+    icon: "ach-lkw",
+    threshold: new Decimal("2.4e12"),
+    desc: "Eine ganze Ladung – Sand für die Baustelle.",
+  },
+  {
+    id: "duene",
+    name: "Eine Düne",
+    icon: "ach-duene",
+    threshold: new Decimal("15e15"),
+    desc: "Vom Wind geformt: ein sanfter Sandhügel.",
+  },
+  {
+    id: "strand",
+    name: "Ein Strand",
+    icon: "ach-strand",
+    threshold: new Decimal("200e15"),
+    desc: "Kilometerweit nichts als Sand – ein ganzer Strand.",
+  },
 ];
 
 /** Ist der Erfolg (nach gesamt gesammeltem Sand) freigeschaltet? */
