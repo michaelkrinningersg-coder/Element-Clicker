@@ -230,15 +230,18 @@ export function digIncomeMultiplier(state: GameState): Decimal {
   return new Decimal(1 + DIG_MILESTONE_BONUS_PER * reached);
 }
 
-/** Prestige erlaubt, sobald Sand ≥ 1e9. */
+/** Prestige erlaubt, sobald in diesem Run ≥ 1e9 Sand gesammelt wurde. */
 export function canPrestige(state: GameState): boolean {
-  return state.sand.gte(GLAS_UNLOCK);
+  return state.runSandEver.gte(GLAS_UNLOCK);
 }
 
-/** Wie viel Glas ein Prestige einbringt: floor(sqrt(Sand / 1e9)), min. 1. */
+/**
+ * Wie viel Glas ein Prestige einbringt: floor(sqrt(Run-Sand / 1e9)), min. 1.
+ * Basis ist der in diesem Prestige insgesamt gesammelte Sand (nicht der aktuelle).
+ */
 export function glasGain(state: GameState): Decimal {
-  if (state.sand.lt(GLAS_UNLOCK)) return ZERO;
-  const g = state.sand.div(GLAS_UNLOCK).sqrt().floor();
+  if (state.runSandEver.lt(GLAS_UNLOCK)) return ZERO;
+  const g = state.runSandEver.div(GLAS_UNLOCK).sqrt().floor();
   return g.lt(1) ? ONE : g;
 }
 

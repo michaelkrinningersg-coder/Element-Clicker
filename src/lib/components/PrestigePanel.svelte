@@ -11,21 +11,23 @@
   import { formatDecimal, formatInt, formatEta } from "../game/format";
   import { Decimal } from "../game/decimal";
 
+  // Glas-Ertrag basiert auf dem in diesem Prestige gesammelten Sand (runSandEver).
+  $: runSand = $game.runSandEver;
   $: gain = glasGain($game);
-  $: unlocked = $game.sand.gte(GLAS_UNLOCK);
-  $: progressPct = Decimal.min($game.sand.div(GLAS_UNLOCK), new Decimal(1)).mul(100).toNumber();
+  $: unlocked = runSand.gte(GLAS_UNLOCK);
+  $: progressPct = Decimal.min(runSand.div(GLAS_UNLOCK), new Decimal(1)).mul(100).toNumber();
   $: bonusPct = (glasMultiplier($game).toNumber() - 1) * 100;
 
   $: prod = totalProductionPerSec($game);
   $: gainNum = gain.toNumber();
   $: nextK = gainNum + 1;
   $: nextThreshold = sandForNextGlas($game);
-  $: remaining = Decimal.max(nextThreshold.sub($game.sand), new Decimal(0));
-  $: nextEta = formatEta(nextThreshold, $game.sand, prod);
+  $: remaining = Decimal.max(nextThreshold.sub(runSand), new Decimal(0));
+  $: nextEta = formatEta(nextThreshold, runSand, prod);
   // Fortschritt innerhalb der aktuellen Glas-Stufe (von k² zu (k+1)²).
   $: stepFrom = sandForGlas(gainNum);
   $: stepPct = Decimal.min(
-    Decimal.max($game.sand.sub(stepFrom), new Decimal(0)).div(nextThreshold.sub(stepFrom)),
+    Decimal.max(runSand.sub(stepFrom), new Decimal(0)).div(nextThreshold.sub(stepFrom)),
     new Decimal(1),
   ).mul(100).toNumber();
 
@@ -38,7 +40,7 @@
     const W = 320, H = 140, pad = 24;
     const plotW = W - pad * 2, plotH = H - pad * 2;
     const L0 = 9; // 1e9
-    const Lcur = Math.max(L0, log10D($game.sand));
+    const Lcur = Math.max(L0, log10D(runSand));
     const Lnext = log10D(nextThreshold);
     const L1 = Math.max(11, 9 + 2 * Math.log10(gainNum + 3), Lnext + 0.2, Lcur + 0.2);
     const yMax = Math.pow(10, (L1 - 9) / 2);
@@ -65,8 +67,10 @@
   <h3>Prestige · Glas</h3>
 
   <p class="dim small">
-    Aus vielen Sandkörnern wird Glas. Jedes Glas gibt <b>+{GLAS_BONUS_PER * 100} %</b>
-    auf Sand-Produktion &amp; Klick (bleibt erhalten). Prestige setzt Sand &amp; Gebäude zurück.
+    Aus vielen Sandkörnern wird Glas. Der Ertrag richtet sich nach dem
+    <b>in diesem Prestige insgesamt gesammelten</b> Sand (nicht dem aktuellen). Jedes Glas
+    gibt <b>+{GLAS_BONUS_PER * 100} %</b> auf Sand-Produktion &amp; Klick (bleibt erhalten).
+    Prestige setzt Sand &amp; Gebäude zurück.
   </p>
 
   <div class="stat">
@@ -81,7 +85,7 @@
     </div>
     <div class="grow">
       <span class="glabel">Nächstes Glas ({formatInt(new Decimal(nextK))}) bei</span>
-      <span class="gval mono">{formatDecimal(nextThreshold)} Sand</span>
+      <span class="gval mono">{formatDecimal(nextThreshold)} Sand (Run)</span>
     </div>
     <div class="steprow">
       <div class="progress"><div class="fill" style="width:{stepPct}%"></div></div>
@@ -107,7 +111,7 @@
     </svg>
     <div class="clabels dim">
       <span>{formatDecimal(GLAS_UNLOCK)}</span>
-      <span>Sand →</span>
+      <span>gesammelt (Run) →</span>
       <span>{formatDecimal(chart.xRight)}</span>
     </div>
     <div class="clegend dim small">
@@ -122,8 +126,8 @@
     </button>
   {:else}
     <div class="lockrow">
-      <span class="dim small">🔒 Glas ab {formatDecimal(GLAS_UNLOCK)} Sand</span>
-      <span class="mono small">{formatDecimal($game.sand)} / {formatDecimal(GLAS_UNLOCK)}</span>
+      <span class="dim small">🔒 Glas ab {formatDecimal(GLAS_UNLOCK)} gesammeltem Sand (Run)</span>
+      <span class="mono small">{formatDecimal(runSand)} / {formatDecimal(GLAS_UNLOCK)}</span>
     </div>
     <div class="progress"><div class="fill" style="width:{progressPct}%"></div></div>
   {/if}

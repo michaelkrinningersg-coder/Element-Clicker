@@ -73,19 +73,18 @@ describe("Glas-Prestige", () => {
     expect(clickValue(s).toNumber()).toBeCloseTo(3, 9);
   });
 
-  it("erst ab 1e9 Sand möglich", () => {
+  it("erst ab 1e9 im Run gesammeltem Sand möglich", () => {
     const s = createInitialState();
-    s.sand = new Decimal("9.9e8");
+    s.runSandEver = new Decimal("9.9e8");
     expect(canPrestige(s)).toBe(false);
-    s.sand = new Decimal("1e9");
+    s.runSandEver = new Decimal("1e9");
     expect(canPrestige(s)).toBe(true);
   });
 
-  it("Ertrag = floor(sqrt(Sand / 1e9)), min. 1", () => {
+  it("Ertrag = floor(sqrt(Run-Sand / 1e9)), unabhängig vom aktuellen Sand", () => {
     const s = createInitialState();
-    s.sand = new Decimal("1e9");
-    expect(glasGain(s).toNumber()).toBe(1);
-    s.sand = new Decimal("1e11"); // sqrt(100) = 10
+    s.runSandEver = new Decimal("1e11"); // sqrt(100) = 10
+    s.sand = new Decimal("0"); // aktueller Sand egal (ausgegeben)
     expect(glasGain(s).toNumber()).toBe(10);
   });
 });
@@ -202,15 +201,15 @@ describe("Glas-Kurve & nächstes Glas", () => {
     expect(sandForGlas(10).eq(new Decimal("100e9"))).toBe(true);
   });
 
-  it("Rundlauf: bei sandForGlas(k) Sand ist der Ertrag genau k", () => {
+  it("Rundlauf: bei sandForGlas(k) Run-Sand ist der Ertrag genau k", () => {
     const s = createInitialState();
-    s.sand = sandForGlas(7);
+    s.runSandEver = sandForGlas(7);
     expect(glasGain(s).toNumber()).toBe(7);
   });
 
   it("nächstes Glas = (aktueller Ertrag + 1)² · 1e9", () => {
     const s = createInitialState();
-    s.sand = new Decimal("5e9"); // sqrt(5) ≈ 2,23 → Ertrag 2
+    s.runSandEver = new Decimal("5e9"); // sqrt(5) ≈ 2,23 → Ertrag 2
     expect(glasGain(s).toNumber()).toBe(2);
     expect(sandForNextGlas(s).eq(sandForGlas(3))).toBe(true); // 9e9
   });
