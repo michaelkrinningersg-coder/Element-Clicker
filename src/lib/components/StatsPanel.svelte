@@ -9,12 +9,16 @@
     generatorCount,
     arbeiterBoostMultiplier,
     runTimeBoostMultiplier,
+    runTimeBoostRate,
     effectiveDigCompletions,
     totalDigCompletions,
+    digCompletionMultiplier,
+    completionBuildingMult,
   } from "../game/formulas";
   import { unlockedCount, effectiveCompletions } from "../game/achievements";
   import { ACHIEVEMENTS } from "../game/achievements";
-  import { DIG_MILESTONES } from "../game/constants";
+  import { BUILDINGS } from "../game/buildings";
+  import { DIG_MILESTONES, ARBEITER_BOOST_PER, MENSCH_ARBEITER_PER } from "../game/constants";
   import {
     formatDecimal,
     formatInt,
@@ -32,6 +36,16 @@
     (x) => x.n > 0,
   );
   $: digTotal = totalDigCompletions($game);
+  // Effektive Raten inkl. Abschluss-Boni.
+  $: timeRatePct = runTimeBoostRate($game) * 100; // % je Sekunde (inkl. Sanduhr)
+  $: arbeiterPct =
+    (ARBEITER_BOOST_PER + MENSCH_ARBEITER_PER * effectiveDigCompletions($game, "mensch")) * 100;
+  // Pro-Gebäude-Boni aus Bauwerk-Abschlüssen (nur > 1).
+  $: genBonuses = BUILDINGS.filter((b) => b.kind === "generator")
+    .map((b) => ({ name: b.name, mult: completionBuildingMult($game, b.id) }))
+    .filter((x) => x.mult.gt(1));
+  const pctStr = (n: number, digits = 3) =>
+    n.toLocaleString("de-DE", { maximumFractionDigits: digits });
 </script>
 
 <div class="panel">
@@ -128,15 +142,33 @@
         <span class="v mono">×{formatDecimal(generatorBoostMultiplier($game), 3)}</span>
       </div>
       <div class="stat">
-        <span class="k">Arbeiter ({formatNumber($game.buildings.arbeiter.owned)}) · +1 % je Arbeiter</span>
+        <span class="k">Arbeiter ({formatNumber($game.buildings.arbeiter.owned)}) · +{pctStr(arbeiterPct)} % je Arbeiter (inkl. Mensch)</span>
         <span class="v mono">×{formatDecimal(arbeiterBoostMultiplier($game), 3)}</span>
       </div>
       <div class="stat">
-        <span class="k">Zeit-Bonus (+0,01 % je Sekunde im Prestige)</span>
+        <span class="k">Zeit-Bonus (+{pctStr(timeRatePct, 4)} % je Sekunde, inkl. Sanduhr)</span>
         <span class="v mono">×{formatDecimal(runTimeBoostMultiplier($game), 3)}</span>
+      </div>
+      <div class="stat">
+        <span class="k">Graben-Abschluss-Bonus (+0,1 % je Abschluss)</span>
+        <span class="v mono">×{formatDecimal(digCompletionMultiplier($game), 3)}</span>
       </div>
     </div>
   </div>
+
+  {#if genBonuses.length > 0}
+    <div class="grp">
+      <h4>Gebäude-Boni aus Bauwerk-Abschlüssen</h4>
+      <div class="rows">
+        {#each genBonuses as g (g.name)}
+          <div class="stat">
+            <span class="k">{g.name}</span>
+            <span class="v mono">×{formatDecimal(g.mult, 3)}</span>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   <div class="grp">
     <h4>Bauwerk-Abschlüsse (mit aktuellem Run)</h4>
