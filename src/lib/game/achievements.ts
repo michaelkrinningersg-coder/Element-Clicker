@@ -23,6 +23,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "Genug Sand, um die Zeit rinnen zu lassen.",
   },
   {
+    id: "reagenzglas",
+    name: "Ein Reagenzglas voll Sand",
+    icon: "ach-reagenzglas",
+    threshold: new Decimal("2e6"),
+    desc: "Ein Reagenzglas (≈ 20 g) für den Laborsand.",
+  },
+  {
     id: "eierbecher",
     name: "Ein Eierbecher voll Sand",
     icon: "ach-eierbecher",
@@ -114,6 +121,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "Das komplette Sandbett eines Spielfelds (≈ 40 t).",
   },
   {
+    id: "gueterwaggon",
+    name: "Ein Güterwaggon voll Sand",
+    icon: "ach-gueterwaggon",
+    threshold: new Decimal("6e12"),
+    desc: "Eine Waggonladung (≈ 60 t) auf der Schiene.",
+  },
+  {
     id: "blauwal",
     name: "Ein Blauwal",
     icon: "ach-blauwal",
@@ -154,6 +168,20 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     icon: "ach-sphinx",
     threshold: new Decimal("3e15"),
     desc: "≈ 30.000 t Kalkstein – der große Wächter von Gizeh.",
+  },
+  {
+    id: "sandfrachter",
+    name: "Ein Sandfrachter",
+    icon: "ach-sandfrachter",
+    threshold: new Decimal("5e15"),
+    desc: "Ein Frachtschiff randvoll mit Sand (≈ 50.000 t).",
+  },
+  {
+    id: "silizium",
+    name: "Silizium-Chips (aus Sand)",
+    icon: "ach-silizium",
+    threshold: new Decimal("8e15"),
+    desc: "Quarzsand raffiniert zu Silizium für Mikrochips.",
   },
   {
     id: "duene",
@@ -198,6 +226,20 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "≈ 5,9 Mio. t Kalkstein – das größte Bauwerk der Antike.",
   },
   {
+    id: "alle-straende",
+    name: "Alle Strände der Erde",
+    icon: "ach-straende",
+    threshold: new Decimal("7.5e18"),
+    desc: "≈ 7,5·10¹⁸ Körner – die berühmte Schätzung für alle Strände.",
+  },
+  {
+    id: "kuenstliche-insel",
+    name: "Eine künstliche Insel (Palm Jumeirah)",
+    icon: "ach-insel",
+    threshold: new Decimal("1.5e19"),
+    desc: "Aufgeschüttet aus ≈ 150 Mio. t Meeressand.",
+  },
+  {
     id: "berg",
     name: "Ein ganzer Berg",
     icon: "ach-berg",
@@ -205,11 +247,32 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "Ein kompletter Berg aus Sand (≈ 500 Mrd. t).",
   },
   {
+    id: "sterne",
+    name: "Mehr Körner als Sterne im Universum",
+    icon: "ach-sterne",
+    threshold: new Decimal("1e24"),
+    desc: "Mehr Sandkörner, als es Sterne im beobachtbaren Universum gibt.",
+  },
+  {
+    id: "namib",
+    name: "Die Namib-Wüste",
+    icon: "ach-namib",
+    threshold: new Decimal("3e25"),
+    desc: "Rote Dünen so weit das Auge reicht.",
+  },
+  {
     id: "sahara",
     name: "Die Sahara",
     icon: "ach-sahara",
     threshold: new Decimal("1e27"),
     desc: "Die größte Sandwüste der Erde. Unvorstellbar.",
+  },
+  {
+    id: "aller-sand",
+    name: "Aller Sand der Erde",
+    icon: "ach-allersand",
+    threshold: new Decimal("1e28"),
+    desc: "Sämtlicher Sand des Planeten – Strände, Wüsten, Meeresgrund.",
   },
 ];
 

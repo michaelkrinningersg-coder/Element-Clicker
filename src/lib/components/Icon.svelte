@@ -375,6 +375,72 @@
       <line x1="12" y1="30" x2="11" y2="22" stroke="#7d5122" stroke-width="1.6" stroke-linecap="round" />
       <g stroke="#5aa06a" stroke-width="1.4" fill="none" stroke-linecap="round"><path d="M11 22 q-4 -2 -6 0 M11 22 q4 -2 6 0 M11 22 q-2 -4 -1 -6 M11 22 q3 -3 5 -3" /></g>
     </g>
+  {:else if id === "ach-reagenzglas"}
+    <g transform="rotate(12 22 22)">
+      <path d="M19 8 h6 v20 a3 3 0 0 1 -6 0 z" fill="none" stroke="#8fbcc7" stroke-width="1.5" stroke-linejoin="round" />
+      <path d="M19.2 20 h5.6 v8 a2.8 2.8 0 0 1 -5.6 0 z" fill="#ecca7d" />
+      <rect x="18" y="6.5" width="8" height="2.6" rx="1" fill="#cbb48f" stroke="#a3895a" stroke-width="0.8" />
+    </g>
+  {:else if id === "ach-gueterwaggon"}
+    <g>
+      <rect x="8" y="18" width="28" height="12" rx="1.5" fill="#8a5a3a" stroke="#5f3d27" stroke-width="1.3" />
+      <path d="M9 18 q13 5 26 0 q0 2 -13 2 q-13 0 -13 -2 z" fill="#ecca7d" />
+      <g stroke="#5f3d27" stroke-width="0.8" opacity="0.5"><path d="M15 20 v10 M22 20 v10 M29 20 v10" /></g>
+      <circle cx="14" cy="33" r="3" fill="#3f3123" stroke="#2a2016" stroke-width="1.1" />
+      <circle cx="30" cy="33" r="3" fill="#3f3123" stroke="#2a2016" stroke-width="1.1" />
+    </g>
+  {:else if id === "ach-sandfrachter"}
+    <g>
+      <path d="M6 28 h30 l-3 6 h-24 z" fill="#4d84bb" stroke="#3a6591" stroke-width="1.3" stroke-linejoin="round" />
+      <rect x="10" y="20" width="18" height="8" fill="#c9b283" stroke="#a3895a" stroke-width="1.1" />
+      <path d="M11 20 q8 3 16 0 q0 1.5 -8 1.5 q-8 0 -8 -1.5 z" fill="#ecca7d" stroke="none" />
+      <rect x="28" y="16" width="6" height="12" fill="#f2efe6" stroke="#b9b2a3" stroke-width="1" />
+      <g stroke="#bfe0f2" stroke-width="1" opacity="0.6" fill="none"><path d="M6 35 q4 1.5 8 0 t8 0 t8 0" /></g>
+    </g>
+  {:else if id === "ach-silizium"}
+    <g>
+      <rect x="13" y="13" width="18" height="18" rx="2" fill="#3a3f44" stroke="#22262a" stroke-width="1.3" />
+      <rect x="17" y="17" width="10" height="10" rx="1" fill="#6aa8de" stroke="#3a6591" stroke-width="1" />
+      <g stroke="#c9b89a" stroke-width="1.4" stroke-linecap="round"><path d="M16 13 v-3 M20 13 v-3 M24 13 v-3 M28 13 v-3 M16 31 v3 M20 31 v3 M24 31 v3 M28 31 v3 M13 16 h-3 M13 20 h-3 M13 24 h-3 M13 28 h-3 M31 16 h3 M31 20 h3 M31 24 h3 M31 28 h3" /></g>
+    </g>
+  {:else if id === "ach-straende"}
+    <g>
+      <rect x="3" y="8" width="38" height="14" fill="#6cc3d4" />
+      <g fill="none" stroke="#bfe9f0" stroke-width="1" opacity="0.7"><path d="M5 13 q4 -2 8 0 t8 0 t8 0 t8 0" /><path d="M5 18 q4 -2 8 0 t8 0 t8 0 t8 0" /></g>
+      <path d="M3 22 q19 8 38 0 v14 h-38 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1.2" stroke-linejoin="round" />
+      <line x1="31" y1="24" x2="31" y2="31" stroke="#9a6f2e" stroke-width="1.2" stroke-linecap="round" />
+      <path d="M27 25 a4 4 0 0 1 8 0 z" fill="#e0654b" stroke="#b84d36" stroke-width="0.8" stroke-linejoin="round" />
+    </g>
+  {:else if id === "ach-insel"}
+    <g>
+      <rect x="3" y="10" width="38" height="26" fill="#6cc3d4" />
+      <ellipse cx="22" cy="30" rx="14" ry="6" fill="#ecca7d" stroke="#cf9f45" stroke-width="1.2" />
+      <line x1="22" y1="28" x2="20" y2="16" stroke="#7d5122" stroke-width="1.8" stroke-linecap="round" />
+      <g stroke="#5aa06a" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M20 16 q-6 -3 -9 0 M20 16 q6 -3 9 0 M20 16 q-3 -6 -1 -9 M20 16 q4 -5 8 -4" /></g>
+    </g>
+  {:else if id === "ach-sterne"}
+    <g>
+      <rect x="4" y="6" width="36" height="32" rx="3" fill="#1b2a4a" />
+      <g fill="#fdf3dd">
+        <circle cx="12" cy="12" r="1.4" /><circle cx="24" cy="10" r="1" /><circle cx="33" cy="15" r="1.5" />
+        <circle cx="16" cy="22" r="1" /><circle cx="28" cy="24" r="1.4" /><circle cx="10" cy="30" r="1.2" />
+        <circle cx="22" cy="33" r="1" /><circle cx="35" cy="30" r="1" /><circle cx="19" cy="15" r="0.8" />
+        <circle cx="31" cy="21" r="0.8" /><circle cx="8" cy="20" r="0.8" />
+      </g>
+      <path d="M22 17 l1.2 3 3 0.4 -2.2 2 0.6 3 -2.6 -1.6 -2.6 1.6 0.6 -3 -2.2 -2 3 -0.4 z" fill="#f2c94c" />
+    </g>
+  {:else if id === "ach-namib"}
+    <g>
+      <circle cx="34" cy="11" r="4" fill="#f2a54c" />
+      <path d="M3 30 q9 -10 17 -3 q7 6 12 -3 q3 -3 8 1 v11 h-40 z" fill="#d98a4e" stroke="#b06a34" stroke-width="1.2" stroke-linejoin="round" />
+      <path d="M3 34 q11 -5 20 -1 q9 4 15 -3 v9 h-38 z" fill="#c2703a" opacity="0.7" stroke="none" />
+    </g>
+  {:else if id === "ach-allersand"}
+    <g>
+      <circle cx="22" cy="22" r="15" fill="#e6c684" stroke="#cf9f45" stroke-width="1.4" />
+      <path d="M12 16 q6 3 12 0 q4 4 9 2 M9 24 q8 4 16 0 q4 3 10 1 M14 31 q6 2 12 0" fill="none" stroke="#cf9f45" stroke-width="1" opacity="0.6" />
+      <g fill="#cf9f45" opacity="0.5"><circle cx="18" cy="20" r="0.9" /><circle cx="27" cy="24" r="0.9" /><circle cx="20" cy="28" r="0.9" /></g>
+    </g>
   {/if}
 </svg>
 

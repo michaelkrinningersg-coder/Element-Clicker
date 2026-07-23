@@ -33,8 +33,10 @@ export const DIG_MILESTONE_BONUS_PER = 0.01;
 export const DIG_MILESTONES: { id: string; name: string; m: number }[] = [
   { id: "streichholz", name: "🔥 Streichholz", m: 0.045 },
   { id: "gartenzwerg", name: "🧝 Gartenzwerg", m: 0.4 },
+  { id: "grundwasser", name: "💧 Grundwasser im Sand", m: 0.6 },
   { id: "kaiserpinguin", name: "🐧 Kaiserpinguin", m: 1.2 },
   { id: "mensch", name: "Größe eines Menschen", m: 1.8 },
+  { id: "sandgrube", name: "🚜 Sandgrube (Abbau)", m: 15 },
   { id: "sphinx", name: "Die Sphinx (Höhe)", m: 20 },
   { id: "sandburg-rekord", name: "Höchste Sandburg der Welt", m: 21.16 },
   { id: "duene-de", name: "Höchste Düne Deutschlands", m: 52 },
@@ -49,6 +51,7 @@ export const DIG_MILESTONES: { id: string; name: string; m: number }[] = [
   { id: "duene-welt", name: "Höchste Düne der Welt (Cerro Blanco)", m: 1176 },
   { id: "see-welt", name: "Tiefster See der Erde (Baikalsee)", m: 1642 },
   { id: "zugspitze", name: "Zugspitze", m: 2962 },
+  { id: "erdoel", name: "🛢️ Erdöl in Sandstein-Lagerstätte", m: 3000 },
   { id: "montblanc", name: "Mont Blanc", m: 4808 },
   { id: "everest", name: "Mount Everest", m: 8849 },
   { id: "marianengraben", name: "Tiefster Punkt im Meer (Marianengraben)", m: 10_994 },

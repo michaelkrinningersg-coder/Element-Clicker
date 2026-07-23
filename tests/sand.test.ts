@@ -154,8 +154,8 @@ describe("Fortschritt zur Erdmasse", () => {
 });
 
 describe("Bauwerke aus Sand (Erfolge)", () => {
-  it("28 Bauwerke mit den vereinbarten Schwellen", () => {
-    expect(ACHIEVEMENTS.length).toBe(28);
+  it("37 Bauwerke mit den vereinbarten Schwellen", () => {
+    expect(ACHIEVEMENTS.length).toBe(37);
     const byId = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a.threshold]));
     const eq = (id: string, v: string) => expect(byId[id].eq(new Decimal(v))).toBe(true);
     eq("sanduhr", "1e6");
@@ -172,8 +172,11 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
     eq("koelner-dom", "3e16"); // ≈ 300.000 t
     eq("goldengate", "8e16"); // ≈ 805.000 t
     eq("cheops", "5.9e17"); // ≈ 5,9 Mio. t
+    eq("alle-straende", "7.5e18");
     eq("berg", "5e19");
+    eq("sterne", "1e24");
     eq("sahara", "1e27");
+    eq("aller-sand", "1e28");
   });
 
   it("Schwellen sind aufsteigend sortiert", () => {
@@ -185,20 +188,20 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
   it("schalten sich am Run-Sand frei", () => {
     const s = createInitialState();
     expect(unlockedCount(s)).toBe(0);
-    s.runSandEver = new Decimal("5e6"); // Sanduhr, Eierbecher, Schaufel
+    s.runSandEver = new Decimal("5e6"); // Sanduhr, Reagenzglas, Eierbecher, Schaufel
     expect(isUnlocked(s, ACHIEVEMENTS[0])).toBe(true);
-    expect(unlockedCount(s)).toBe(3);
+    expect(unlockedCount(s)).toBe(4);
     s.runSandEver = new Decimal("6e9"); // bis Sandburg
-    expect(unlockedCount(s)).toBe(8);
-    s.runSandEver = new Decimal("200e15"); // alle außer Golden Gate, Berg, Sahara
-    expect(unlockedCount(s)).toBe(25);
+    expect(unlockedCount(s)).toBe(9);
+    s.runSandEver = new Decimal("200e15"); // bis Strand (2e17)
+    expect(unlockedCount(s)).toBe(29);
   });
 
   it("Prestige setzt Bauwerke & Graben zurück (runSandEver = 0), Lifetime bleibt", () => {
     const s = createInitialState();
     s.runSandEver = new Decimal("200e15");
     s.totalSandEver = new Decimal("500e15");
-    expect(unlockedCount(s)).toBe(25);
+    expect(unlockedCount(s)).toBe(29);
     prestigeReset(s);
     expect(s.runSandEver.eq(0)).toBe(true);
     expect(unlockedCount(s)).toBe(0); // alle wieder gesperrt
@@ -268,24 +271,24 @@ describe("Graben (exponentiell schwerer mit der Tiefe)", () => {
 describe("Graben-Meilensteine (+1 % je erreichter Tiefe)", () => {
   it("zählt erreichte Meilensteine nach Tiefe", () => {
     expect(digMilestonesReached(0)).toBe(0);
-    // Streichholz(0,045), Gartenzwerg(0,4), Kaiserpinguin(1,2), Mensch(1,8)
-    expect(digMilestonesReached(1.8)).toBe(4);
-    // + Sphinx(20), Sandburg-Rekord(21,16)
-    expect(digMilestonesReached(25)).toBe(6);
+    // Streichholz(0,045), Gartenzwerg(0,4), Grundwasser(0,6), Kaiserpinguin(1,2), Mensch(1,8)
+    expect(digMilestonesReached(1.8)).toBe(5);
+    // + Sandgrube(15), Sphinx(20), Sandburg-Rekord(21,16)
+    expect(digMilestonesReached(25)).toBe(8);
     expect(digMilestonesReached(EARTH_DIAMETER_M)).toBe(DIG_MILESTONES.length);
   });
 
   it("+1 % auf Klick und Produktion je Meilenstein", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 10; // 2 /s Basis
-    // 2,5e13 Körner → ~25 m → 6 Meilensteine → +6 %
+    // 2,5e13 Körner → ~25 m → 8 Meilensteine → +8 %
     s.runSandEver = new Decimal("2.5e13");
     const depth = digDepthMeters(s.runSandEver);
     const n = digMilestonesReached(depth);
-    expect(n).toBe(6);
+    expect(n).toBe(8);
     expect(digIncomeMultiplier(s).toNumber()).toBeCloseTo(1 + 0.01 * n, 9);
-    // Klick: Basis 1 · Glas 1 · Graben (1+0,06) = 1,06
-    expect(clickValue(s).toNumber()).toBeCloseTo(1.06, 9);
+    // Klick: Basis 1 · Glas 1 · Graben (1+0,08) = 1,08
+    expect(clickValue(s).toNumber()).toBeCloseTo(1.08, 9);
     // Produktion enthält den Graben-Faktor ebenfalls
     const withoutDig = new Decimal(2)
       .mul(glasMultiplier(s))
@@ -531,7 +534,7 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     // (3e7) noch NICHT abgeschlossen → kein Eimer-Abschlussbonus, Test bleibt sauber.
     s.runSandEver = new Decimal("1e7");
     const n = unlockedCount(s);
-    expect(n).toBe(3);
+    expect(n).toBe(4);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 1.02 ** n, 9);
   });
