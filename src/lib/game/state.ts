@@ -19,7 +19,8 @@ export interface GameState {
   totalSandEver: Decimal; // je gesammelte Sandkörner (bleibt bei Prestige)
   runSandEver: Decimal; // in diesem Run gesammelt (Basis für Bauwerke & Graben, Reset bei Prestige)
   totalClicks: number;
-  playtimeSeconds: number;
+  playtimeSeconds: number; // gesamte aktive Spielzeit (Lifetime)
+  runPlaytimeSeconds: number; // Spielzeit in diesem Prestige (Reset bei Prestige)
   lastSaved: number;
 }
 
@@ -35,6 +36,7 @@ export function createInitialState(): GameState {
     runSandEver: ZERO,
     totalClicks: 0,
     playtimeSeconds: 0,
+    runPlaytimeSeconds: 0,
     lastSaved: Date.now(),
   };
 }
@@ -55,6 +57,7 @@ export function recomputeNextCosts(state: GameState): void {
 export function prestigeReset(state: GameState): void {
   state.sand = ZERO;
   state.runSandEver = ZERO; // Bauwerke & Graben setzen sich zurück
+  state.runPlaytimeSeconds = 0; // Run-Zeit-Bonus zurück
   for (const b of BUILDINGS) {
     state.buildings[b.id] = { owned: 0, nextCost: b.baseCost };
   }

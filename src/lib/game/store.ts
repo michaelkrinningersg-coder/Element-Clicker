@@ -115,6 +115,7 @@ export function tick(dtSeconds: number): void {
   state.totalSandEver = state.totalSandEver.add(gained);
   state.runSandEver = state.runSandEver.add(gained);
   state.playtimeSeconds += dtSeconds;
+  state.runPlaytimeSeconds += dtSeconds;
   syncAchievements();
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {

@@ -23,6 +23,7 @@ function serialize(state: GameState): string {
       runSandEver: state.runSandEver.toString(),
       totalClicks: state.totalClicks,
       playtimeSeconds: state.playtimeSeconds,
+      runPlaytimeSeconds: state.runPlaytimeSeconds,
       lastSaved: Date.now(),
     },
   };
@@ -52,6 +53,7 @@ function deserialize(raw: string): GameState {
     s.runSandEver != null ? new Decimal(s.runSandEver) : base.totalSandEver;
   base.totalClicks = Number(s.totalClicks ?? 0);
   base.playtimeSeconds = Number(s.playtimeSeconds ?? 0);
+  base.runPlaytimeSeconds = Number(s.runPlaytimeSeconds ?? 0);
   base.lastSaved = Number(s.lastSaved ?? Date.now());
 
   recomputeNextCosts(base);

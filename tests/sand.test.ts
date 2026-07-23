@@ -35,6 +35,7 @@ import {
   generatorBoostMultiplier,
   arbeiterBoostMultiplier,
   timeBoostMultiplier,
+  runTimeBoostMultiplier,
   buildingProduction,
 } from "../src/lib/game/formulas";
 
@@ -337,6 +338,21 @@ describe("Zeit-Bonus (+0,01 % Produktion je Spielsekunde)", () => {
     const before = totalProductionPerSec(s).toNumber();
     s.playtimeSeconds = 10000; // ×(1 + 0,0001·10000) = ×2
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(before * 2, 6);
+  });
+
+  it("Run-Zeit-Bonus zusätzlich zur Lifetime-Zeit, Reset bei Prestige", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 10;
+    s.playtimeSeconds = 10000; // Lifetime ×2
+    s.runPlaytimeSeconds = 10000; // Run ×2
+    expect(runTimeBoostMultiplier(s).toNumber()).toBeCloseTo(2, 9);
+    // Beide Zeit-Boni stapeln: 2 · glasBoost(1) · genBoost · 2(lifetime) · 2(run)
+    const base = new Decimal(2).mul(generatorBoostMultiplier(s));
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 2 * 2, 6);
+    prestigeReset(s);
+    expect(s.runPlaytimeSeconds).toBe(0);
+    expect(runTimeBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
+    expect(s.playtimeSeconds).toBe(10000); // Lifetime bleibt
   });
 });
 
