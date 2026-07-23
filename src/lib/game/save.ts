@@ -24,6 +24,10 @@ function serialize(state: GameState): string {
       eventRemaining: state.eventRemaining,
       eventCooldown: state.eventCooldown,
       dinoBones: state.dinoBones,
+      amber: state.amber,
+      meteorShards: state.meteorShards,
+      metal: state.metal,
+      dinosBuilt: state.dinosBuilt,
       excavatedMeter: state.excavatedMeter,
       totalSandEver: state.totalSandEver.toString(),
       runSandEver: state.runSandEver.toString(),
@@ -57,6 +61,10 @@ function deserialize(raw: string): GameState {
   base.eventRemaining = Number(s.eventRemaining ?? 0);
   base.eventCooldown = Number(s.eventCooldown ?? base.eventCooldown);
   base.dinoBones = Number(s.dinoBones ?? 0);
+  base.amber = Number(s.amber ?? 0);
+  base.meteorShards = Number(s.meteorShards ?? 0);
+  base.metal = Number(s.metal ?? 0);
+  if (s.dinosBuilt && typeof s.dinosBuilt === "object") base.dinosBuilt = { ...s.dinosBuilt };
   base.excavatedMeter = Number(s.excavatedMeter ?? 0);
   // Ältere Saves kennen totalSandEver nicht: mindestens den aktuellen Sand ansetzen.
   base.totalSandEver =

@@ -6,20 +6,29 @@
   import StatsPanel from "./lib/components/StatsPanel.svelte";
   import AchievementsPanel from "./lib/components/AchievementsPanel.svelte";
   import DigPanel from "./lib/components/DigPanel.svelte";
+  import ExcavationPanel from "./lib/components/ExcavationPanel.svelte";
   import { offlineReport, game } from "./lib/game/store";
   import { formatDecimal } from "./lib/game/format";
   import { unlockedCount, ACHIEVEMENTS } from "./lib/game/achievements";
+  import { EXCAVATION_UNLOCK_PRESTIGE } from "./lib/game/constants";
 
   let showOffline = offlineReport.seconds > 2 && offlineReport.gained.gt(0);
 
-  type Tab = "spiel" | "graben" | "statistiken" | "bauwerke";
+  type Tab = "spiel" | "graben" | "ausgrabungen" | "statistiken" | "bauwerke";
   let tab: Tab = "spiel";
-  const TABS: { id: Tab; label: string }[] = [
+  // Ausgrabungen-Tab erst ab Freischaltung (oder wenn schon Funde vorhanden).
+  $: excavationUnlocked =
+    $game.prestigeCount >= EXCAVATION_UNLOCK_PRESTIGE ||
+    $game.dinoBones > 0 ||
+    $game.amber > 0 ||
+    $game.meteorShards > 0;
+  $: TABS = [
     { id: "spiel", label: "Spiel" },
     { id: "graben", label: "Graben" },
+    ...(excavationUnlocked ? [{ id: "ausgrabungen", label: "Ausgrabungen" }] : []),
     { id: "statistiken", label: "Statistiken" },
     { id: "bauwerke", label: "Bauwerke" },
-  ];
+  ] as { id: Tab; label: string }[];
 
   $: builtCount = unlockedCount($game);
 </script>
@@ -60,6 +69,8 @@
   </div>
 {:else if tab === "graben"}
   <DigPanel />
+{:else if tab === "ausgrabungen"}
+  <ExcavationPanel />
 {:else if tab === "statistiken"}
   <StatsPanel />
 {:else if tab === "bauwerke"}

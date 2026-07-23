@@ -41,6 +41,8 @@ import {
   effectiveDigCompletions,
   eventMultiplier,
   stepExcavation,
+  excavationBonusMultiplier,
+  dinoBonusPct,
 } from "../src/lib/game/formulas";
 import { effectiveCompletions } from "../src/lib/game/achievements";
 
@@ -395,28 +397,50 @@ describe("Wiederholbare Abschlüsse & Boni", () => {
   });
 });
 
-describe("Ausgrabungen (Dino-Knochen, ab 10 Prestiges)", () => {
-  it("wertet jeden neuen Meter aus, max. 100 m", () => {
-    // rng immer 0 → jeder Meter ein Fund
-    const r = stepExcavation(50, 0, () => 0);
-    expect(r.meter).toBe(50);
-    expect(r.bones).toBe(50);
-    // ab 100 m keine weiteren Meter
-    const r2 = stepExcavation(150, 90, () => 0);
-    expect(r2.meter).toBe(100);
-    expect(r2.bones).toBe(10);
-  });
-
-  it("rng über der Chance → kein Fund, Meter trotzdem gezählt", () => {
-    const r = stepExcavation(10, 0, () => 0.9);
-    expect(r.meter).toBe(10);
-    expect(r.bones).toBe(0);
+describe("Ausgrabungen (Funde ab 10 Prestiges)", () => {
+  it("je Meter genau ein Fund je nach Wurf; max. 100 m", () => {
+    // 0,0002 < 0,0005 → Splitter
+    expect(stepExcavation(10, 0, () => 0.0002)).toMatchObject({ meter: 10, shards: 10, bones: 0, amber: 0 });
+    // 0,01 → Dino-Knochen (0,0005..0,0505)
+    expect(stepExcavation(50, 0, () => 0.01)).toMatchObject({ meter: 50, bones: 50, amber: 0, shards: 0 });
+    // 0,06 → Bernstein (0,0505..0,0755)
+    expect(stepExcavation(10, 0, () => 0.06)).toMatchObject({ meter: 10, amber: 10, bones: 0, shards: 0 });
+    // 0,9 → nichts, Meter trotzdem gezählt
+    expect(stepExcavation(10, 0, () => 0.9)).toMatchObject({ meter: 10, bones: 0, amber: 0, shards: 0 });
+    // Deckel 100 m
+    expect(stepExcavation(150, 90, () => 0.01)).toMatchObject({ meter: 100, bones: 10 });
   });
 
   it("keine Doppelauswertung schon gegrabener Meter", () => {
-    const r = stepExcavation(30, 30, () => 0);
+    const r = stepExcavation(30, 30, () => 0.01);
     expect(r.meter).toBe(30);
     expect(r.bones).toBe(0);
+  });
+});
+
+describe("Ausgrabungs-Boni (auf Sand-Produktion)", () => {
+  it("+1 % je Knochen, +0,1 % je Bernstein, +25 % je Splitter", () => {
+    const s = createInitialState();
+    s.dinoBones = 10; // +10 %
+    s.amber = 20; // +2 %
+    s.meteorShards = 2; // +50 %
+    // 1 + 0,10 + 0,02 + 0,50 = 1,62
+    expect(excavationBonusMultiplier(s).toNumber()).toBeCloseTo(1.62, 9);
+  });
+
+  it("zusammengesetzte Dinos: Bonus = 3·Knochenkosten in %", () => {
+    const s = createInitialState();
+    s.dinosBuilt = { stegosaurus: true, trex: true }; // 750 % + 7500 %
+    expect(dinoBonusPct(s)).toBe(750 + 7500);
+    expect(excavationBonusMultiplier(s).toNumber()).toBeCloseTo(1 + (750 + 7500) / 100, 6);
+  });
+
+  it("wirkt multiplikativ auf die Produktion", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 10;
+    const before = totalProductionPerSec(s).toNumber();
+    s.dinoBones = 100; // ×2
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(before * 2, 6);
   });
 });
 

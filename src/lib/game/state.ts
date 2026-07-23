@@ -23,8 +23,12 @@ export interface GameState {
   eventRemaining: number; // Sekunden verbleibend (0 = kein aktives Event)
   eventCooldown: number; // Sekunden bis zum nächsten Event
 
-  // Ausgrabungen (ab 10 Prestiges)
-  dinoBones: number; // gefundene Dino-Knochen (dauerhaft)
+  // Ausgrabungen (ab 10 Prestiges) – Funde sind dauerhafte Prestige-Währungen
+  dinoBones: number; // Dino-Knochen (Währung, für Dinos ausgebbar), +1 % Sand je Stück
+  amber: number; // Bernstein, +0,1 % Sand je Stück
+  meteorShards: number; // Meteoritensplitter, +25 % Sand je Stück
+  metal: number; // aus Splittern eingeschmolzenes Metall (spätere Generatoren)
+  dinosBuilt: Record<string, boolean>; // zusammengesetzte Dinos (je einmal)
   excavatedMeter: number; // höchster diesen Run ausgewerteter Meter (Reset bei Prestige)
 
   // Statistik / Lifetime
@@ -49,6 +53,10 @@ export function createInitialState(): GameState {
     eventRemaining: 0,
     eventCooldown: 1500,
     dinoBones: 0,
+    amber: 0,
+    meteorShards: 0,
+    metal: 0,
+    dinosBuilt: {},
     excavatedMeter: 0,
     totalSandEver: ZERO,
     runSandEver: ZERO,

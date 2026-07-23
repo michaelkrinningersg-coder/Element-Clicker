@@ -3,11 +3,17 @@ import {
   ACH_COST_PER,
   ACH_PROD_PER,
   ARBEITER_BOOST_PER,
+  AMBER_BONUS_PER,
+  AMBER_CHANCE,
+  BONE_BONUS_PER,
   COMPLETION_EFFECTS,
   DIG_COMPLETION_PROD_PER,
   DINO_CHANCE,
-  DINO_MAX_M,
+  DINOS,
   EVENT_PROD_MULT,
+  EXCAVATION_MAX_M,
+  METEOR_BONUS_PER,
+  METEOR_CHANCE,
   MENSCH_ARBEITER_PER,
   SANDUHR_RATE_PER,
   COST_GROWTH_FLOOR,
@@ -182,23 +188,48 @@ export function eventMultiplier(state: GameState): Decimal {
 }
 
 /**
- * Wertet neu vollständig gegrabene Meter für Ausgrabungen aus.
- * Für jeden Meter von `excavatedMeter+1` bis zur aktuellen Tiefe (max. DINO_MAX_M)
- * gibt es DINO_CHANCE auf einen Dino-Knochen. `rng` liefert Werte in [0,1).
+ * Wertet neu vollständig gegrabene Meter (1–EXCAVATION_MAX_M) aus.
+ * Je Meter EIN Wurf → höchstens ein Fund: Meteoritensplitter (0,05 %),
+ * sonst Dino-Knochen (5 %), sonst Bernstein (2,5 %), sonst nichts.
  */
 export function stepExcavation(
   depthM: number,
   excavatedMeter: number,
   rng: () => number,
-): { meter: number; bones: number } {
-  const target = Math.min(DINO_MAX_M, Math.floor(depthM));
+): { meter: number; bones: number; amber: number; shards: number } {
+  const target = Math.min(EXCAVATION_MAX_M, Math.floor(depthM));
   let meter = excavatedMeter;
   let bones = 0;
+  let amber = 0;
+  let shards = 0;
   while (meter < target) {
     meter++;
-    if (rng() < DINO_CHANCE) bones++;
+    const r = rng();
+    if (r < METEOR_CHANCE) shards++;
+    else if (r < METEOR_CHANCE + DINO_CHANCE) bones++;
+    else if (r < METEOR_CHANCE + DINO_CHANCE + AMBER_CHANCE) amber++;
   }
-  return { meter, bones };
+  return { meter, bones, amber, shards };
+}
+
+/** Summe der Bonus-Prozente aus zusammengesetzten Dinos. */
+export function dinoBonusPct(state: GameState): number {
+  let pct = 0;
+  for (const d of DINOS) if (state.dinosBuilt?.[d.id]) pct += d.bonusPct;
+  return pct;
+}
+
+/**
+ * Sand-Produktions-Multiplikator aus Ausgrabungs-Funden:
+ * +1 % je Knochen, +0,1 % je Bernstein, +25 % je Splitter, + zusammengesetzte Dinos.
+ */
+export function excavationBonusMultiplier(state: GameState): Decimal {
+  const bonus =
+    BONE_BONUS_PER * state.dinoBones +
+    AMBER_BONUS_PER * state.amber +
+    METEOR_BONUS_PER * state.meteorShards +
+    dinoBonusPct(state) / 100;
+  return new Decimal(1 + bonus);
 }
 
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */
@@ -226,6 +257,7 @@ export function buildingProduction(state: GameState, id: string): Decimal {
       .mul(arbeiterBoostMultiplier(state))
       .mul(runTimeBoostMultiplier(state))
       .mul(digCompletionMultiplier(state))
+      .mul(excavationBonusMultiplier(state))
       .mul(eventMultiplier(state));
   }
   return ZERO;
@@ -250,6 +282,7 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(arbeiterBoostMultiplier(state))
     .mul(runTimeBoostMultiplier(state))
     .mul(digCompletionMultiplier(state))
+    .mul(excavationBonusMultiplier(state))
     .mul(eventMultiplier(state));
 }
 

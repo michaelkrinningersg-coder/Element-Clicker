@@ -15,6 +15,7 @@
     digCompletionMultiplier,
     completionBuildingMult,
     eventMultiplier,
+    excavationBonusMultiplier,
   } from "../game/formulas";
   import { unlockedCount, effectiveCompletions } from "../game/achievements";
   import { ACHIEVEMENTS } from "../game/achievements";
@@ -175,6 +176,10 @@
         <span class="k">Graben-Abschluss-Bonus (+0,1 % je Abschluss)</span>
         <span class="v mono">×{formatDecimal(digCompletionMultiplier($game), 3)}</span>
       </div>
+      <div class="stat">
+        <span class="k">Ausgrabungs-Bonus (Knochen/Bernstein/Splitter/Dinos)</span>
+        <span class="v mono">×{formatDecimal(excavationBonusMultiplier($game), 3)}</span>
+      </div>
       <div class="stat" class:hi={$game.eventRemaining > 0}>
         <span class="k">
           Event „{EVENT_NAME}"
@@ -204,15 +209,31 @@
       <h4>Ausgrabungen</h4>
       <div class="rows">
         <div class="stat hi">
-          <span class="k">🦴 Dino-Knochen gefunden</span>
+          <span class="k">Sand-Bonus aus Funden &amp; Dinos</span>
+          <span class="v mono">×{formatDecimal(excavationBonusMultiplier($game), 3)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">🦴 Dino-Knochen</span>
           <span class="v mono">{formatNumber($game.dinoBones)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">🟠 Bernstein</span>
+          <span class="v mono">{formatNumber($game.amber)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">☄️ Meteoritensplitter</span>
+          <span class="v mono">{formatNumber($game.meteorShards)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">⚙️ Metall</span>
+          <span class="v mono">{formatNumber($game.metal)}</span>
         </div>
         <div class="stat">
           <span class="k">Ausgewertete Meter (dieser Run, 1–{DINO_MAX_M} m)</span>
           <span class="v mono">{formatNumber($game.excavatedMeter)}</span>
         </div>
       </div>
-      <p class="note dim">Je vollständig gegrabenem Meter (1–{DINO_MAX_M} m) 5 % Chance auf einen Dino-Knochen.</p>
+      <p class="note dim">Details & Dinos zusammensetzen im Ausgrabungen-Tab.</p>
     </div>
   {/if}
 

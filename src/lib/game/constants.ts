@@ -107,8 +107,27 @@ export const DIG_COMPLETION_PROD_PER = 0.001;
 
 // ---- Ausgrabungen (ab 10 Prestiges) ----
 export const EXCAVATION_UNLOCK_PRESTIGE = 10;
-export const DINO_MAX_M = 100; // Dino-Knochen von 1 m bis 100 m
-export const DINO_CHANCE = 0.05; // 5 % je vollständig gegrabenem Meter
+export const EXCAVATION_MAX_M = 100; // Funde von 1 m bis 100 m
+export const DINO_MAX_M = EXCAVATION_MAX_M; // (Kompatibilität)
+// Fundchancen je vollständig gegrabenem Meter (je Meter nur EIN Fund möglich).
+export const DINO_CHANCE = 0.05; // 5 % Dino-Knochen
+export const AMBER_CHANCE = 0.025; // 2,5 % Bernstein (halbierte Chance)
+export const METEOR_CHANCE = 0.0005; // 0,05 % Meteoritensplitter
+// Sand-Boni je Fund (auf die Produktion).
+export const BONE_BONUS_PER = 0.01; // +1 % je Dino-Knochen (aktueller Bestand)
+export const AMBER_BONUS_PER = 0.001; // +0,1 % je Bernstein
+export const METEOR_BONUS_PER = 0.25; // +25 % je Meteoritensplitter
+// Meteoritensplitter einschmelzen.
+export const SPLITTER_PER_METAL = 100; // 100 Splitter → 1 Stück Metall
+
+// Zusammensetzbare Dinos (nur je einmal). Bonus = 3 · Knochenkosten (in %).
+export const DINOS: { id: string; name: string; cost: number; bonusPct: number }[] = [
+  { id: "stegosaurus", name: "Stegosaurus", cost: 250, bonusPct: 750 },
+  { id: "triceratops", name: "Triceratops", cost: 500, bonusPct: 1500 },
+  { id: "brachiosaurus", name: "Brachiosaurus", cost: 1000, bonusPct: 3000 },
+  { id: "trex", name: "T-Rex", cost: 2500, bonusPct: 7500 },
+  { id: "argentinosaurus", name: "Argentinosaurus", cost: 5000, bonusPct: 15000 },
+];
 
 // ---- Event: "Es ist Gottes Wille" ----
 export const EVENT_INTERVAL_MIN_S = 1000;

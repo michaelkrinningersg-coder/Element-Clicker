@@ -6,6 +6,8 @@ import {
   EVENT_INTERVAL_MAX_S,
   EVENT_INTERVAL_MIN_S,
   EXCAVATION_UNLOCK_PRESTIGE,
+  DINOS,
+  SPLITTER_PER_METAL,
 } from "./constants";
 import { BUILDINGS, BUILDING_BY_ID, isBuildingUnlocked } from "./buildings";
 import {
@@ -138,11 +140,33 @@ export function prestige(): void {
 function updateExcavation(): void {
   if (state.prestigeCount < EXCAVATION_UNLOCK_PRESTIGE) return;
   const depth = digDepthMeters(state.runSandEver);
-  const { meter, bones } = stepExcavation(depth, state.excavatedMeter, Math.random);
+  const { meter, bones, amber, shards } = stepExcavation(depth, state.excavatedMeter, Math.random);
   if (meter !== state.excavatedMeter) {
     state.excavatedMeter = meter;
     state.dinoBones += bones;
+    state.amber += amber;
+    state.meteorShards += shards;
   }
+}
+
+/** Setzt einen Dino zusammen (verbraucht Knochen, nur einmal möglich). */
+export function buildDino(id: string): void {
+  const def = DINOS.find((d) => d.id === id);
+  if (!def) return;
+  if (state.dinosBuilt[id]) return;
+  if (state.dinoBones < def.cost) return;
+  state.dinoBones -= def.cost;
+  state.dinosBuilt[id] = true;
+  commit();
+}
+
+/** Schmilzt Meteoritensplitter zu Metall ein (100 Splitter → 1 Metall). */
+export function meltShards(): void {
+  const metal = Math.floor(state.meteorShards / SPLITTER_PER_METAL);
+  if (metal <= 0) return;
+  state.meteorShards -= metal * SPLITTER_PER_METAL;
+  state.metal += metal;
+  commit();
 }
 
 /** Event-Timer: löst "Es ist Gottes Wille" aus und lässt es ablaufen. */
