@@ -1,6 +1,6 @@
 <script lang="ts">
   import { game, buyBuildings } from "../game/store";
-  import { BUILDINGS, BUILDING_BY_ID } from "../game/buildings";
+  import { BUILDINGS, BUILDING_BY_ID, isBuildingUnlocked } from "../game/buildings";
   import {
     buildingProduction,
     totalProductionPerSec,
@@ -27,6 +27,7 @@
     const gens: { id: string; eff: Decimal }[] = [];
     for (const b of BUILDINGS) {
       if (b.kind !== "generator" || !b.prodPerUnit) continue;
+      if (!isBuildingUnlocked(b, $game.prestigeCount)) continue;
       gens.push({ id: b.id, eff: b.prodPerUnit.div($game.buildings[b.id].nextCost) });
     }
     gens.sort((a, c) => (c.eff.gt(a.eff) ? 1 : c.eff.lt(a.eff) ? -1 : 0));
@@ -79,6 +80,16 @@
   </div>
 
   {#each BUILDINGS as def (def.id)}
+    {@const locked = !isBuildingUnlocked(def, $game.prestigeCount)}
+    {#if locked}
+      <div class="trow lockedrow">
+        <span class="gen">
+          <Icon id={def.id} size={30} />
+          <span class="name dim">{def.name}</span>
+        </span>
+        <span class="lockmsg dim">🔒 ab {def.unlockPrestige} Prestiges freigeschaltet</span>
+      </div>
+    {:else}
     {@const bs = $game.buildings[def.id]}
     {@const isGen = def.kind === "generator"}
     {@const buyCount = maxAffordable(bs.nextCost, bs.owned, $game.sand, targetCount(buyMode), def.costGrowth)}
@@ -113,6 +124,7 @@
       <span class="r bonus">+{formatDecimal(boni)} {unitSuffix(def.id)}</span>
       <span class="r share">{isGen && share.gt(0) ? `${formatDecimal(share, 1)} %` : "—"}</span>
     </button>
+    {/if}
   {/each}
 </div>
 
@@ -191,6 +203,18 @@
   .trow:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+  }
+  .lockedrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    opacity: 0.75;
+    background: var(--panel-dim);
+  }
+  .lockmsg {
+    font-size: 13px;
+    font-weight: 600;
   }
   .trow.best {
     border-color: var(--accent);

@@ -5,6 +5,8 @@ import {
   ARBEITER_BOOST_PER,
   COMPLETION_EFFECTS,
   DIG_COMPLETION_PROD_PER,
+  DINO_CHANCE,
+  DINO_MAX_M,
   EVENT_PROD_MULT,
   MENSCH_ARBEITER_PER,
   SANDUHR_RATE_PER,
@@ -177,6 +179,26 @@ export function digCompletionMultiplier(state: GameState): Decimal {
 /** Event-Multiplikator: ×5 auf die Produktion, solange "Es ist Gottes Wille" läuft. */
 export function eventMultiplier(state: GameState): Decimal {
   return new Decimal(state.eventRemaining > 0 ? EVENT_PROD_MULT : 1);
+}
+
+/**
+ * Wertet neu vollständig gegrabene Meter für Ausgrabungen aus.
+ * Für jeden Meter von `excavatedMeter+1` bis zur aktuellen Tiefe (max. DINO_MAX_M)
+ * gibt es DINO_CHANCE auf einen Dino-Knochen. `rng` liefert Werte in [0,1).
+ */
+export function stepExcavation(
+  depthM: number,
+  excavatedMeter: number,
+  rng: () => number,
+): { meter: number; bones: number } {
+  const target = Math.min(DINO_MAX_M, Math.floor(depthM));
+  let meter = excavatedMeter;
+  let bones = 0;
+  while (meter < target) {
+    meter++;
+    if (rng() < DINO_CHANCE) bones++;
+  }
+  return { meter, bones };
 }
 
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */

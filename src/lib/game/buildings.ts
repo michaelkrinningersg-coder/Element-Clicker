@@ -18,6 +18,7 @@ export interface BuildingDef {
   clickPerUnit?: number;
   prodPerUnit?: Decimal;
   desc: string;
+  unlockPrestige?: number; // ab wie vielen Prestiges freigeschaltet (sonst sofort)
 }
 
 export const BUILDINGS: BuildingDef[] = [
@@ -91,8 +92,35 @@ export const BUILDINGS: BuildingDef[] = [
     prodPerUnit: new Decimal(47_000),
     desc: "+47.000 Sand/Sek. je Handkarren",
   },
+  {
+    id: "radlader",
+    name: "Radlader",
+    icon: "🚜",
+    baseCost: new Decimal(16_000_000).mul(22), // ×22 von Handkarren
+    costGrowth: 1.19, // minimal steiler
+    kind: "generator",
+    prodPerUnit: new Decimal(47_000).mul(7), // ×7 von Handkarren = 329.000
+    desc: "+329.000 Sand/Sek. je Radlader",
+    unlockPrestige: 5,
+  },
+  {
+    id: "muldenkipper",
+    name: "Muldenkipper",
+    icon: "🚛",
+    baseCost: new Decimal(16_000_000).mul(22).mul(13), // ×13 von Radlader
+    costGrowth: 1.21, // minimal steiler
+    kind: "generator",
+    prodPerUnit: new Decimal(47_000).mul(7).mul(9), // ×9 von Radlader = 2.961.000
+    desc: "+2.961.000 Sand/Sek. je Muldenkipper",
+    unlockPrestige: 15,
+  },
 ];
 
 export const BUILDING_BY_ID: Record<string, BuildingDef> = Object.fromEntries(
   BUILDINGS.map((b) => [b.id, b]),
 );
+
+/** Ist das Gebäude bei der gegebenen Prestige-Zahl freigeschaltet? */
+export function isBuildingUnlocked(def: BuildingDef, prestigeCount: number): boolean {
+  return def.unlockPrestige == null || prestigeCount >= def.unlockPrestige;
+}

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Decimal } from "../src/lib/game/decimal";
 import { createInitialState, prestigeReset } from "../src/lib/game/state";
-import { BUILDINGS, BUILDING_BY_ID } from "../src/lib/game/buildings";
+import { BUILDINGS, BUILDING_BY_ID, isBuildingUnlocked } from "../src/lib/game/buildings";
 import {
   formatWeight,
   earthMassPercent,
@@ -40,6 +40,7 @@ import {
   completionBuildingMult,
   effectiveDigCompletions,
   eventMultiplier,
+  stepExcavation,
 } from "../src/lib/game/formulas";
 import { effectiveCompletions } from "../src/lib/game/achievements";
 
@@ -354,6 +355,17 @@ describe("Wiederholbare Abschlüsse & Boni", () => {
     expect(completionBuildingMult(s, "handkarren").toNumber()).toBeCloseTo(1, 9);
   });
 
+  it("Sandkasten gibt Eimer/Schaufel/Sieb je +2 % je Abschluss", () => {
+    const s = createInitialState();
+    s.completions["sandkasten"] = 3; // +6 % auf eimer, schaufel, sieb
+    expect(completionBuildingMult(s, "eimer").toNumber()).toBeCloseTo(1.06, 9);
+    expect(completionBuildingMult(s, "schaufel").toNumber()).toBeCloseTo(1.06, 9);
+    expect(completionBuildingMult(s, "sieb").toNumber()).toBeCloseTo(1.06, 9);
+    // kombiniert mit Sandburg (+1 %) auf Eimer
+    s.completions["sandburg"] = 1;
+    expect(completionBuildingMult(s, "eimer").toNumber()).toBeCloseTo(1.07, 9);
+  });
+
   it("Sanduhr-Abschluss erhöht die Zeit-Bonus-Rate um 0,002 %-Punkte", () => {
     const s = createInitialState();
     expect(runTimeBoostRate(s)).toBeCloseTo(0.0001, 12); // Basis 0,01 %
@@ -380,6 +392,31 @@ describe("Wiederholbare Abschlüsse & Boni", () => {
     s.eventRemaining = 30; // Event aktiv
     expect(eventMultiplier(s).toNumber()).toBe(5);
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(normal * 5, 6);
+  });
+});
+
+describe("Ausgrabungen (Dino-Knochen, ab 10 Prestiges)", () => {
+  it("wertet jeden neuen Meter aus, max. 100 m", () => {
+    // rng immer 0 → jeder Meter ein Fund
+    const r = stepExcavation(50, 0, () => 0);
+    expect(r.meter).toBe(50);
+    expect(r.bones).toBe(50);
+    // ab 100 m keine weiteren Meter
+    const r2 = stepExcavation(150, 90, () => 0);
+    expect(r2.meter).toBe(100);
+    expect(r2.bones).toBe(10);
+  });
+
+  it("rng über der Chance → kein Fund, Meter trotzdem gezählt", () => {
+    const r = stepExcavation(10, 0, () => 0.9);
+    expect(r.meter).toBe(10);
+    expect(r.bones).toBe(0);
+  });
+
+  it("keine Doppelauswertung schon gegrabener Meter", () => {
+    const r = stepExcavation(30, 30, () => 0);
+    expect(r.meter).toBe(30);
+    expect(r.bones).toBe(0);
   });
 });
 
@@ -475,13 +512,35 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
 });
 
 describe("Gebäude & Ramping je Gebäude", () => {
-  it("7 Gebäude mit den vereinbarten Startkosten", () => {
-    expect(BUILDINGS.length).toBe(7);
+  it("9 Gebäude mit den vereinbarten Startkosten", () => {
+    expect(BUILDINGS.length).toBe(9);
     expect(BUILDING_BY_ID.schaufel.baseCost.toNumber()).toBe(150);
     expect(BUILDING_BY_ID.sieb.baseCost.toNumber()).toBe(3000);
     expect(BUILDING_BY_ID.arbeiter.baseCost.toNumber()).toBe(36000);
     expect(BUILDING_BY_ID.lasttiere.baseCost.toNumber()).toBe(900000);
     expect(BUILDING_BY_ID.handkarren.baseCost.toNumber()).toBe(16000000);
+  });
+
+  it("prestige-gesperrte Generatoren: Radlader (×22/×7 ab 5), Muldenkipper (×13/×9 ab 15)", () => {
+    const hk = BUILDING_BY_ID.handkarren;
+    const rl = BUILDING_BY_ID.radlader;
+    const mk = BUILDING_BY_ID.muldenkipper;
+    expect(rl.unlockPrestige).toBe(5);
+    expect(mk.unlockPrestige).toBe(15);
+    expect(rl.baseCost.div(hk.baseCost).toNumber()).toBeCloseTo(22, 6);
+    expect(rl.prodPerUnit!.div(hk.prodPerUnit!).toNumber()).toBeCloseTo(7, 6);
+    expect(mk.baseCost.div(rl.baseCost).toNumber()).toBeCloseTo(13, 6);
+    expect(mk.prodPerUnit!.div(rl.prodPerUnit!).toNumber()).toBeCloseTo(9, 6);
+    // Kostensteigerung minimal steiler
+    expect(rl.costGrowth).toBe(1.19);
+    expect(mk.costGrowth).toBe(1.21);
+  });
+
+  it("isBuildingUnlocked hängt an der Prestige-Zahl", () => {
+    const rl = BUILDING_BY_ID.radlader;
+    expect(isBuildingUnlocked(BUILDING_BY_ID.eimer, 0)).toBe(true);
+    expect(isBuildingUnlocked(rl, 4)).toBe(false);
+    expect(isBuildingUnlocked(rl, 5)).toBe(true);
   });
 
   it("Produktionssprünge liegen bei ~75 % (nur ~×7 bis ×21 statt ×9–×28)", () => {

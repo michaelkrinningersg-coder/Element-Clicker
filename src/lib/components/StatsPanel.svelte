@@ -24,6 +24,8 @@
     ARBEITER_BOOST_PER,
     MENSCH_ARBEITER_PER,
     EVENT_NAME,
+    EXCAVATION_UNLOCK_PRESTIGE,
+    DINO_MAX_M,
   } from "../game/constants";
   import {
     formatDecimal,
@@ -52,6 +54,12 @@
     .filter((x) => x.mult.gt(1));
   const pctStr = (n: number, digits = 3) =>
     n.toLocaleString("de-DE", { maximumFractionDigits: digits });
+
+  const PRESTIGE_UNLOCKS = [
+    { at: 5, label: "Generator Radlader" },
+    { at: 10, label: "Ausgrabungen (Dino-Knochen)" },
+    { at: 15, label: "Generator Muldenkipper" },
+  ];
 </script>
 
 <div class="panel">
@@ -103,10 +111,18 @@
         <span class="k">Glas</span>
         <span class="v mono">{formatInt($game.glas)}</span>
       </div>
-      <div class="stat">
+      <div class="stat hi">
         <span class="k">Prestiges (zu Glas geschmolzen)</span>
         <span class="v mono">{formatNumber($game.prestigeCount)}</span>
       </div>
+      {#each PRESTIGE_UNLOCKS as u (u.at)}
+        <div class="stat">
+          <span class="k">{u.label}</span>
+          <span class="v mono">
+            {#if $game.prestigeCount >= u.at}✓ frei{:else}🔒 ab {u.at} Prestiges{/if}
+          </span>
+        </div>
+      {/each}
       <div class="stat">
         <span class="k">Spielzeit (gesamt)</span>
         <span class="v mono">{formatDuration($game.playtimeSeconds)}</span>
@@ -180,6 +196,23 @@
           </div>
         {/each}
       </div>
+    </div>
+  {/if}
+
+  {#if $game.prestigeCount >= EXCAVATION_UNLOCK_PRESTIGE || $game.dinoBones > 0}
+    <div class="grp">
+      <h4>Ausgrabungen</h4>
+      <div class="rows">
+        <div class="stat hi">
+          <span class="k">🦴 Dino-Knochen gefunden</span>
+          <span class="v mono">{formatNumber($game.dinoBones)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">Ausgewertete Meter (dieser Run, 1–{DINO_MAX_M} m)</span>
+          <span class="v mono">{formatNumber($game.excavatedMeter)}</span>
+        </div>
+      </div>
+      <p class="note dim">Je vollständig gegrabenem Meter (1–{DINO_MAX_M} m) 5 % Chance auf einen Dino-Knochen.</p>
     </div>
   {/if}
 

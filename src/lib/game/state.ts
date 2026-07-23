@@ -23,6 +23,10 @@ export interface GameState {
   eventRemaining: number; // Sekunden verbleibend (0 = kein aktives Event)
   eventCooldown: number; // Sekunden bis zum nächsten Event
 
+  // Ausgrabungen (ab 10 Prestiges)
+  dinoBones: number; // gefundene Dino-Knochen (dauerhaft)
+  excavatedMeter: number; // höchster diesen Run ausgewerteter Meter (Reset bei Prestige)
+
   // Statistik / Lifetime
   totalSandEver: Decimal; // je gesammelte Sandkörner (bleibt bei Prestige)
   runSandEver: Decimal; // in diesem Run gesammelt (Basis für Bauwerke & Graben, Reset bei Prestige)
@@ -44,6 +48,8 @@ export function createInitialState(): GameState {
     digCompletions: {},
     eventRemaining: 0,
     eventCooldown: 1500,
+    dinoBones: 0,
+    excavatedMeter: 0,
     totalSandEver: ZERO,
     runSandEver: ZERO,
     totalClicks: 0,
@@ -70,6 +76,7 @@ export function prestigeReset(state: GameState): void {
   state.sand = ZERO;
   state.runSandEver = ZERO; // Bauwerke & Graben setzen sich zurück
   state.runPlaytimeSeconds = 0; // Run-Zeit-Bonus zurück
+  state.excavatedMeter = 0; // Ausgrabungen des Runs zurück (Dino-Knochen bleiben)
   for (const b of BUILDINGS) {
     state.buildings[b.id] = { owned: 0, nextCost: b.baseCost };
   }

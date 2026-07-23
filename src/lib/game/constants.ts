@@ -87,6 +87,11 @@ export const COMPLETION_EFFECTS: Record<string, { building: string; pct: number 
     { building: "schaufel", pct: 1 },
     { building: "eimer", pct: 1 },
   ],
+  sandkasten: [
+    { building: "eimer", pct: 2 },
+    { building: "schaufel", pct: 2 },
+    { building: "sieb", pct: 2 },
+  ],
   "koelner-dom": [
     { building: "arbeiter", pct: 1 },
     { building: "lasttiere", pct: 1 },
@@ -99,6 +104,11 @@ export const SANDUHR_RATE_PER = 0.00002;
 export const MENSCH_ARBEITER_PER = 0.001;
 // Generischer Bonus je Graben-Abschluss: +0,1 % Gesamtproduktion.
 export const DIG_COMPLETION_PROD_PER = 0.001;
+
+// ---- Ausgrabungen (ab 10 Prestiges) ----
+export const EXCAVATION_UNLOCK_PRESTIGE = 10;
+export const DINO_MAX_M = 100; // Dino-Knochen von 1 m bis 100 m
+export const DINO_CHANCE = 0.05; // 5 % je vollständig gegrabenem Meter
 
 // ---- Event: "Es ist Gottes Wille" ----
 export const EVENT_INTERVAL_MIN_S = 1000;

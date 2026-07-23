@@ -5,14 +5,16 @@ import {
   EVENT_DURATION_S,
   EVENT_INTERVAL_MAX_S,
   EVENT_INTERVAL_MIN_S,
+  EXCAVATION_UNLOCK_PRESTIGE,
 } from "./constants";
-import { BUILDINGS, BUILDING_BY_ID } from "./buildings";
+import { BUILDINGS, BUILDING_BY_ID, isBuildingUnlocked } from "./buildings";
 import {
   canPrestige,
   clickValue,
   digDepthMeters,
   glasGain,
   growthRate,
+  stepExcavation,
   totalProductionPerSec,
 } from "./formulas";
 import {
@@ -64,6 +66,7 @@ export function click(): void {
 export function buyBuildings(id: string, count: number): void {
   const def = BUILDING_BY_ID[id];
   if (!def) return;
+  if (!isBuildingUnlocked(def, state.prestigeCount)) return;
   const bs = state.buildings[id];
   let bought = 0;
   const cap = Math.min(count, 1_000_000);
@@ -85,6 +88,7 @@ export function buyMaxAll(): void {
   for (let step = 0; step < SAFETY_CAP; step++) {
     let cheapestId: string | null = null;
     for (const def of BUILDINGS) {
+      if (!isBuildingUnlocked(def, state.prestigeCount)) continue;
       const bs = state.buildings[def.id];
       if (state.sand.lt(bs.nextCost)) continue;
       if (cheapestId === null || bs.nextCost.lt(state.buildings[cheapestId].nextCost)) {
@@ -130,6 +134,17 @@ export function prestige(): void {
   commit();
 }
 
+/** Ausgrabungen: wertet neu gegrabene Meter aus (ab EXCAVATION_UNLOCK_PRESTIGE). */
+function updateExcavation(): void {
+  if (state.prestigeCount < EXCAVATION_UNLOCK_PRESTIGE) return;
+  const depth = digDepthMeters(state.runSandEver);
+  const { meter, bones } = stepExcavation(depth, state.excavatedMeter, Math.random);
+  if (meter !== state.excavatedMeter) {
+    state.excavatedMeter = meter;
+    state.dinoBones += bones;
+  }
+}
+
 /** Event-Timer: löst "Es ist Gottes Wille" aus und lässt es ablaufen. */
 function updateEvent(dt: number): void {
   if (state.eventRemaining > 0) {
@@ -154,6 +169,7 @@ export function tick(dtSeconds: number): void {
   state.playtimeSeconds += dtSeconds;
   state.runPlaytimeSeconds += dtSeconds;
   updateEvent(dtSeconds);
+  updateExcavation();
   syncAchievements();
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {

@@ -59,6 +59,32 @@
       <circle cx="18.6" cy="33.5" r="4.4" fill="#5b4a37" stroke="#3f3123" stroke-width="1.2" />
       <circle cx="18.6" cy="33.5" r="1.4" fill="#e0cfae" />
     </g>
+  {:else if id === "radlader"}
+    <g>
+      <!-- Schaufelarm + Ladeschaufel -->
+      <path d="M4 26 l7 -3 v4 l-6 3 z" fill="#c9922f" stroke="#a67f3c" stroke-width="1.2" stroke-linejoin="round" />
+      <line x1="10" y1="24" x2="20" y2="26" stroke="#a67f3c" stroke-width="2" stroke-linecap="round" />
+      <!-- Karosserie -->
+      <path d="M18 20 h14 a2 2 0 0 1 2 2 v9 h-18 v-9 a2 2 0 0 1 2 -2 z" fill="#f2c94c" stroke="#d9a93a" stroke-width="1.3" stroke-linejoin="round" />
+      <rect x="21" y="22" width="6" height="5" rx="1" fill="#bfe0f2" stroke="#d9a93a" stroke-width="1" />
+      <!-- große Räder -->
+      <circle cx="20" cy="33" r="4.6" fill="#3f3123" stroke="#2a2016" stroke-width="1.3" />
+      <circle cx="31" cy="33" r="4.6" fill="#3f3123" stroke="#2a2016" stroke-width="1.3" />
+      <circle cx="20" cy="33" r="1.6" fill="#c9b89a" /><circle cx="31" cy="33" r="1.6" fill="#c9b89a" />
+    </g>
+  {:else if id === "muldenkipper"}
+    <g>
+      <!-- Kippmulde mit Sand -->
+      <path d="M15 15 h22 l-2 12 h-20 z" fill="#cf9a3a" stroke="#a67f3c" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M16.5 16 q9 5 18 0 q0 2 -9 2 q-9 0 -9 -2 z" fill="#ecca7d" stroke="none" />
+      <!-- Fahrerhaus -->
+      <path d="M6 24 h9 v7 h-11 v-4 a3 3 0 0 1 2 -3 z" fill="#4d84bb" stroke="#3a6591" stroke-width="1.2" stroke-linejoin="round" />
+      <rect x="7" y="25.5" width="5" height="3.5" rx="1" fill="#bfe0f2" stroke="#3a6591" stroke-width="0.9" />
+      <!-- Räder -->
+      <circle cx="12" cy="34" r="4" fill="#3f3123" stroke="#2a2016" stroke-width="1.2" />
+      <circle cx="24" cy="34" r="4" fill="#3f3123" stroke="#2a2016" stroke-width="1.2" />
+      <circle cx="32" cy="34" r="4" fill="#3f3123" stroke="#2a2016" stroke-width="1.2" />
+    </g>
   {:else if id === "ach-schaufel"}
     <g>
       <!-- Sandhaufen -->
