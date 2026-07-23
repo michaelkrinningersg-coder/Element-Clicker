@@ -34,6 +34,7 @@ import {
   generatorCount,
   generatorBoostMultiplier,
   arbeiterBoostMultiplier,
+  timeBoostMultiplier,
   buildingProduction,
 } from "../src/lib/game/formulas";
 
@@ -319,6 +320,23 @@ describe("Arbeiter-Boost (+1 % auf alle Generatoren je Arbeiter)", () => {
       .mul(generatorBoostMultiplier(s))
       .mul(arbeiterBoostMultiplier(s));
     expect(buildingProduction(s, "eimer").toNumber()).toBeCloseTo(expected.toNumber(), 6);
+  });
+});
+
+describe("Zeit-Bonus (+0,01 % Produktion je Spielsekunde)", () => {
+  it("Multiplikator = 1 + 0,0001 · Spielsekunden", () => {
+    const s = createInitialState();
+    expect(timeBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
+    s.playtimeSeconds = 3600; // 1 h → +36 %
+    expect(timeBoostMultiplier(s).toNumber()).toBeCloseTo(1.36, 9);
+  });
+
+  it("wirkt multiplikativ auf die Produktion", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 10; // 2 /s Basis
+    const before = totalProductionPerSec(s).toNumber();
+    s.playtimeSeconds = 10000; // ×(1 + 0,0001·10000) = ×2
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(before * 2, 6);
   });
 });
 

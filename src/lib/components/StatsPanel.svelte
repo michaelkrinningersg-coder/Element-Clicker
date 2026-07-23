@@ -8,6 +8,7 @@
     generatorBoostMultiplier,
     generatorCount,
     arbeiterBoostMultiplier,
+    timeBoostMultiplier,
   } from "../game/formulas";
   import { unlockedCount } from "../game/achievements";
   import {
@@ -112,6 +113,10 @@
       <div class="stat">
         <span class="k">Arbeiter ({formatNumber($game.buildings.arbeiter.owned)}) · +1 % je Arbeiter</span>
         <span class="v mono">×{formatDecimal(arbeiterBoostMultiplier($game), 3)}</span>
+      </div>
+      <div class="stat">
+        <span class="k">Zeit-Bonus (+0,01 % je Spielsekunde)</span>
+        <span class="v mono">×{formatDecimal(timeBoostMultiplier($game), 3)}</span>
       </div>
     </div>
   </div>

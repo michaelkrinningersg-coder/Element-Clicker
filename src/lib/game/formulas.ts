@@ -15,6 +15,7 @@ import {
   GENERATOR_BOOST_PER,
   GLAS_BONUS_PER,
   GLAS_UNLOCK,
+  TIME_BOOST_PER,
   TONNE_IN_GRAINS,
 } from "./constants";
 import { BUILDINGS, BUILDING_BY_ID } from "./buildings";
@@ -116,6 +117,11 @@ export function arbeiterBoostMultiplier(state: GameState): Decimal {
   return new Decimal(1 + ARBEITER_BOOST_PER * owned);
 }
 
+/** Zeit-Bonus auf die Produktion: 1 + 0,01 % je gespielter Sekunde. */
+export function timeBoostMultiplier(state: GameState): Decimal {
+  return new Decimal(1 + TIME_BOOST_PER * state.playtimeSeconds);
+}
+
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */
 export function clickValue(state: GameState): Decimal {
   let base = 1;
@@ -137,7 +143,8 @@ export function buildingProduction(state: GameState, id: string): Decimal {
       .mul(achievementProductionMult(state))
       .mul(digIncomeMultiplier(state))
       .mul(generatorBoostMultiplier(state))
-      .mul(arbeiterBoostMultiplier(state));
+      .mul(arbeiterBoostMultiplier(state))
+      .mul(timeBoostMultiplier(state));
   }
   return ZERO;
 }
@@ -155,7 +162,8 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(achievementProductionMult(state))
     .mul(digIncomeMultiplier(state))
     .mul(generatorBoostMultiplier(state))
-    .mul(arbeiterBoostMultiplier(state));
+    .mul(arbeiterBoostMultiplier(state))
+    .mul(timeBoostMultiplier(state));
 }
 
 // ---- Graben: Tiefe aus gesammeltem Sandgewicht (exponentiell schwerer) ----

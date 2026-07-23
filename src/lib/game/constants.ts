@@ -72,3 +72,6 @@ export const ACH_COST_PER = 0.01; // −1 % Kosten je Bauwerk (multiplikativ, 0,
 // ---- Generator-Synergie ----
 export const GENERATOR_BOOST_PER = 0.001; // +0,1 % Produktion je gebautem Generator (gesamt)
 export const ARBEITER_BOOST_PER = 0.01; // +1 % auf alle Generatoren je Arbeiter
+
+// ---- Zeit-Bonus ----
+export const TIME_BOOST_PER = 0.0001; // +0,01 % Produktion je gespielter Sekunde
