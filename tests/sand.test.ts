@@ -160,7 +160,8 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
     const eq = (id: string, v: string) => expect(byId[id].eq(new Decimal(v))).toBe(true);
     eq("sanduhr", "1e6");
     eq("eierbecher", "4e6");
-    eq("schaufel-voll", "5e6");
+    eq("schaufel-voll", "1.5e8"); // ≈ 1,5 kg
+    eq("eimer-voll", "1.5e9"); // ≈ 15 kg
     eq("vogelsand", "2e8");
     eq("sandsteinblock", "1e11");
     eq("elefant", "6e11"); // ≈ 6 t
@@ -188,9 +189,9 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
   it("schalten sich am Run-Sand frei", () => {
     const s = createInitialState();
     expect(unlockedCount(s)).toBe(0);
-    s.runSandEver = new Decimal("5e6"); // Sanduhr, Reagenzglas, Eierbecher, Schaufel
+    s.runSandEver = new Decimal("5e6"); // Sanduhr, Reagenzglas, Eierbecher
     expect(isUnlocked(s, ACHIEVEMENTS[0])).toBe(true);
-    expect(unlockedCount(s)).toBe(4);
+    expect(unlockedCount(s)).toBe(3);
     s.runSandEver = new Decimal("6e9"); // bis Sandburg
     expect(unlockedCount(s)).toBe(9);
     s.runSandEver = new Decimal("200e15"); // bis Strand (2e17)
@@ -344,7 +345,7 @@ describe("Wiederholbare Abschlüsse & Boni", () => {
   it("effektiver Abschluss = gebankt + 1 wenn diesen Run erreicht", () => {
     const s = createInitialState();
     expect(effectiveCompletions(s, "schaufel-voll")).toBe(0);
-    s.runSandEver = new Decimal("5e6"); // Schaufel-Bauwerk erreicht
+    s.runSandEver = new Decimal("1.5e8"); // Schaufel-Bauwerk erreicht
     expect(effectiveCompletions(s, "schaufel-voll")).toBe(1);
     s.completions["schaufel-voll"] = 3; // 3 aus früheren Runs
     expect(effectiveCompletions(s, "schaufel-voll")).toBe(4);
@@ -534,7 +535,7 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     // (3e7) noch NICHT abgeschlossen → kein Eimer-Abschlussbonus, Test bleibt sauber.
     s.runSandEver = new Decimal("1e7");
     const n = unlockedCount(s);
-    expect(n).toBe(4);
+    expect(n).toBe(3);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 1.02 ** n, 9);
   });

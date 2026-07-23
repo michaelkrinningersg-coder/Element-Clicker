@@ -37,25 +37,18 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: "Ein Eierbecher (≈ 40 g) randvoll mit Sand.",
   },
   {
-    id: "schaufel-voll",
-    name: "Eine Schaufel voll Sand",
-    icon: "ach-schaufel",
-    threshold: new Decimal("5e6"),
-    desc: "Genug Sand für eine ordentliche Schaufel voll.",
-  },
-  {
-    id: "eimer-voll",
-    name: "Ein Eimer voll Sand",
-    icon: "ach-eimer",
-    threshold: new Decimal("30e6"),
-    desc: "Ein randvoll gefüllter Eimer – bereit für die Burg.",
-  },
-  {
     id: "sandkuchen",
     name: "Ein Sandkuchen",
     icon: "ach-sandkuchen",
     threshold: new Decimal("48e6"),
-    desc: "Aus dem Förmchen gestürzt – der perfekte Sandkuchen.",
+    desc: "Aus dem Förmchen gestürzt (≈ 480 g) – der perfekte Sandkuchen.",
+  },
+  {
+    id: "schaufel-voll",
+    name: "Eine Schaufel voll Sand",
+    icon: "ach-schaufel",
+    threshold: new Decimal("1.5e8"),
+    desc: "≈ 1,5 kg – eine ordentliche Schaufel voll.",
   },
   {
     id: "vogelsand",
@@ -63,6 +56,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     icon: "ach-vogelsand",
     threshold: new Decimal("2e8"),
     desc: "2 kg Vogelsand aus dem Zoohandel.",
+  },
+  {
+    id: "eimer-voll",
+    name: "Ein Eimer voll Sand",
+    icon: "ach-eimer",
+    threshold: new Decimal("1.5e9"),
+    desc: "≈ 15 kg – ein randvoll gefüllter Eimer.",
   },
   {
     id: "sandsack",
