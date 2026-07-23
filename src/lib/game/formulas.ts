@@ -117,12 +117,7 @@ export function arbeiterBoostMultiplier(state: GameState): Decimal {
   return new Decimal(1 + ARBEITER_BOOST_PER * owned);
 }
 
-/** Zeit-Bonus (Lifetime) auf die Produktion: 1 + 0,01 % je gespielter Sekunde. */
-export function timeBoostMultiplier(state: GameState): Decimal {
-  return new Decimal(1 + TIME_BOOST_PER * state.playtimeSeconds);
-}
-
-/** Zeit-Bonus dieses Runs: 1 + 0,01 % je Sekunde seit dem letzten Prestige. */
+/** Zeit-Bonus dieses Runs auf die Produktion: 1 + 0,01 % je Sekunde seit dem letzten Prestige. */
 export function runTimeBoostMultiplier(state: GameState): Decimal {
   return new Decimal(1 + TIME_BOOST_PER * state.runPlaytimeSeconds);
 }
@@ -149,7 +144,6 @@ export function buildingProduction(state: GameState, id: string): Decimal {
       .mul(digIncomeMultiplier(state))
       .mul(generatorBoostMultiplier(state))
       .mul(arbeiterBoostMultiplier(state))
-      .mul(timeBoostMultiplier(state))
       .mul(runTimeBoostMultiplier(state));
   }
   return ZERO;
@@ -169,7 +163,6 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(digIncomeMultiplier(state))
     .mul(generatorBoostMultiplier(state))
     .mul(arbeiterBoostMultiplier(state))
-    .mul(timeBoostMultiplier(state))
     .mul(runTimeBoostMultiplier(state));
 }
 

@@ -34,7 +34,6 @@ import {
   generatorCount,
   generatorBoostMultiplier,
   arbeiterBoostMultiplier,
-  timeBoostMultiplier,
   runTimeBoostMultiplier,
   buildingProduction,
 } from "../src/lib/game/formulas";
@@ -324,35 +323,34 @@ describe("Arbeiter-Boost (+1 % auf alle Generatoren je Arbeiter)", () => {
   });
 });
 
-describe("Zeit-Bonus (+0,01 % Produktion je Spielsekunde)", () => {
-  it("Multiplikator = 1 + 0,0001 · Spielsekunden", () => {
+describe("Zeit-Bonus (+0,01 % Produktion je Sekunde im aktuellen Prestige)", () => {
+  it("Multiplikator = 1 + 0,0001 · Run-Sekunden", () => {
     const s = createInitialState();
-    expect(timeBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
-    s.playtimeSeconds = 3600; // 1 h → +36 %
-    expect(timeBoostMultiplier(s).toNumber()).toBeCloseTo(1.36, 9);
+    expect(runTimeBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
+    s.runPlaytimeSeconds = 3600; // 1 h → +36 %
+    expect(runTimeBoostMultiplier(s).toNumber()).toBeCloseTo(1.36, 9);
   });
 
   it("wirkt multiplikativ auf die Produktion", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 10; // 2 /s Basis
     const before = totalProductionPerSec(s).toNumber();
-    s.playtimeSeconds = 10000; // ×(1 + 0,0001·10000) = ×2
+    s.runPlaytimeSeconds = 10000; // ×(1 + 0,0001·10000) = ×2
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(before * 2, 6);
   });
 
-  it("Run-Zeit-Bonus zusätzlich zur Lifetime-Zeit, Reset bei Prestige", () => {
+  it("nur Run-Zeit zählt (Lifetime-Spielzeit ohne Wirkung), Reset bei Prestige", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 10;
-    s.playtimeSeconds = 10000; // Lifetime ×2
-    s.runPlaytimeSeconds = 10000; // Run ×2
-    expect(runTimeBoostMultiplier(s).toNumber()).toBeCloseTo(2, 9);
-    // Beide Zeit-Boni stapeln: 2 · glasBoost(1) · genBoost · 2(lifetime) · 2(run)
+    s.playtimeSeconds = 99999; // Lifetime hat KEINE Wirkung mehr
     const base = new Decimal(2).mul(generatorBoostMultiplier(s));
-    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 2 * 2, 6);
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber(), 6);
+    s.runPlaytimeSeconds = 10000; // nur Run zählt → ×2
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 2, 6);
     prestigeReset(s);
     expect(s.runPlaytimeSeconds).toBe(0);
     expect(runTimeBoostMultiplier(s).toNumber()).toBeCloseTo(1, 9);
-    expect(s.playtimeSeconds).toBe(10000); // Lifetime bleibt
+    expect(s.playtimeSeconds).toBe(99999); // Lifetime-Statistik bleibt
   });
 });
 

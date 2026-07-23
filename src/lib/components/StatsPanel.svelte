@@ -8,7 +8,6 @@
     generatorBoostMultiplier,
     generatorCount,
     arbeiterBoostMultiplier,
-    timeBoostMultiplier,
     runTimeBoostMultiplier,
   } from "../game/formulas";
   import { unlockedCount } from "../game/achievements";
@@ -120,11 +119,7 @@
         <span class="v mono">×{formatDecimal(arbeiterBoostMultiplier($game), 3)}</span>
       </div>
       <div class="stat">
-        <span class="k">Zeit-Bonus gesamt (+0,01 % je Spielsekunde)</span>
-        <span class="v mono">×{formatDecimal(timeBoostMultiplier($game), 3)}</span>
-      </div>
-      <div class="stat">
-        <span class="k">Zeit-Bonus dieses Prestige (+0,01 % je Run-Sekunde)</span>
+        <span class="k">Zeit-Bonus (+0,01 % je Sekunde im Prestige)</span>
         <span class="v mono">×{formatDecimal(runTimeBoostMultiplier($game), 3)}</span>
       </div>
     </div>
