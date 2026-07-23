@@ -31,6 +31,9 @@ export const DIG_CENTER_FACTOR = 1e30; // im Erdmittelpunkt 1e30× so schwer (Gr
 // Meilenstein gibt +1 % auf alle Einkünfte (Klick & Produktion).
 export const DIG_MILESTONE_BONUS_PER = 0.01;
 export const DIG_MILESTONES: { id: string; name: string; m: number }[] = [
+  { id: "streichholz", name: "🔥 Streichholz", m: 0.045 },
+  { id: "gartenzwerg", name: "🧝 Gartenzwerg", m: 0.4 },
+  { id: "kaiserpinguin", name: "🐧 Kaiserpinguin", m: 1.2 },
   { id: "mensch", name: "Größe eines Menschen", m: 1.8 },
   { id: "sphinx", name: "Die Sphinx (Höhe)", m: 20 },
   { id: "sandburg-rekord", name: "Höchste Sandburg der Welt", m: 21.16 },

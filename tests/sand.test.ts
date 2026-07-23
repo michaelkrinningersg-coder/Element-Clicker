@@ -264,22 +264,24 @@ describe("Graben (exponentiell schwerer mit der Tiefe)", () => {
 describe("Graben-Meilensteine (+1 % je erreichter Tiefe)", () => {
   it("zählt erreichte Meilensteine nach Tiefe", () => {
     expect(digMilestonesReached(0)).toBe(0);
-    expect(digMilestonesReached(1.8)).toBe(1); // Mensch
-    expect(digMilestonesReached(25)).toBe(3); // Mensch, Sphinx, Sandburg
+    // Streichholz(0,045), Gartenzwerg(0,4), Kaiserpinguin(1,2), Mensch(1,8)
+    expect(digMilestonesReached(1.8)).toBe(4);
+    // + Sphinx(20), Sandburg-Rekord(21,16)
+    expect(digMilestonesReached(25)).toBe(6);
     expect(digMilestonesReached(EARTH_DIAMETER_M)).toBe(DIG_MILESTONES.length);
   });
 
   it("+1 % auf Klick und Produktion je Meilenstein", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 10; // 2 /s Basis
-    // 2,5e13 Körner → ~25 m → 3 Meilensteine → +3 %
+    // 2,5e13 Körner → ~25 m → 6 Meilensteine → +6 %
     s.runSandEver = new Decimal("2.5e13");
     const depth = digDepthMeters(s.runSandEver);
     const n = digMilestonesReached(depth);
-    expect(n).toBe(3);
+    expect(n).toBe(6);
     expect(digIncomeMultiplier(s).toNumber()).toBeCloseTo(1 + 0.01 * n, 9);
-    // Klick: Basis 1 · Glas 1 · Graben (1+0,03) = 1,03
-    expect(clickValue(s).toNumber()).toBeCloseTo(1.03, 9);
+    // Klick: Basis 1 · Glas 1 · Graben (1+0,06) = 1,06
+    expect(clickValue(s).toNumber()).toBeCloseTo(1.06, 9);
     // Produktion enthält den Graben-Faktor ebenfalls
     const withoutDig = new Decimal(2)
       .mul(glasMultiplier(s))
