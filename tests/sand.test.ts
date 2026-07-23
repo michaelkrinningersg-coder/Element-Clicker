@@ -226,10 +226,10 @@ describe("Graben (exponentiell schwerer mit der Tiefe)", () => {
     expect(tonnesPerMeterAt(0)).toBeCloseTo(10, 6);
   });
 
-  it("im Erdmittelpunkt 1e15× so schwer wie am Start", () => {
+  it("im Erdmittelpunkt 1e30× so schwer wie am Start", () => {
     const ratio = tonnesPerMeterAt(DIG_CENTER_M) / tonnesPerMeterAt(0);
-    expect(ratio).toBeGreaterThan(1e15 * 0.999);
-    expect(ratio).toBeLessThan(1e15 * 1.001);
+    expect(ratio).toBeGreaterThan(1e30 * 0.999);
+    expect(ratio).toBeLessThan(1e30 * 1.001);
   });
 
   it("nahe der Oberfläche noch ~linear mit 10 t/m", () => {
@@ -244,7 +244,7 @@ describe("Graben (exponentiell schwerer mit der Tiefe)", () => {
   });
 
   it("nicht tiefer als der Erddurchmesser", () => {
-    const huge = new Decimal("1e60");
+    const huge = new Decimal("1e80");
     expect(digDepthMeters(huge)).toBe(EARTH_DIAMETER_M);
     expect(isMaxDepth(digDepthMeters(huge))).toBe(true);
     expect(isMaxDepth(1000)).toBe(false);

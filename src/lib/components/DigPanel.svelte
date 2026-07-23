@@ -114,7 +114,7 @@
     </div>
     <p class="note dim">
       An der Oberfläche unverändert {DIG_START_TPM} t/m – im Erdmittelpunkt das
-      1·10<sup>15</sup>-fache. Du sammelst gleich viel Sand, aber jeder Meter dauert
+      1·10<sup>30</sup>-fache. Du sammelst gleich viel Sand, aber jeder Meter dauert
       immer länger.
     </p>
   </div>

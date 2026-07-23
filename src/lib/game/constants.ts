@@ -25,7 +25,7 @@ export const DIG_CENTER_M = EARTH_DIAMETER_M / 2; // Erdmittelpunkt (Referenz f�
 // Graben wird mit der Tiefe exponentiell schwerer: an der Oberfläche DIG_START_TPM
 // Tonnen je Meter, im Erdmittelpunkt das DIG_CENTER_FACTOR-fache davon.
 export const DIG_START_TPM = 10; // t/m an der Oberfläche (unverändert)
-export const DIG_CENTER_FACTOR = 1e15; // im Erdmittelpunkt 1e15× so schwer
+export const DIG_CENTER_FACTOR = 1e30; // im Erdmittelpunkt 1e30× so schwer (Graben deutlich härter)
 
 // Vergleichstiefen als Meilensteine (nach Tiefe aufsteigend). Jeder erreichte
 // Meilenstein gibt +1 % auf alle Einkünfte (Klick & Produktion).
