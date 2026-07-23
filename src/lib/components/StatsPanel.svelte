@@ -14,11 +14,17 @@
     totalDigCompletions,
     digCompletionMultiplier,
     completionBuildingMult,
+    eventMultiplier,
   } from "../game/formulas";
   import { unlockedCount, effectiveCompletions } from "../game/achievements";
   import { ACHIEVEMENTS } from "../game/achievements";
   import { BUILDINGS } from "../game/buildings";
-  import { DIG_MILESTONES, ARBEITER_BOOST_PER, MENSCH_ARBEITER_PER } from "../game/constants";
+  import {
+    DIG_MILESTONES,
+    ARBEITER_BOOST_PER,
+    MENSCH_ARBEITER_PER,
+    EVENT_NAME,
+  } from "../game/constants";
   import {
     formatDecimal,
     formatInt,
@@ -152,6 +158,13 @@
       <div class="stat">
         <span class="k">Graben-Abschluss-Bonus (+0,1 % je Abschluss)</span>
         <span class="v mono">×{formatDecimal(digCompletionMultiplier($game), 3)}</span>
+      </div>
+      <div class="stat" class:hi={$game.eventRemaining > 0}>
+        <span class="k">
+          Event „{EVENT_NAME}"
+          {#if $game.eventRemaining > 0}· aktiv, noch {Math.ceil($game.eventRemaining)} s{/if}
+        </span>
+        <span class="v mono">×{formatDecimal(eventMultiplier($game), 0)}</span>
       </div>
     </div>
   </div>
