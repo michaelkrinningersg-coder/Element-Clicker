@@ -252,6 +252,129 @@
       <!-- Förmchen -->
       <path d="M29 31 h4 l-0.7 3 h-2.6 z" fill="#e0654b" stroke="#b84d36" stroke-width="0.9" stroke-linejoin="round" />
     </g>
+  {:else if id === "ach-eierbecher"}
+    <g>
+      <path d="M16 20 h12 l-2 9 a6 6 0 0 1 -8 0 z" fill="#f2efe6" stroke="#cbb48f" stroke-width="1.3" stroke-linejoin="round" />
+      <rect x="17" y="30" width="10" height="2.4" rx="1" fill="#f2efe6" stroke="#cbb48f" stroke-width="1" />
+      <path d="M18 33 h8 v3 h-8 z" fill="#e8e2d2" stroke="#cbb48f" stroke-width="1" stroke-linejoin="round" />
+      <path d="M16.5 20.5 q5.5 3 11 0 q0 2 -5.5 2 q-5.5 0 -5.5 -2 z" fill="#ecca7d" />
+      <path d="M18.5 18 q3.5 -3 7 0 q-3.5 2 -7 0 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="0.8" />
+    </g>
+  {:else if id === "ach-vogelsand"}
+    <g>
+      <path d="M14 16 h16 v20 a2 2 0 0 1 -2 2 h-12 a2 2 0 0 1 -2 -2 z" fill="#d9c7a0" stroke="#b39b6a" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M14 16 l3 -3 h10 l3 3 z" fill="#e6d6b3" stroke="#b39b6a" stroke-width="1.1" stroke-linejoin="round" />
+      <circle cx="22" cy="27" r="4" fill="#6aa8de" />
+      <circle cx="20.5" cy="26" r="0.8" fill="#123" />
+      <path d="M25.5 26 l3 -1 -3 -1 z" fill="#e0a838" />
+      <path d="M18 29 q-3 1 -4 3" stroke="#4d84bb" stroke-width="1.4" fill="none" stroke-linecap="round" />
+    </g>
+  {:else if id === "ach-sandsack"}
+    <g>
+      <path d="M12 22 q10 -6 20 0 q3 12 -2 15 h-16 q-5 -3 -2 -15 z" fill="#c9b283" stroke="#a3895a" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M17 18 q5 -3 10 0 l-2 5 q-3 -2 -6 0 z" fill="#b39b6a" stroke="#8f7548" stroke-width="1.2" stroke-linejoin="round" />
+      <line x1="16" y1="20" x2="28" y2="20" stroke="#8f7548" stroke-width="1.2" />
+      <g stroke="#a3895a" stroke-width="0.8" opacity="0.6"><path d="M15 28 h14 M14 32 h16" /></g>
+    </g>
+  {:else if id === "ach-schubkarre"}
+    <g>
+      <path d="M10 20 h20 l-4 9 h-12 z" fill="#8a939c" stroke="#5f676e" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M11 21 q9 5 18 0 q0 2 -9 2 q-9 0 -9 -2 z" fill="#ecca7d" />
+      <path d="M14 20 q6 -4 12 0 q-6 2 -12 0 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="0.8" />
+      <line x1="26" y1="27" x2="35" y2="31" stroke="#7d5122" stroke-width="2" stroke-linecap="round" />
+      <line x1="14" y1="29" x2="9" y2="34" stroke="#5f676e" stroke-width="1.6" stroke-linecap="round" />
+      <circle cx="16" cy="33" r="3.6" fill="#3f3123" stroke="#2a2016" stroke-width="1.2" />
+      <circle cx="16" cy="33" r="1.2" fill="#c9b89a" />
+    </g>
+  {:else if id === "ach-sandsteinblock"}
+    <g>
+      <path d="M10 18 l12 -4 l12 4 v14 l-12 4 l-12 -4 z" fill="#e0c58a" stroke="#c8993f" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M10 18 l12 4 l12 -4 M22 22 v14" fill="none" stroke="#c8993f" stroke-width="1.1" />
+      <g stroke="#c8993f" stroke-width="0.6" opacity="0.4"><path d="M11 24 l11 3.6 M33 24 l-11 3.6" /></g>
+    </g>
+  {:else if id === "ach-elefant"}
+    <g fill="#9aa3ab" stroke="#6f767d" stroke-width="1.3" stroke-linejoin="round">
+      <ellipse cx="23" cy="24" rx="11" ry="8" />
+      <circle cx="13" cy="22" r="6" />
+      <path d="M10 24 q-3 4 -1 9 q1 2 2 0 q0 -3 2 -5 z" />
+      <rect x="17" y="30" width="3" height="6" rx="1.2" />
+      <rect x="27" y="30" width="3" height="6" rx="1.2" />
+      <path d="M12 17 q5 -3 8 1 z" />
+      <circle cx="12" cy="21" r="0.9" fill="#3a3f44" stroke="none" />
+    </g>
+  {:else if id === "ach-blauwal"}
+    <g>
+      <path d="M6 24 q10 -8 24 -3 q6 2 8 -1 q-2 5 -6 5 q1 3 -1 5 q-3 -2 -4 -4 q-12 4 -21 -1 q-3 -2 0 -6 z" fill="#4d84bb" stroke="#3a6591" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M8 24 q8 3 18 1" fill="none" stroke="#bfe0f2" stroke-width="1" opacity="0.7" />
+      <circle cx="12" cy="23" r="1" fill="#0d1b2a" />
+    </g>
+  {:else if id === "ach-beachvolleyball"}
+    <g>
+      <path d="M6 32 q10 -4 20 0 q6 2 12 0 v6 h-32 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1.2" stroke-linejoin="round" />
+      <circle cx="20" cy="19" r="9" fill="#fbf5e9" stroke="#4d84bb" stroke-width="1.3" />
+      <path d="M20 10 q4 9 0 18 M12 15 q8 4 16 0 M12 23 q8 -4 16 0" fill="none" stroke="#4d84bb" stroke-width="1.1" />
+    </g>
+  {:else if id === "ach-glasscheibe"}
+    <g>
+      <rect x="12" y="8" width="20" height="28" rx="1.5" fill="#cfeef2" stroke="#7fbcc7" stroke-width="1.4" opacity="0.85" />
+      <path d="M16 11 h6 l-10 14 v-6 z" fill="#ffffff" opacity="0.55" />
+      <path d="M26 11 h3 l-14 22 h-3 z" fill="#ffffff" opacity="0.4" />
+    </g>
+  {:else if id === "ach-eiffelturm"}
+    <g stroke="#8a6d3b" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="22" y1="7" x2="22" y2="12" />
+      <path d="M22 12 C 19 20 16 30 13 37" />
+      <path d="M22 12 C 25 20 28 30 31 37" />
+      <path d="M18 24 H 26" />
+      <path d="M15 32 H 29" />
+      <path d="M16 37 Q 22 30 28 37" />
+      <circle cx="22" cy="6.5" r="1.2" fill="#8a6d3b" stroke="none" />
+    </g>
+  {:else if id === "ach-saturnv"}
+    <g>
+      <path d="M22 6 q5 6 5 16 v10 h-10 v-10 q0 -10 5 -16 z" fill="#f2efe6" stroke="#b9b2a3" stroke-width="1.3" stroke-linejoin="round" />
+      <rect x="17" y="22" width="10" height="2" fill="#c94f3a" />
+      <circle cx="22" cy="16" r="2.4" fill="#6aa8de" stroke="#3a6591" stroke-width="1" />
+      <path d="M17 26 l-4 6 4 0 z M27 26 l4 6 -4 0 z" fill="#e0654b" stroke="#b84d36" stroke-width="1" stroke-linejoin="round" />
+      <rect x="19" y="32" width="6" height="3" fill="#8a939c" />
+      <path d="M20 35 q2 5 4 0 q-2 3 -4 0 z" fill="#f2a54c" />
+    </g>
+  {:else if id === "ach-sandbank"}
+    <g>
+      <rect x="3" y="10" width="38" height="26" fill="#6cc3d4" />
+      <g fill="none" stroke="#bfe9f0" stroke-width="1" opacity="0.7"><path d="M6 15 q3 -1.5 6 0 t6 0 t6 0 t6 0" /></g>
+      <path d="M8 30 q14 -8 28 0 q-4 5 -14 5 q-10 0 -14 -5 z" fill="#ecca7d" stroke="#cf9f45" stroke-width="1.2" stroke-linejoin="round" />
+      <g fill="#cf9f45" opacity="0.5"><circle cx="20" cy="30" r="0.8" /><circle cx="24" cy="31" r="0.8" /><circle cx="17" cy="31.5" r="0.8" /></g>
+    </g>
+  {:else if id === "ach-wueste"}
+    <g>
+      <circle cx="33" cy="12" r="4" fill="#f2c94c" />
+      <path d="M3 30 q8 -8 15 -3 q6 4 11 -1 q5 -4 8 1 v9 h-34 z" fill="#e6c684" stroke="#cf9f45" stroke-width="1.2" stroke-linejoin="round" />
+      <path d="M3 34 q10 -4 18 -1 q9 3 16 -2 v6 h-34 z" fill="#d9b160" opacity="0.7" stroke="none" />
+    </g>
+  {:else if id === "ach-goldengate"}
+    <g stroke="#c0392b" stroke-width="1.5" fill="none" stroke-linecap="round">
+      <line x1="13" y1="10" x2="13" y2="30" />
+      <line x1="31" y1="10" x2="31" y2="30" />
+      <path d="M4 28 Q 13 14 22 22 Q 31 30 40 16" />
+      <line x1="4" y1="30" x2="40" y2="30" />
+      <g stroke-width="0.9"><line x1="9" y1="24" x2="9" y2="30" /><line x1="17" y1="23" x2="17" y2="30" /><line x1="26" y1="23" x2="26" y2="30" /><line x1="35" y1="22" x2="35" y2="30" /></g>
+      <line x1="11" y1="14" x2="15" y2="14" /><line x1="29" y1="14" x2="33" y2="14" />
+    </g>
+  {:else if id === "ach-berg"}
+    <g>
+      <path d="M4 36 L18 12 L26 26 L31 19 L40 36 z" fill="#8a939c" stroke="#5f676e" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M18 12 l4 7 -3 2 -3 -3 -2 3 z" fill="#f2efe6" stroke="none" />
+      <path d="M31 19 l3 5 -2 1 -2 -2 z" fill="#f2efe6" stroke="none" />
+    </g>
+  {:else if id === "ach-sahara"}
+    <g>
+      <circle cx="32" cy="13" r="5" fill="#f2a54c" />
+      <path d="M3 28 q9 -9 17 -3 q7 5 12 -2 q4 -4 8 0 v13 h-37 z" fill="#e8b866" stroke="#cf9f45" stroke-width="1.2" stroke-linejoin="round" />
+      <path d="M3 33 q11 -5 20 -1 q9 4 15 -2 v8 h-35 z" fill="#d9a24e" opacity="0.7" stroke="none" />
+      <line x1="12" y1="30" x2="11" y2="22" stroke="#7d5122" stroke-width="1.6" stroke-linecap="round" />
+      <g stroke="#5aa06a" stroke-width="1.4" fill="none" stroke-linecap="round"><path d="M11 22 q-4 -2 -6 0 M11 22 q4 -2 6 0 M11 22 q-2 -4 -1 -6 M11 22 q3 -3 5 -3" /></g>
+    </g>
   {/if}
 </svg>
 

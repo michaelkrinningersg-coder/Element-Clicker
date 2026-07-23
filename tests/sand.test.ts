@@ -154,22 +154,25 @@ describe("Fortschritt zur Erdmasse", () => {
 });
 
 describe("Bauwerke aus Sand (Erfolge)", () => {
-  it("zwölf Bauwerke mit den vereinbarten Schwellen", () => {
-    expect(ACHIEVEMENTS.length).toBe(12);
+  it("28 Bauwerke mit den vereinbarten Schwellen", () => {
+    expect(ACHIEVEMENTS.length).toBe(28);
     const byId = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a.threshold]));
     const eq = (id: string, v: string) => expect(byId[id].eq(new Decimal(v))).toBe(true);
     eq("sanduhr", "1e6");
+    eq("eierbecher", "4e6");
     eq("schaufel-voll", "5e6");
-    eq("eimer-voll", "30e6");
-    eq("sandkuchen", "48e6");
-    eq("sandburg", "6e9");
-    eq("koelner-dom", "65e9");
-    eq("sandkasten", "110e9");
-    eq("sphinx", "400e9");
-    eq("lkw", "2.4e12");
-    eq("cheops", "600e12");
-    eq("duene", "15e15");
-    eq("strand", "200e15");
+    eq("vogelsand", "2e8");
+    eq("elefant", "8e9");
+    eq("sandsteinblock", "1e11");
+    eq("blauwal", "3e12");
+    eq("glasscheibe", "3e13");
+    eq("eiffelturm", "5e13");
+    eq("sandbank", "1e15");
+    eq("saturnv", "6e16");
+    eq("wueste", "1e17");
+    eq("goldengate", "2e18");
+    eq("berg", "5e19");
+    eq("sahara", "1e27");
   });
 
   it("Schwellen sind aufsteigend sortiert", () => {
@@ -181,20 +184,20 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
   it("schalten sich am Run-Sand frei", () => {
     const s = createInitialState();
     expect(unlockedCount(s)).toBe(0);
-    s.runSandEver = new Decimal("5e6"); // Sanduhr + Schaufel
+    s.runSandEver = new Decimal("5e6"); // Sanduhr, Eierbecher, Schaufel
     expect(isUnlocked(s, ACHIEVEMENTS[0])).toBe(true);
-    expect(unlockedCount(s)).toBe(2);
-    s.runSandEver = new Decimal("6e9"); // + Eimer, Sandkuchen, Sandburg
-    expect(unlockedCount(s)).toBe(5);
-    s.runSandEver = new Decimal("200e15"); // alle
-    expect(unlockedCount(s)).toBe(12);
+    expect(unlockedCount(s)).toBe(3);
+    s.runSandEver = new Decimal("6e9"); // bis Sandburg
+    expect(unlockedCount(s)).toBe(8);
+    s.runSandEver = new Decimal("200e15"); // alle außer Golden Gate, Berg, Sahara
+    expect(unlockedCount(s)).toBe(25);
   });
 
   it("Prestige setzt Bauwerke & Graben zurück (runSandEver = 0), Lifetime bleibt", () => {
     const s = createInitialState();
     s.runSandEver = new Decimal("200e15");
     s.totalSandEver = new Decimal("500e15");
-    expect(unlockedCount(s)).toBe(12);
+    expect(unlockedCount(s)).toBe(25);
     prestigeReset(s);
     expect(s.runSandEver.eq(0)).toBe(true);
     expect(unlockedCount(s)).toBe(0); // alle wieder gesperrt
@@ -523,11 +526,11 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     const base = new Decimal(2).mul(generatorBoostMultiplier(s)); // inkl. Generator-Boost
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber(), 9);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1, 9);
-    // 1e7: Sanduhr + Schaufel frei (für den Ach-Bonus), aber Eimer-Bauwerk (3e7)
-    // noch NICHT abgeschlossen → kein Eimer-Abschlussbonus, Test bleibt sauber.
+    // 1e7: Sanduhr/Eierbecher/Schaufel frei (für den Ach-Bonus), aber Eimer-Bauwerk
+    // (3e7) noch NICHT abgeschlossen → kein Eimer-Abschlussbonus, Test bleibt sauber.
     s.runSandEver = new Decimal("1e7");
     const n = unlockedCount(s);
-    expect(n).toBe(2);
+    expect(n).toBe(3);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 1.02 ** n, 9);
   });
