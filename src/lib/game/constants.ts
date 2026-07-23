@@ -74,4 +74,35 @@ export const GENERATOR_BOOST_PER = 0.001; // +0,1 % Produktion je gebautem Gener
 export const ARBEITER_BOOST_PER = 0.01; // +1 % auf alle Generatoren je Arbeiter
 
 // ---- Zeit-Bonus ----
-export const TIME_BOOST_PER = 0.0001; // +0,01 % Produktion je gespielter Sekunde
+export const TIME_BOOST_PER = 0.0001; // +0,01 % Produktion je Sekunde im Prestige (Basis)
+
+// ---- Bauwerk-/Graben-Abschlüsse (wiederholbar, dauerhaft über Prestige) ----
+// Effekte je Abschluss eines Bauwerks (in diesem Run erreicht → beim erneuten Run erneut).
+export const COMPLETION_EFFECTS: Record<string, { building: string; pct: number }[]> = {
+  "schaufel-voll": [{ building: "schaufel", pct: 2.5 }],
+  "eimer-voll": [{ building: "eimer", pct: 2.5 }],
+  sandkuchen: [{ building: "sieb", pct: 2.5 }],
+  sandburg: [
+    { building: "sieb", pct: 1 },
+    { building: "schaufel", pct: 1 },
+    { building: "eimer", pct: 1 },
+  ],
+  "koelner-dom": [
+    { building: "arbeiter", pct: 1 },
+    { building: "lasttiere", pct: 1 },
+    { building: "handkarren", pct: 1 },
+  ],
+};
+// Sanduhr-Abschluss: erhöht die "je Sekunde im Prestige"-Rate um 0,002 %-Punkte.
+export const SANDUHR_RATE_PER = 0.00002;
+// Mensch-Tiefe (Graben): +0,1 % je Arbeiter je Abschluss.
+export const MENSCH_ARBEITER_PER = 0.001;
+// Generischer Bonus je Graben-Abschluss: +0,1 % Gesamtproduktion.
+export const DIG_COMPLETION_PROD_PER = 0.001;
+
+// ---- Event: "Es ist Gottes Wille" ----
+export const EVENT_INTERVAL_MIN_S = 1000;
+export const EVENT_INTERVAL_MAX_S = 2000;
+export const EVENT_DURATION_S = 60; // Basisdauer
+export const EVENT_PROD_MULT = 5; // ×5 Gesamtproduktion während des Events
+export const EVENT_NAME = "Es ist Gottes Wille";

@@ -1,9 +1,16 @@
 import { writable } from "svelte/store";
-import { AUTOSAVE_INTERVAL_S } from "./constants";
+import {
+  AUTOSAVE_INTERVAL_S,
+  DIG_MILESTONES,
+  EVENT_DURATION_S,
+  EVENT_INTERVAL_MAX_S,
+  EVENT_INTERVAL_MIN_S,
+} from "./constants";
 import { BUILDINGS, BUILDING_BY_ID } from "./buildings";
 import {
   canPrestige,
   clickValue,
+  digDepthMeters,
   glasGain,
   growthRate,
   totalProductionPerSec,
@@ -14,7 +21,7 @@ import {
   recomputeNextCosts,
   type GameState,
 } from "./state";
-import { unlockedCount } from "./achievements";
+import { ACHIEVEMENTS, unlockedCount } from "./achievements";
 import { applyOfflineProgress, loadGame, saveGame } from "./save";
 
 const initial = loadGame();
@@ -95,16 +102,46 @@ export function buyMaxAll(): void {
   if (anyBought) commit();
 }
 
-/** Prestige: Glas gewinnen, Sand + Gebäude zurücksetzen. */
+/** Bankt die in diesem Run erreichten Bauwerke & Graben-Tiefen als Abschlüsse. */
+function bankCompletions(): void {
+  for (const a of ACHIEVEMENTS) {
+    if (state.runSandEver.gte(a.threshold)) {
+      state.completions[a.id] = (state.completions[a.id] ?? 0) + 1;
+    }
+  }
+  const depth = digDepthMeters(state.runSandEver);
+  for (const m of DIG_MILESTONES) {
+    if (depth >= m.m) {
+      state.digCompletions[m.id] = (state.digCompletions[m.id] ?? 0) + 1;
+    }
+  }
+}
+
+/** Prestige: Glas gewinnen, Abschlüsse banken, Sand + Gebäude + Run zurücksetzen. */
 export function prestige(): void {
   if (!canPrestige(state)) return;
   const gain = glasGain(state);
   if (gain.lte(0)) return;
   state.glas = state.glas.add(gain);
   state.prestigeCount += 1;
+  bankCompletions(); // erreichte Bauwerke/Tiefen dauerhaft gutschreiben
   prestigeReset(state);
   lastUnlocked = unlockedCount(state); // Bauwerke zurückgesetzt
   commit();
+}
+
+/** Event-Timer: löst "Es ist Gottes Wille" aus und lässt es ablaufen. */
+function updateEvent(dt: number): void {
+  if (state.eventRemaining > 0) {
+    state.eventRemaining = Math.max(0, state.eventRemaining - dt);
+  } else {
+    state.eventCooldown -= dt;
+    if (state.eventCooldown <= 0) {
+      state.eventRemaining = EVENT_DURATION_S;
+      state.eventCooldown =
+        EVENT_INTERVAL_MIN_S + Math.random() * (EVENT_INTERVAL_MAX_S - EVENT_INTERVAL_MIN_S);
+    }
+  }
 }
 
 // ---- Tick-Engine ----
@@ -116,6 +153,7 @@ export function tick(dtSeconds: number): void {
   state.runSandEver = state.runSandEver.add(gained);
   state.playtimeSeconds += dtSeconds;
   state.runPlaytimeSeconds += dtSeconds;
+  updateEvent(dtSeconds);
   syncAchievements();
   sinceAutosave += dtSeconds;
   if (sinceAutosave >= AUTOSAVE_INTERVAL_S) {

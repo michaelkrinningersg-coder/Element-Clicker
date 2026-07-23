@@ -15,6 +15,14 @@ export interface GameState {
   glas: Decimal;
   prestigeCount: number;
 
+  // Abschlüsse (dauerhaft, über Prestige hinaus)
+  completions: Record<string, number>; // Bauwerk-Id → wie oft abgeschlossen
+  digCompletions: Record<string, number>; // Graben-Meilenstein-Id → wie oft erreicht
+
+  // Event "Es ist Gottes Wille"
+  eventRemaining: number; // Sekunden verbleibend (0 = kein aktives Event)
+  eventCooldown: number; // Sekunden bis zum nächsten Event
+
   // Statistik / Lifetime
   totalSandEver: Decimal; // je gesammelte Sandkörner (bleibt bei Prestige)
   runSandEver: Decimal; // in diesem Run gesammelt (Basis für Bauwerke & Graben, Reset bei Prestige)
@@ -32,6 +40,10 @@ export function createInitialState(): GameState {
     buildings,
     glas: ZERO,
     prestigeCount: 0,
+    completions: {},
+    digCompletions: {},
+    eventRemaining: 0,
+    eventCooldown: 1500,
     totalSandEver: ZERO,
     runSandEver: ZERO,
     totalClicks: 0,

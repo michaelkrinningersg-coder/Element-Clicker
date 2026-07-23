@@ -112,3 +112,14 @@ export function unlockedCount(state: GameState): number {
   for (const a of ACHIEVEMENTS) if (isUnlocked(state, a)) n++;
   return n;
 }
+
+/**
+ * Effektive Abschlüsse eines Bauwerks: gebankt (frühere Runs) + 1, falls in
+ * diesem Run bereits erreicht. So wirkt der Bonus sofort und bleibt über Prestige.
+ */
+export function effectiveCompletions(state: GameState, achId: string): number {
+  const banked = state.completions?.[achId] ?? 0;
+  const a = ACHIEVEMENTS.find((x) => x.id === achId);
+  const reached = a ? state.runSandEver.gte(a.threshold) : false;
+  return banked + (reached ? 1 : 0);
+}

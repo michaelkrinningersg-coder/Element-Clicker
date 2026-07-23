@@ -35,8 +35,13 @@ import {
   generatorBoostMultiplier,
   arbeiterBoostMultiplier,
   runTimeBoostMultiplier,
+  runTimeBoostRate,
   buildingProduction,
+  completionBuildingMult,
+  effectiveDigCompletions,
+  eventMultiplier,
 } from "../src/lib/game/formulas";
+import { effectiveCompletions } from "../src/lib/game/achievements";
 
 describe("Klick (Hand)", () => {
   it("Basis 1 Sand pro Klick", () => {
@@ -322,6 +327,62 @@ describe("Arbeiter-Boost (+1 % auf alle Generatoren je Arbeiter)", () => {
   });
 });
 
+describe("Wiederholbare Abschlüsse & Boni", () => {
+  it("effektiver Abschluss = gebankt + 1 wenn diesen Run erreicht", () => {
+    const s = createInitialState();
+    expect(effectiveCompletions(s, "schaufel-voll")).toBe(0);
+    s.runSandEver = new Decimal("5e6"); // Schaufel-Bauwerk erreicht
+    expect(effectiveCompletions(s, "schaufel-voll")).toBe(1);
+    s.completions["schaufel-voll"] = 3; // 3 aus früheren Runs
+    expect(effectiveCompletions(s, "schaufel-voll")).toBe(4);
+  });
+
+  it("Schaufel-Abschluss gibt +2,5 % Schaufel-Produktion je Abschluss", () => {
+    const s = createInitialState();
+    s.completions["schaufel-voll"] = 4; // gebankt
+    // runSandEver 0 → nicht diesen Run erreicht → 4 Abschlüsse → +10 %
+    expect(completionBuildingMult(s, "schaufel").toNumber()).toBeCloseTo(1.1, 9);
+    // Eimer unberührt
+    expect(completionBuildingMult(s, "eimer").toNumber()).toBeCloseTo(1, 9);
+  });
+
+  it("Sandburg gibt Sieb/Schaufel/Eimer je +1 % je Abschluss", () => {
+    const s = createInitialState();
+    s.completions["sandburg"] = 2; // +2 % auf sieb, schaufel, eimer
+    expect(completionBuildingMult(s, "sieb").toNumber()).toBeCloseTo(1.02, 9);
+    expect(completionBuildingMult(s, "schaufel").toNumber()).toBeCloseTo(1.02, 9);
+    expect(completionBuildingMult(s, "handkarren").toNumber()).toBeCloseTo(1, 9);
+  });
+
+  it("Sanduhr-Abschluss erhöht die Zeit-Bonus-Rate um 0,002 %-Punkte", () => {
+    const s = createInitialState();
+    expect(runTimeBoostRate(s)).toBeCloseTo(0.0001, 12); // Basis 0,01 %
+    s.completions["sanduhr"] = 5; // +5·0,00002 = 0,0001
+    expect(runTimeBoostRate(s)).toBeCloseTo(0.0002, 12);
+  });
+
+  it("Mensch-Tiefe gibt +0,1 % je Arbeiter je Abschluss", () => {
+    const s = createInitialState();
+    s.buildings.arbeiter.owned = 10;
+    // Basis: 1 + 0,01·10 = 1,1
+    expect(arbeiterBoostMultiplier(s).toNumber()).toBeCloseTo(1.1, 9);
+    s.digCompletions["mensch"] = 3; // +3·0,001 = 0,003 je Arbeiter
+    // (0,01 + 0,003)·10 = 0,13 → 1,13
+    expect(effectiveDigCompletions(s, "mensch")).toBe(3);
+    expect(arbeiterBoostMultiplier(s).toNumber()).toBeCloseTo(1.13, 9);
+  });
+
+  it("Event verfünffacht die Produktion, solange es läuft", () => {
+    const s = createInitialState();
+    s.buildings.eimer.owned = 10;
+    const normal = totalProductionPerSec(s).toNumber();
+    expect(eventMultiplier(s).toNumber()).toBe(1);
+    s.eventRemaining = 30; // Event aktiv
+    expect(eventMultiplier(s).toNumber()).toBe(5);
+    expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(normal * 5, 6);
+  });
+});
+
 describe("Zeit-Bonus (+0,01 % Produktion je Sekunde im aktuellen Prestige)", () => {
   it("Multiplikator = 1 + 0,0001 · Run-Sekunden", () => {
     const s = createInitialState();
@@ -384,9 +445,11 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     const base = new Decimal(2).mul(generatorBoostMultiplier(s)); // inkl. Generator-Boost
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber(), 9);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1, 9);
-    s.runSandEver = new Decimal("30e6"); // einige Bauwerke frei
+    // 1e7: Sanduhr + Schaufel frei (für den Ach-Bonus), aber Eimer-Bauwerk (3e7)
+    // noch NICHT abgeschlossen → kein Eimer-Abschlussbonus, Test bleibt sauber.
+    s.runSandEver = new Decimal("1e7");
     const n = unlockedCount(s);
-    expect(n).toBeGreaterThan(0);
+    expect(n).toBe(2);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber() * 1.02 ** n, 9);
   });

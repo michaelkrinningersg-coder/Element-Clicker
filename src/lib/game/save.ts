@@ -19,6 +19,10 @@ function serialize(state: GameState): string {
       buildings,
       glas: state.glas.toString(),
       prestigeCount: state.prestigeCount,
+      completions: state.completions,
+      digCompletions: state.digCompletions,
+      eventRemaining: state.eventRemaining,
+      eventCooldown: state.eventCooldown,
       totalSandEver: state.totalSandEver.toString(),
       runSandEver: state.runSandEver.toString(),
       totalClicks: state.totalClicks,
@@ -45,6 +49,11 @@ function deserialize(raw: string): GameState {
   }
   base.glas = new Decimal(s.glas ?? 0);
   base.prestigeCount = Number(s.prestigeCount ?? 0);
+  if (s.completions && typeof s.completions === "object") base.completions = { ...s.completions };
+  if (s.digCompletions && typeof s.digCompletions === "object")
+    base.digCompletions = { ...s.digCompletions };
+  base.eventRemaining = Number(s.eventRemaining ?? 0);
+  base.eventCooldown = Number(s.eventCooldown ?? base.eventCooldown);
   // Ältere Saves kennen totalSandEver nicht: mindestens den aktuellen Sand ansetzen.
   base.totalSandEver =
     s.totalSandEver != null ? new Decimal(s.totalSandEver) : base.sand;

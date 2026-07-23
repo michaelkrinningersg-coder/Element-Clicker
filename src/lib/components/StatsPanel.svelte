@@ -9,8 +9,12 @@
     generatorCount,
     arbeiterBoostMultiplier,
     runTimeBoostMultiplier,
+    effectiveDigCompletions,
+    totalDigCompletions,
   } from "../game/formulas";
-  import { unlockedCount } from "../game/achievements";
+  import { unlockedCount, effectiveCompletions } from "../game/achievements";
+  import { ACHIEVEMENTS } from "../game/achievements";
+  import { DIG_MILESTONES } from "../game/constants";
   import {
     formatDecimal,
     formatInt,
@@ -23,6 +27,11 @@
   $: perClick = clickValue($game);
   $: built = unlockedCount($game);
   $: genCount = generatorCount($game);
+  // Graben-Abschlüsse nur anzeigen, wenn > 0 (Liste sonst sehr lang).
+  $: digDone = DIG_MILESTONES.map((m) => ({ m, n: effectiveDigCompletions($game, m.id) })).filter(
+    (x) => x.n > 0,
+  );
+  $: digTotal = totalDigCompletions($game);
 </script>
 
 <div class="panel">
@@ -126,6 +135,34 @@
         <span class="k">Zeit-Bonus (+0,01 % je Sekunde im Prestige)</span>
         <span class="v mono">×{formatDecimal(runTimeBoostMultiplier($game), 3)}</span>
       </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h4>Bauwerk-Abschlüsse (mit aktuellem Run)</h4>
+    <div class="rows">
+      {#each ACHIEVEMENTS as a (a.id)}
+        <div class="stat">
+          <span class="k">{a.name}</span>
+          <span class="v mono">×{formatNumber(effectiveCompletions($game, a.id))}</span>
+        </div>
+      {/each}
+    </div>
+  </div>
+
+  <div class="grp">
+    <h4>Graben-Abschlüsse (gesamt {formatNumber(digTotal)})</h4>
+    <div class="rows">
+      {#if digDone.length === 0}
+        <p class="note dim">Noch keine Tiefe erreicht.</p>
+      {:else}
+        {#each digDone as d (d.m.id)}
+          <div class="stat">
+            <span class="k">{d.m.name}</span>
+            <span class="v mono">×{formatNumber(d.n)}</span>
+          </div>
+        {/each}
+      {/if}
     </div>
   </div>
 </div>

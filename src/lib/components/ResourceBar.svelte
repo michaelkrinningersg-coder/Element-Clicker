@@ -2,6 +2,7 @@
   import { game, hardReset } from "../game/store";
   import { totalProductionPerSec } from "../game/formulas";
   import { formatDecimal, formatInt } from "../game/format";
+  import { EVENT_NAME, EVENT_PROD_MULT } from "../game/constants";
 
   $: production = totalProductionPerSec($game);
 
@@ -25,6 +26,11 @@
   <div class="line2">
     {#if $game.glas.gt(0)}
       <span class="chip glas">🔷 Glas {formatInt($game.glas)}</span>
+    {/if}
+    {#if $game.eventRemaining > 0}
+      <span class="chip event" title="{EVENT_NAME}: ×{EVENT_PROD_MULT} Produktion">
+        ✨ {EVENT_NAME} · ×{EVENT_PROD_MULT} · {Math.ceil($game.eventRemaining)} s
+      </span>
     {/if}
     <button class="reset" on:click={resetConfirm}>Reset</button>
   </div>
@@ -93,6 +99,22 @@
     background: var(--chip-grav-bg);
     border: 1px solid var(--chip-grav-bd);
     color: #2b7f8b;
+  }
+  .chip.event {
+    background: linear-gradient(180deg, #fff2c8, #ffe39a);
+    border: 1px solid #e8bf5e;
+    color: #8a5a12;
+    font-weight: 700;
+    animation: eventpulse 1.2s ease-in-out infinite;
+  }
+  @keyframes eventpulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(224, 168, 56, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(224, 168, 56, 0);
+    }
   }
   .reset {
     margin-left: auto;

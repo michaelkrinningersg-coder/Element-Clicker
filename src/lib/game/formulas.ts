@@ -3,6 +3,11 @@ import {
   ACH_COST_PER,
   ACH_PROD_PER,
   ARBEITER_BOOST_PER,
+  COMPLETION_EFFECTS,
+  DIG_COMPLETION_PROD_PER,
+  EVENT_PROD_MULT,
+  MENSCH_ARBEITER_PER,
+  SANDUHR_RATE_PER,
   COST_GROWTH_FLOOR,
   COST_GROWTH_KAPPA,
   COST_GROWTH_SPAN,
@@ -19,7 +24,7 @@ import {
   TONNE_IN_GRAINS,
 } from "./constants";
 import { BUILDINGS, BUILDING_BY_ID } from "./buildings";
-import { unlockedCount } from "./achievements";
+import { unlockedCount, effectiveCompletions } from "./achievements";
 import type { GameState } from "./state";
 
 /** Reine Formelfunktionen (keine Seiteneffekte). */
@@ -111,15 +116,67 @@ export function generatorBoostMultiplier(state: GameState): Decimal {
   return new Decimal(1 + GENERATOR_BOOST_PER * generatorCount(state));
 }
 
-/** Boost auf alle Generatoren aus den Arbeitern: 1 + 1 % je Arbeiter. */
+/**
+ * Boost auf alle Generatoren aus den Arbeitern: 1 + (1 % + Mensch-Bonus) je Arbeiter.
+ * Jeder Abschluss der Mensch-Tiefe erhöht den Bonus je Arbeiter um 0,1 %.
+ */
 export function arbeiterBoostMultiplier(state: GameState): Decimal {
   const owned = state.buildings.arbeiter?.owned ?? 0;
-  return new Decimal(1 + ARBEITER_BOOST_PER * owned);
+  const menschCompletions = effectiveDigCompletions(state, "mensch");
+  const perArbeiter = ARBEITER_BOOST_PER + MENSCH_ARBEITER_PER * menschCompletions;
+  return new Decimal(1 + perArbeiter * owned);
 }
 
-/** Zeit-Bonus dieses Runs auf die Produktion: 1 + 0,01 % je Sekunde seit dem letzten Prestige. */
+/**
+ * Zeit-Bonus dieses Runs: 1 + Rate je Sekunde seit dem letzten Prestige.
+ * Die Rate steigt mit jedem Sanduhr-Abschluss (+0,002 %-Punkte).
+ */
+export function runTimeBoostRate(state: GameState): number {
+  return TIME_BOOST_PER + SANDUHR_RATE_PER * effectiveCompletions(state, "sanduhr");
+}
 export function runTimeBoostMultiplier(state: GameState): Decimal {
-  return new Decimal(1 + TIME_BOOST_PER * state.runPlaytimeSeconds);
+  return new Decimal(1 + runTimeBoostRate(state) * state.runPlaytimeSeconds);
+}
+
+/** Produktions-Multiplikator eines Gebäudes aus seinen Bauwerk-Abschlüssen. */
+export function completionBuildingMult(state: GameState, buildingId: string): Decimal {
+  let pct = 0;
+  for (const achId in COMPLETION_EFFECTS) {
+    const count = effectiveCompletions(state, achId);
+    if (!count) continue;
+    for (const e of COMPLETION_EFFECTS[achId]) {
+      if (e.building === buildingId) pct += e.pct * count;
+    }
+  }
+  return new Decimal(1 + pct / 100);
+}
+
+/** Effektive Abschlüsse einer Graben-Tiefe: gebankt + 1, falls diesen Run erreicht. */
+export function effectiveDigCompletions(state: GameState, id: string): number {
+  const mile = DIG_MILESTONES.find((x) => x.id === id);
+  const banked = state.digCompletions?.[id] ?? 0;
+  const reached = mile ? digDepthMeters(state.runSandEver) >= mile.m : false;
+  return banked + (reached ? 1 : 0);
+}
+
+/** Gesamtzahl der (effektiven) Graben-Abschlüsse über alle Meilensteine. */
+export function totalDigCompletions(state: GameState): number {
+  const depth = digDepthMeters(state.runSandEver);
+  let n = 0;
+  for (const mile of DIG_MILESTONES) {
+    n += (state.digCompletions?.[mile.id] ?? 0) + (depth >= mile.m ? 1 : 0);
+  }
+  return n;
+}
+
+/** Generischer Produktions-Bonus aus Graben-Abschlüssen: +0,1 % je Abschluss. */
+export function digCompletionMultiplier(state: GameState): Decimal {
+  return new Decimal(1 + DIG_COMPLETION_PROD_PER * totalDigCompletions(state));
+}
+
+/** Event-Multiplikator: ×5 auf die Produktion, solange "Es ist Gottes Wille" läuft. */
+export function eventMultiplier(state: GameState): Decimal {
+  return new Decimal(state.eventRemaining > 0 ? EVENT_PROD_MULT : 1);
 }
 
 /** Wert eines Klicks: (1 + Σ Klick-Gebäude) × Glas. */
@@ -139,12 +196,15 @@ export function buildingProduction(state: GameState, id: string): Decimal {
   if (b?.kind === "generator" && b.prodPerUnit) {
     return b.prodPerUnit
       .mul(state.buildings[id].owned)
+      .mul(completionBuildingMult(state, id))
       .mul(glasMultiplier(state))
       .mul(achievementProductionMult(state))
       .mul(digIncomeMultiplier(state))
       .mul(generatorBoostMultiplier(state))
       .mul(arbeiterBoostMultiplier(state))
-      .mul(runTimeBoostMultiplier(state));
+      .mul(runTimeBoostMultiplier(state))
+      .mul(digCompletionMultiplier(state))
+      .mul(eventMultiplier(state));
   }
   return ZERO;
 }
@@ -154,7 +214,10 @@ export function totalProductionPerSec(state: GameState): Decimal {
   let sum = ZERO;
   for (const b of BUILDINGS) {
     if (b.kind === "generator" && b.prodPerUnit) {
-      sum = sum.add(b.prodPerUnit.mul(state.buildings[b.id].owned));
+      // Pro-Gebäude-Abschlussbonus wirkt nur auf das jeweilige Gebäude.
+      sum = sum.add(
+        b.prodPerUnit.mul(state.buildings[b.id].owned).mul(completionBuildingMult(state, b.id)),
+      );
     }
   }
   return sum
@@ -163,7 +226,9 @@ export function totalProductionPerSec(state: GameState): Decimal {
     .mul(digIncomeMultiplier(state))
     .mul(generatorBoostMultiplier(state))
     .mul(arbeiterBoostMultiplier(state))
-    .mul(runTimeBoostMultiplier(state));
+    .mul(runTimeBoostMultiplier(state))
+    .mul(digCompletionMultiplier(state))
+    .mul(eventMultiplier(state));
 }
 
 // ---- Graben: Tiefe aus gesammeltem Sandgewicht (exponentiell schwerer) ----
