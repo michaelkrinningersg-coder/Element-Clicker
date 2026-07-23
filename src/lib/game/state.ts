@@ -17,6 +17,7 @@ export interface GameState {
 
   // Statistik / Lifetime
   totalSandEver: Decimal; // je gesammelte Sandkörner (bleibt bei Prestige)
+  runSandEver: Decimal; // in diesem Run gesammelt (Basis für Bauwerke & Graben, Reset bei Prestige)
   totalClicks: number;
   playtimeSeconds: number;
   lastSaved: number;
@@ -31,6 +32,7 @@ export function createInitialState(): GameState {
     glas: ZERO,
     prestigeCount: 0,
     totalSandEver: ZERO,
+    runSandEver: ZERO,
     totalClicks: 0,
     playtimeSeconds: 0,
     lastSaved: Date.now(),
@@ -46,12 +48,16 @@ export function recomputeNextCosts(state: GameState): void {
   }
 }
 
-/** Prestige-Reset: Sand + Gebäude zurück (Glas & Meta & Bauwerke bleiben). */
+/**
+ * Prestige-Reset: Sand + Gebäude + Run-Fortschritt (Bauwerke & Graben) zurück.
+ * Glas, Lifetime-Statistik (totalSandEver) & Meta bleiben.
+ */
 export function prestigeReset(state: GameState): void {
   state.sand = ZERO;
+  state.runSandEver = ZERO; // Bauwerke & Graben setzen sich zurück
   for (const b of BUILDINGS) {
     state.buildings[b.id] = { owned: 0, nextCost: b.baseCost };
   }
-  // Bauwerk-Rabatt weiterhin anwenden (Bauwerke bleiben freigeschaltet).
+  // Kosten neu (Bauwerk-Rabatt jetzt weg, da runSandEver = 0).
   recomputeNextCosts(state);
 }

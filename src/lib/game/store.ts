@@ -47,6 +47,7 @@ export function click(): void {
   const gained = clickValue(state);
   state.sand = state.sand.add(gained);
   state.totalSandEver = state.totalSandEver.add(gained);
+  state.runSandEver = state.runSandEver.add(gained);
   state.totalClicks += 1;
   syncAchievements();
   commit();
@@ -102,6 +103,7 @@ export function prestige(): void {
   state.glas = state.glas.add(gain);
   state.prestigeCount += 1;
   prestigeReset(state);
+  lastUnlocked = unlockedCount(state); // Bauwerke zurückgesetzt
   commit();
 }
 
@@ -111,6 +113,7 @@ export function tick(dtSeconds: number): void {
   const gained = totalProductionPerSec(state).mul(dtSeconds);
   state.sand = state.sand.add(gained);
   state.totalSandEver = state.totalSandEver.add(gained);
+  state.runSandEver = state.runSandEver.add(gained);
   state.playtimeSeconds += dtSeconds;
   syncAchievements();
   sinceAutosave += dtSeconds;

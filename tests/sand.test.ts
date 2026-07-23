@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Decimal } from "../src/lib/game/decimal";
-import { createInitialState } from "../src/lib/game/state";
+import { createInitialState, prestigeReset } from "../src/lib/game/state";
 import { BUILDINGS, BUILDING_BY_ID } from "../src/lib/game/buildings";
 import {
   formatWeight,
@@ -16,6 +16,8 @@ import {
   totalProductionPerSec,
   glasMultiplier,
   glasGain,
+  sandForGlas,
+  sandForNextGlas,
   canPrestige,
   growthRate,
   costForNext,
@@ -167,16 +169,49 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
     }
   });
 
-  it("schalten sich an totalSandEver frei", () => {
+  it("schalten sich am Run-Sand frei", () => {
     const s = createInitialState();
     expect(unlockedCount(s)).toBe(0);
-    s.totalSandEver = new Decimal("5e6"); // Sanduhr + Schaufel
+    s.runSandEver = new Decimal("5e6"); // Sanduhr + Schaufel
     expect(isUnlocked(s, ACHIEVEMENTS[0])).toBe(true);
     expect(unlockedCount(s)).toBe(2);
-    s.totalSandEver = new Decimal("6e9"); // + Eimer, Sandkuchen, Sandburg
+    s.runSandEver = new Decimal("6e9"); // + Eimer, Sandkuchen, Sandburg
     expect(unlockedCount(s)).toBe(5);
-    s.totalSandEver = new Decimal("200e15"); // alle
+    s.runSandEver = new Decimal("200e15"); // alle
     expect(unlockedCount(s)).toBe(12);
+  });
+
+  it("Prestige setzt Bauwerke & Graben zurück (runSandEver = 0), Lifetime bleibt", () => {
+    const s = createInitialState();
+    s.runSandEver = new Decimal("200e15");
+    s.totalSandEver = new Decimal("500e15");
+    expect(unlockedCount(s)).toBe(12);
+    prestigeReset(s);
+    expect(s.runSandEver.eq(0)).toBe(true);
+    expect(unlockedCount(s)).toBe(0); // alle wieder gesperrt
+    expect(s.totalSandEver.eq(new Decimal("500e15"))).toBe(true); // Lifetime bleibt
+    expect(digDepthMeters(s.runSandEver)).toBe(0); // Graben zurück
+  });
+});
+
+describe("Glas-Kurve & nächstes Glas", () => {
+  it("sandForGlas(k) = k² · 1e9", () => {
+    expect(sandForGlas(1).eq(new Decimal("1e9"))).toBe(true);
+    expect(sandForGlas(2).eq(new Decimal("4e9"))).toBe(true);
+    expect(sandForGlas(10).eq(new Decimal("100e9"))).toBe(true);
+  });
+
+  it("Rundlauf: bei sandForGlas(k) Sand ist der Ertrag genau k", () => {
+    const s = createInitialState();
+    s.sand = sandForGlas(7);
+    expect(glasGain(s).toNumber()).toBe(7);
+  });
+
+  it("nächstes Glas = (aktueller Ertrag + 1)² · 1e9", () => {
+    const s = createInitialState();
+    s.sand = new Decimal("5e9"); // sqrt(5) ≈ 2,23 → Ertrag 2
+    expect(glasGain(s).toNumber()).toBe(2);
+    expect(sandForNextGlas(s).eq(sandForGlas(3))).toBe(true); // 9e9
   });
 });
 
@@ -229,8 +264,8 @@ describe("Graben-Meilensteine (+1 % je erreichter Tiefe)", () => {
     const s = createInitialState();
     s.buildings.eimer.owned = 10; // 2 /s Basis
     // 2,5e13 Körner → ~25 m → 3 Meilensteine → +3 %
-    s.totalSandEver = new Decimal("2.5e13");
-    const depth = digDepthMeters(s.totalSandEver);
+    s.runSandEver = new Decimal("2.5e13");
+    const depth = digDepthMeters(s.runSandEver);
     const n = digMilestonesReached(depth);
     expect(n).toBe(3);
     expect(digIncomeMultiplier(s).toNumber()).toBeCloseTo(1 + 0.01 * n, 9);
@@ -318,7 +353,7 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
     const base = new Decimal(2).mul(generatorBoostMultiplier(s)); // inkl. Generator-Boost
     expect(totalProductionPerSec(s).toNumber()).toBeCloseTo(base.toNumber(), 9);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1, 9);
-    s.totalSandEver = new Decimal("30e6"); // einige Bauwerke frei
+    s.runSandEver = new Decimal("30e6"); // einige Bauwerke frei
     const n = unlockedCount(s);
     expect(n).toBeGreaterThan(0);
     expect(achievementProductionMult(s).toNumber()).toBeCloseTo(1.02 ** n, 9);
@@ -328,7 +363,7 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
   it("Kosten: (0,99)^Anzahl, multiplikativ (weniger Rabatt als linear)", () => {
     const s = createInitialState();
     expect(costMultiplier(s).toNumber()).toBeCloseTo(1, 9);
-    s.totalSandEver = new Decimal("6e9");
+    s.runSandEver = new Decimal("6e9");
     const n = unlockedCount(s);
     const mult = costMultiplier(s).toNumber();
     expect(mult).toBeCloseTo(0.99 ** n, 9);
@@ -338,7 +373,7 @@ describe("Bauwerk-Boni (+2 % Produktion, −1 % Kosten je Bauwerk)", () => {
 
   it("costForNext wendet den Kosten-Multiplikator an", () => {
     const s = createInitialState();
-    s.totalSandEver = new Decimal("6e9");
+    s.runSandEver = new Decimal("6e9");
     const mult = costMultiplier(s);
     const c = costForNext(new Decimal(1000), 0, undefined, mult);
     expect(c.toNumber()).toBeCloseTo(1000 * mult.toNumber(), 6);

@@ -39,8 +39,12 @@
         <span class="v mono">{formatDecimal($game.totalSandEver)}</span>
       </div>
       <div class="stat hi">
-        <span class="k">Gesamtgewicht des Sandes</span>
+        <span class="k">Gesamtgewicht des Sandes (gesamt)</span>
         <span class="v mono weight">{formatWeight($game.totalSandEver)}</span>
+      </div>
+      <div class="stat hi">
+        <span class="k">Gewicht dieses Prestige (Run)</span>
+        <span class="v mono weight">{formatWeight($game.runSandEver)}</span>
       </div>
       <div class="stat">
         <span class="k">Produktion</span>

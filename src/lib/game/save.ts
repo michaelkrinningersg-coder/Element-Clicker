@@ -20,6 +20,7 @@ function serialize(state: GameState): string {
       glas: state.glas.toString(),
       prestigeCount: state.prestigeCount,
       totalSandEver: state.totalSandEver.toString(),
+      runSandEver: state.runSandEver.toString(),
       totalClicks: state.totalClicks,
       playtimeSeconds: state.playtimeSeconds,
       lastSaved: Date.now(),
@@ -46,6 +47,9 @@ function deserialize(raw: string): GameState {
   // Ältere Saves kennen totalSandEver nicht: mindestens den aktuellen Sand ansetzen.
   base.totalSandEver =
     s.totalSandEver != null ? new Decimal(s.totalSandEver) : base.sand;
+  // runSandEver: ältere Saves → Bauwerke/Graben-Stand aus totalSandEver übernehmen.
+  base.runSandEver =
+    s.runSandEver != null ? new Decimal(s.runSandEver) : base.totalSandEver;
   base.totalClicks = Number(s.totalClicks ?? 0);
   base.playtimeSeconds = Number(s.playtimeSeconds ?? 0);
   base.lastSaved = Number(s.lastSaved ?? Date.now());
@@ -90,6 +94,7 @@ export function applyOfflineProgress(state: GameState): { gained: Decimal; secon
   const gained = totalProductionPerSec(state).mul(seconds);
   state.sand = state.sand.add(gained);
   state.totalSandEver = state.totalSandEver.add(gained);
+  state.runSandEver = state.runSandEver.add(gained);
   state.lastSaved = now;
   return { gained, seconds };
 }

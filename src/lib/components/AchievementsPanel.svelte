@@ -26,7 +26,7 @@
   $: earthPct = earthMassPercent($game.totalSandEver);
 
   const progressPct = (threshold: Decimal): number => {
-    const p = $game.totalSandEver.div(threshold).toNumber() * 100;
+    const p = $game.runSandEver.div(threshold).toNumber() * 100;
     return Math.max(0, Math.min(100, p));
   };
   const pct1 = (n: number) => formatDecimal(new Decimal(n), 1);
@@ -38,8 +38,9 @@
     <span class="counter">{done} / {ACHIEVEMENTS.length}</span>
   </div>
   <p class="legend dim">
-    Meilensteine, die sich an den insgesamt gesammelten Sandkörnern freischalten.
-    Jedes Bauwerk gibt <b>+2 % Produktion</b> und <b>−1 % Kosten</b> (multiplikativ).
+    Meilensteine, die sich am <b>in diesem Run</b> gesammelten Sand freischalten
+    (Reset bei Prestige). Jedes Bauwerk gibt <b>+2 % Produktion</b> und
+    <b>−1 % Kosten</b> (multiplikativ).
   </p>
 
   <div class="totals">
@@ -97,7 +98,7 @@
             </div>
             <span class="pct dim">
               {formatDecimal(new Decimal(progressPct(a.threshold)), 1)} % ·
-              ⏱ {formatEta(a.threshold, $game.totalSandEver, prod)}
+              ⏱ {formatEta(a.threshold, $game.runSandEver, prod)}
               {#if prod.gt(0)}bei aktueller Produktion{/if}
             </span>
           {/if}

@@ -218,7 +218,7 @@ export function digMilestonesReached(depthM: number): number {
 
 /** Einkommens-Multiplikator aus Graben-Meilensteinen: 1 + 0,01 je Meilenstein (Klick & Produktion). */
 export function digIncomeMultiplier(state: GameState): Decimal {
-  const reached = digMilestonesReached(digDepthMeters(state.totalSandEver));
+  const reached = digMilestonesReached(digDepthMeters(state.runSandEver));
   return new Decimal(1 + DIG_MILESTONE_BONUS_PER * reached);
 }
 
@@ -232,4 +232,15 @@ export function glasGain(state: GameState): Decimal {
   if (state.sand.lt(GLAS_UNLOCK)) return ZERO;
   const g = state.sand.div(GLAS_UNLOCK).sqrt().floor();
   return g.lt(1) ? ONE : g;
+}
+
+/** Umkehrung: Sand, das nötig ist, um insgesamt k Glas zu gewinnen (k² · 1e9). */
+export function sandForGlas(k: number): Decimal {
+  return GLAS_UNLOCK.mul(k * k);
+}
+
+/** Sand für das nächste Glas (aktueller Ertrag + 1). */
+export function sandForNextGlas(state: GameState): Decimal {
+  const g = glasGain(state).toNumber();
+  return sandForGlas(g + 1);
 }

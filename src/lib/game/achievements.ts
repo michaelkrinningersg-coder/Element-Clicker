@@ -101,9 +101,9 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
 ];
 
-/** Ist der Erfolg (nach gesamt gesammeltem Sand) freigeschaltet? */
+/** Ist der Erfolg freigeschaltet? (nach in diesem Run gesammeltem Sand, Reset bei Prestige) */
 export function isUnlocked(state: GameState, a: AchievementDef): boolean {
-  return state.totalSandEver.gte(a.threshold);
+  return state.runSandEver.gte(a.threshold);
 }
 
 /** Anzahl freigeschalteter Erfolge. */

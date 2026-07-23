@@ -26,8 +26,8 @@
   import { Decimal } from "../game/decimal";
 
   $: prod = totalProductionPerSec($game);
-  $: depth = digDepthMeters($game.totalSandEver);
-  $: tonnes = weightInTonnes($game.totalSandEver);
+  $: depth = digDepthMeters($game.runSandEver);
+  $: tonnes = weightInTonnes($game.runSandEver);
   $: tPerM = tonnesPerMeterAt(depth);
   $: atMax = isMaxDepth(depth);
   $: pctToDiameter = new Decimal(depth).div(EARTH_DIAMETER_M).mul(100);
@@ -52,9 +52,10 @@
     {/if}
   </div>
   <p class="legend dim">
-    Dein gesammelter Sand bemisst, wie tief du gräbst. Tiefer wird das Gestein schwerer –
-    tiefer als der Erddurchmesser geht es nicht. Jede erreichte Vergleichstiefe gibt
-    <b>+1 % auf alle Einkünfte</b> (Klick &amp; Produktion).
+    Der <b>in diesem Run</b> gesammelte Sand bemisst, wie tief du gräbst (Reset bei
+    Prestige). Tiefer wird das Gestein schwerer – tiefer als der Erddurchmesser geht es
+    nicht. Jede erreichte Vergleichstiefe gibt <b>+1 % auf alle Einkünfte</b>
+    (Klick &amp; Produktion).
   </p>
 
   <div class="depthbox">
@@ -127,7 +128,7 @@
           <div class="rinfo">
             <span class="rname">{r.name}</span>
             {#if !reached}
-              <span class="reta dim">⏱ {formatEta(grainsForDepth(r.m), $game.totalSandEver, prod)}</span>
+              <span class="reta dim">⏱ {formatEta(grainsForDepth(r.m), $game.runSandEver, prod)}</span>
             {/if}
           </div>
           <span class="rbonus" class:on={reached}>+1 %</span>
