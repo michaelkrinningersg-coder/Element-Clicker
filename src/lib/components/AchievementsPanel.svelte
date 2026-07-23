@@ -1,6 +1,8 @@
 <script lang="ts">
   import { game } from "../game/store";
-  import { ACHIEVEMENTS, isUnlocked, unlockedCount } from "../game/achievements";
+  import { ACHIEVEMENTS, isUnlocked, unlockedCount, effectiveCompletions } from "../game/achievements";
+  import { COMPLETION_EFFECTS } from "../game/constants";
+  import { BUILDING_BY_ID } from "../game/buildings";
   import {
     achievementProductionMult,
     costMultiplier,
@@ -30,6 +32,16 @@
     return Math.max(0, Math.min(100, p));
   };
   const pct1 = (n: number) => formatDecimal(new Decimal(n), 1);
+
+  // Abschluss-Bonus-Text je Bauwerk (dauerhafter Bonus je Abschluss).
+  const completionBonus = (id: string): string | null => {
+    if (id === "sanduhr") return "+0,002 % Zeit-Bonus-Rate / Sek. je Abschluss";
+    const eff = COMPLETION_EFFECTS[id];
+    if (!eff) return null;
+    const pct = formatDecimal(new Decimal(eff[0].pct), 1);
+    const names = eff.map((e) => BUILDING_BY_ID[e.building]?.name ?? e.building).join(", ");
+    return `+${pct} % ${names} je Abschluss`;
+  };
 </script>
 
 <div class="panel">
@@ -71,6 +83,8 @@
   <div class="list">
     {#each ACHIEVEMENTS as a (a.id)}
       {@const unlocked = isUnlocked($game, a)}
+      {@const done = effectiveCompletions($game, a.id)}
+      {@const cbonus = completionBonus(a.id)}
       <div class="ach" class:unlocked class:locked={!unlocked}>
         <div class="ic" class:gray={!unlocked}>
           <Icon id={a.icon} size={46} />
@@ -81,11 +95,17 @@
             {#if unlocked}
               <span class="badge">✓ gebaut</span>
             {/if}
+            {#if done > 0}
+              <span class="cbadge">×{done} abgeschlossen</span>
+            {/if}
           </div>
           <p class="desc dim">{a.desc}</p>
           <div class="reward">
             <span class="rw">+2 % Produktion</span>
             <span class="rw">−1 % Kosten</span>
+            {#if cbonus}
+              <span class="rw perm" title="Dauerhaft, bleibt über Prestige">{cbonus}</span>
+            {/if}
           </div>
           <div class="meta">
             <span class="req mono">{formatDecimal(a.threshold)} Körner</span>
@@ -183,6 +203,20 @@
     border: 1px solid var(--chip-grav-bd);
     border-radius: 999px;
     padding: 2px 8px;
+  }
+  .rw.perm {
+    color: #8a5a12;
+    background: #fff2c8;
+    border-color: #e8bf5e;
+  }
+  .cbadge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8a5a12;
+    background: #fff2c8;
+    border: 1px solid #e8bf5e;
+    border-radius: 999px;
+    padding: 2px 9px;
   }
   .earth {
     background: var(--panel-2);

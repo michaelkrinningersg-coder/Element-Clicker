@@ -9,6 +9,7 @@
     digIncomeMultiplier,
     grainsForDepth,
     totalProductionPerSec,
+    effectiveDigCompletions,
   } from "../game/formulas";
   import {
     DIG_MILESTONES,
@@ -123,10 +124,17 @@
     <div class="refs">
       {#each REFS as r (r.id)}
         {@const reached = depth >= r.m}
+        {@const done = effectiveDigCompletions($game, r.id)}
         <div class="ref" class:reached>
           <span class="rmark">{reached ? "✓" : "○"}</span>
           <div class="rinfo">
-            <span class="rname">{r.name}</span>
+            <span class="rnameline">
+              <span class="rname">{r.name}</span>
+              {#if done > 0}<span class="cbadge">×{done}</span>{/if}
+            </span>
+            <span class="rbonustext dim">
+              +1 % Einkünfte · +0,1 % Produktion je Abschluss{#if r.id === "mensch"} · +0,1 % je Arbeiter je Abschluss{/if}
+            </span>
             {#if !reached}
               <span class="reta dim">⏱ {formatEta(grainsForDepth(r.m), $game.runSandEver, prod)}</span>
             {/if}
@@ -313,8 +321,27 @@
   .rinfo {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     min-width: 0;
+  }
+  .rnameline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .cbadge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8a5a12;
+    background: #fff2c8;
+    border: 1px solid #e8bf5e;
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  .rbonustext {
+    font-size: 11px;
+    line-height: 1.35;
   }
   .reta {
     font-size: 11px;
