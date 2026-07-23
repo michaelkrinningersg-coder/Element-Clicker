@@ -162,15 +162,16 @@ describe("Bauwerke aus Sand (Erfolge)", () => {
     eq("eierbecher", "4e6");
     eq("schaufel-voll", "5e6");
     eq("vogelsand", "2e8");
-    eq("elefant", "8e9");
     eq("sandsteinblock", "1e11");
-    eq("blauwal", "3e12");
-    eq("glasscheibe", "3e13");
-    eq("eiffelturm", "5e13");
+    eq("elefant", "6e11"); // ≈ 6 t
+    eq("blauwal", "1.5e13"); // ≈ 150 t
+    eq("saturnv", "3e14"); // ≈ 2.970 t
     eq("sandbank", "1e15");
-    eq("saturnv", "6e16");
-    eq("wueste", "1e17");
-    eq("goldengate", "2e18");
+    eq("eiffelturm", "1.01e15"); // ≈ 10.100 t
+    eq("sphinx", "3e15"); // ≈ 30.000 t
+    eq("koelner-dom", "3e16"); // ≈ 300.000 t
+    eq("goldengate", "8e16"); // ≈ 805.000 t
+    eq("cheops", "5.9e17"); // ≈ 5,9 Mio. t
     eq("berg", "5e19");
     eq("sahara", "1e27");
   });
