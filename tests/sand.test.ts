@@ -42,6 +42,7 @@ import {
   eventMultiplier,
   stepExcavation,
   excavationBonusMultiplier,
+  excavationFindChance,
   dinoBonusPct,
 } from "../src/lib/game/formulas";
 import { effectiveCompletions } from "../src/lib/game/achievements";
@@ -398,23 +399,37 @@ describe("Wiederholbare Abschlüsse & Boni", () => {
 });
 
 describe("Ausgrabungen (Funde ab 10 Prestiges)", () => {
-  it("je Meter genau ein Fund je nach Wurf; max. 100 m", () => {
-    // 0,0002 < 0,0005 → Splitter
-    expect(stepExcavation(10, 0, () => 0.0002)).toMatchObject({ meter: 10, shards: 10, bones: 0, amber: 0 });
-    // 0,01 → Dino-Knochen (0,0005..0,0505)
-    expect(stepExcavation(50, 0, () => 0.01)).toMatchObject({ meter: 50, bones: 50, amber: 0, shards: 0 });
-    // 0,06 → Bernstein (0,0505..0,0755)
-    expect(stepExcavation(10, 0, () => 0.06)).toMatchObject({ meter: 10, amber: 10, bones: 0, shards: 0 });
-    // 0,9 → nichts, Meter trotzdem gezählt
-    expect(stepExcavation(10, 0, () => 0.9)).toMatchObject({ meter: 10, bones: 0, amber: 0, shards: 0 });
-    // Deckel 100 m
-    expect(stepExcavation(150, 90, () => 0.01)).toMatchObject({ meter: 100, bones: 10 });
+  // Warteschlangen-RNG: liefert die Werte der Reihe nach.
+  const q = (arr: number[]) => {
+    let i = 0;
+    return () => arr[i++] ?? 0;
+  };
+
+  it("Fundchance = Basis (7,55 %) + 0,1 % je Hilfe", () => {
+    expect(excavationFindChance(0)).toBeCloseTo(0.0755, 9);
+    expect(excavationFindChance(1000)).toBeCloseTo(1.0755, 9);
   });
 
-  it("keine Doppelauswertung schon gegrabener Meter", () => {
-    const r = stepExcavation(30, 30, () => 0.01);
-    expect(r.meter).toBe(30);
-    expect(r.bones).toBe(0);
+  it("ein Meter: Typ nach Wurf (Splitter/Knochen/Bernstein) oder nichts", () => {
+    // frac < 0,0755 → Fund; danach Typ-Wurf
+    expect(stepExcavation(1, 0, 0, q([0.01, 0.001]))).toMatchObject({ bones: 0, amber: 0, shards: 1 });
+    expect(stepExcavation(1, 0, 0, q([0.01, 0.5]))).toMatchObject({ bones: 1, amber: 0, shards: 0 });
+    expect(stepExcavation(1, 0, 0, q([0.01, 0.9]))).toMatchObject({ bones: 0, amber: 1, shards: 0 });
+    // frac ≥ 0,0755 → kein Fund
+    expect(stepExcavation(1, 0, 0, q([0.9]))).toMatchObject({ meter: 1, bones: 0, amber: 0, shards: 0 });
+  });
+
+  it("Fundchance > 100 % → mehrere Funde je Meter möglich", () => {
+    // 1000 Hilfen → P = 1,0755. floor = 1 garantiert + Rest-Chance.
+    // frac 0,01 < 0,0755 → 2 Funde; beide Knochen (Typ 0,5)
+    expect(stepExcavation(1, 0, 1000, q([0.01, 0.5, 0.5]))).toMatchObject({ bones: 2 });
+    // frac 0,9 ≥ 0,0755 → nur 1 garantierter Fund
+    expect(stepExcavation(1, 0, 1000, q([0.9, 0.5]))).toMatchObject({ bones: 1 });
+  });
+
+  it("max. 100 m, keine Doppelauswertung", () => {
+    expect(stepExcavation(150, 90, 0, () => 0.9).meter).toBe(100);
+    expect(stepExcavation(30, 30, 0, () => 0.01).bones).toBe(0);
   });
 });
 

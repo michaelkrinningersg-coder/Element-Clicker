@@ -12,6 +12,7 @@ import {
   DINOS,
   EVENT_PROD_MULT,
   EXCAVATION_MAX_M,
+  HELPER_CHANCE_PER,
   METEOR_BONUS_PER,
   METEOR_CHANCE,
   MENSCH_ARBEITER_PER,
@@ -187,27 +188,45 @@ export function eventMultiplier(state: GameState): Decimal {
   return new Decimal(state.eventRemaining > 0 ? EVENT_PROD_MULT : 1);
 }
 
+/** Basis-Gesamtfundchance je Meter (Knochen + Bernstein + Splitter). */
+const EXCAVATION_BASE_CHANCE = DINO_CHANCE + AMBER_CHANCE + METEOR_CHANCE;
+
+/** Gesamt-Fundchance je Meter inkl. Ausgrabungshilfen (kann > 1 sein). */
+export function excavationFindChance(helpers: number): number {
+  return EXCAVATION_BASE_CHANCE + HELPER_CHANCE_PER * helpers;
+}
+
 /**
  * Wertet neu vollständig gegrabene Meter (1–EXCAVATION_MAX_M) aus.
- * Je Meter EIN Wurf → höchstens ein Fund: Meteoritensplitter (0,05 %),
- * sonst Dino-Knochen (5 %), sonst Bernstein (2,5 %), sonst nichts.
+ * Je Meter ist die Fundchance P = Basis + Hilfen. Bei P > 1 gibt es garantierte
+ * Funde (floor P) plus eine Rest-Chance – also 2+ Funde möglich. Jeder Fund wird
+ * nach Basisverteilung als Splitter / Knochen / Bernstein zugeordnet.
  */
 export function stepExcavation(
   depthM: number,
   excavatedMeter: number,
+  helpers: number,
   rng: () => number,
 ): { meter: number; bones: number; amber: number; shards: number } {
   const target = Math.min(EXCAVATION_MAX_M, Math.floor(depthM));
+  const P = excavationFindChance(helpers);
+  const base = EXCAVATION_BASE_CHANCE;
+  const mThr = METEOR_CHANCE / base; // Anteil Splitter
+  const bThr = (METEOR_CHANCE + DINO_CHANCE) / base; // + Anteil Knochen
   let meter = excavatedMeter;
   let bones = 0;
   let amber = 0;
   let shards = 0;
   while (meter < target) {
     meter++;
-    const r = rng();
-    if (r < METEOR_CHANCE) shards++;
-    else if (r < METEOR_CHANCE + DINO_CHANCE) bones++;
-    else if (r < METEOR_CHANCE + DINO_CHANCE + AMBER_CHANCE) amber++;
+    let finds = Math.floor(P);
+    if (rng() < P - finds) finds++;
+    for (let i = 0; i < finds; i++) {
+      const t = rng();
+      if (t < mThr) shards++;
+      else if (t < bThr) bones++;
+      else amber++;
+    }
   }
   return { meter, bones, amber, shards };
 }

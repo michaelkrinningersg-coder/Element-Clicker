@@ -8,6 +8,7 @@ import {
   EXCAVATION_UNLOCK_PRESTIGE,
   DINOS,
   SPLITTER_PER_METAL,
+  METAL_PER_HELPER,
 } from "./constants";
 import { BUILDINGS, BUILDING_BY_ID, isBuildingUnlocked } from "./buildings";
 import {
@@ -140,7 +141,12 @@ export function prestige(): void {
 function updateExcavation(): void {
   if (state.prestigeCount < EXCAVATION_UNLOCK_PRESTIGE) return;
   const depth = digDepthMeters(state.runSandEver);
-  const { meter, bones, amber, shards } = stepExcavation(depth, state.excavatedMeter, Math.random);
+  const { meter, bones, amber, shards } = stepExcavation(
+    depth,
+    state.excavatedMeter,
+    state.excavationHelpers,
+    Math.random,
+  );
   if (meter !== state.excavatedMeter) {
     state.excavatedMeter = meter;
     state.dinoBones += bones;
@@ -166,6 +172,15 @@ export function meltShards(): void {
   if (metal <= 0) return;
   state.meteorShards -= metal * SPLITTER_PER_METAL;
   state.metal += metal;
+  commit();
+}
+
+/** Baut `count` Ausgrabungshilfen (je 100 Metall, +0,1 % Fundchance). */
+export function buildHelper(count = 1): void {
+  const affordable = Math.min(count, Math.floor(state.metal / METAL_PER_HELPER));
+  if (affordable <= 0) return;
+  state.metal -= affordable * METAL_PER_HELPER;
+  state.excavationHelpers += affordable;
   commit();
 }
 

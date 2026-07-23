@@ -119,6 +119,9 @@ export const AMBER_BONUS_PER = 0.001; // +0,1 % je Bernstein
 export const METEOR_BONUS_PER = 0.25; // +25 % je Meteoritensplitter
 // Meteoritensplitter einschmelzen.
 export const SPLITTER_PER_METAL = 100; // 100 Splitter → 1 Stück Metall
+// Ausgrabungshilfe aus Metall bauen.
+export const METAL_PER_HELPER = 100; // 100 Metall je Ausgrabungshilfe
+export const HELPER_CHANCE_PER = 0.001; // +0,1 % Gesamt-Fundchance je Hilfe (kann > 100 %)
 
 // Zusammensetzbare Dinos (nur je einmal). Bonus = 3 · Knochenkosten (in %).
 export const DINOS: { id: string; name: string; cost: number; bonusPct: number }[] = [

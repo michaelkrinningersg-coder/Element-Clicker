@@ -1,20 +1,23 @@
 <script lang="ts">
-  import { game, buildDino, meltShards } from "../game/store";
-  import { excavationBonusMultiplier } from "../game/formulas";
+  import { game, buildDino, meltShards, buildHelper } from "../game/store";
+  import { excavationBonusMultiplier, excavationFindChance } from "../game/formulas";
   import {
     DINOS,
     SPLITTER_PER_METAL,
+    METAL_PER_HELPER,
     EXCAVATION_MAX_M,
     BONE_BONUS_PER,
     AMBER_BONUS_PER,
     METEOR_BONUS_PER,
+    HELPER_CHANCE_PER,
   } from "../game/constants";
   import { formatDecimal, formatNumber } from "../game/format";
   import { Decimal } from "../game/decimal";
 
-  $: bonusPct = (excavationBonusMultiplier($game).toNumber() - 1) * 100;
   $: meltable = Math.floor($game.meteorShards / SPLITTER_PER_METAL);
-  const pct = (n: number) => n.toLocaleString("de-DE", { maximumFractionDigits: 1 });
+  $: buildableHelpers = Math.floor($game.metal / METAL_PER_HELPER);
+  $: findChancePct = excavationFindChance($game.excavationHelpers) * 100;
+  const pct = (n: number, d = 1) => n.toLocaleString("de-DE", { maximumFractionDigits: d });
 </script>
 
 <div class="panel">
@@ -23,8 +26,9 @@
     <span class="bonuschip">Sand-Bonus ×{formatDecimal(excavationBonusMultiplier($game), 3)}</span>
   </div>
   <p class="legend dim">
-    Je vollständig gegrabenem Meter (1–{EXCAVATION_MAX_M} m) findest du höchstens eine Sache:
-    Dino-Knochen (5 %), Bernstein (2,5 %) oder – sehr selten – einen Meteoritensplitter (0,05 %).
+    Je vollständig gegrabenem Meter (1–{EXCAVATION_MAX_M} m) besteht eine Fundchance von
+    <b>{pct(findChancePct, 2)} %</b>: Dino-Knochen (5 %), Bernstein (2,5 %) oder – sehr selten
+    – ein Meteoritensplitter (0,05 %). Über 100 % sind mehrere Funde je Meter möglich.
     Funde bleiben über Prestige erhalten.
   </p>
 
@@ -43,7 +47,11 @@
     </div>
     <div class="find">
       <span class="ftop">⚙️ {formatNumber($game.metal)}</span>
-      <span class="flabel dim">Metall (für spätere Generatoren)</span>
+      <span class="flabel dim">Metall (für Ausgrabungshilfen)</span>
+    </div>
+    <div class="find">
+      <span class="ftop">🛠️ {formatNumber($game.excavationHelpers)}</span>
+      <span class="flabel dim">Ausgrabungshilfen · +{pct(HELPER_CHANCE_PER * 100, 1)} % Fundchance je Stück</span>
     </div>
   </div>
 
@@ -82,7 +90,27 @@
         Einschmelzen ({formatNumber(meltable)})
       </button>
     </div>
-    <p class="legend dim">Metall wird später für besondere Generatoren gebraucht.</p>
+  </div>
+
+  <div class="sub">
+    <h4>Ausgrabungshilfe bauen</h4>
+    <p class="legend dim">
+      Kostet {METAL_PER_HELPER} Metall je Hilfe und erhöht die Fundchance dauerhaft um
+      +{pct(HELPER_CHANCE_PER * 100, 1)} %. Über 100 % findest du im Schnitt mehrere Objekte je Meter.
+    </p>
+    <div class="meltrow">
+      <span class="dim">
+        Aktuelle Fundchance: <b>{pct(findChancePct, 2)} %</b> · baubar: {formatNumber(buildableHelpers)}
+      </span>
+      <div class="btnrow">
+        <button class="dbtn" disabled={buildableHelpers <= 0} on:click={() => buildHelper(1)}>
+          +1 Hilfe
+        </button>
+        <button class="dbtn" disabled={buildableHelpers <= 0} on:click={() => buildHelper(buildableHelpers)}>
+          Max ({formatNumber(buildableHelpers)})
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -206,5 +234,10 @@
     border: 1px solid var(--border-row);
     border-radius: 10px;
     padding: 10px 14px;
+  }
+  .btnrow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 </style>

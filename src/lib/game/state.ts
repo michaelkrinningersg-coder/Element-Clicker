@@ -27,7 +27,8 @@ export interface GameState {
   dinoBones: number; // Dino-Knochen (Währung, für Dinos ausgebbar), +1 % Sand je Stück
   amber: number; // Bernstein, +0,1 % Sand je Stück
   meteorShards: number; // Meteoritensplitter, +25 % Sand je Stück
-  metal: number; // aus Splittern eingeschmolzenes Metall (spätere Generatoren)
+  metal: number; // aus Splittern eingeschmolzenes Metall
+  excavationHelpers: number; // Ausgrabungshilfen (je +0,1 % Fundchance)
   dinosBuilt: Record<string, boolean>; // zusammengesetzte Dinos (je einmal)
   excavatedMeter: number; // höchster diesen Run ausgewerteter Meter (Reset bei Prestige)
 
@@ -56,6 +57,7 @@ export function createInitialState(): GameState {
     amber: 0,
     meteorShards: 0,
     metal: 0,
+    excavationHelpers: 0,
     dinosBuilt: {},
     excavatedMeter: 0,
     totalSandEver: ZERO,

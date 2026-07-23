@@ -16,6 +16,7 @@
     completionBuildingMult,
     eventMultiplier,
     excavationBonusMultiplier,
+    excavationFindChance,
   } from "../game/formulas";
   import { unlockedCount, effectiveCompletions } from "../game/achievements";
   import { ACHIEVEMENTS } from "../game/achievements";
@@ -227,6 +228,14 @@
         <div class="stat">
           <span class="k">⚙️ Metall</span>
           <span class="v mono">{formatNumber($game.metal)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">🛠️ Ausgrabungshilfen</span>
+          <span class="v mono">{formatNumber($game.excavationHelpers)}</span>
+        </div>
+        <div class="stat">
+          <span class="k">Fundchance je Meter</span>
+          <span class="v mono">{pctStr(excavationFindChance($game.excavationHelpers) * 100, 2)} %</span>
         </div>
         <div class="stat">
           <span class="k">Ausgewertete Meter (dieser Run, 1–{DINO_MAX_M} m)</span>
